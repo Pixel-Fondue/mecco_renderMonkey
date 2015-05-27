@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <atom type="Frame">
+    <hash type="Layout" key="base.Render Monkey" val="applicationLayout">
+      <atom type="IdealSize">1902 1010</atom>
+      <list type="Port">vptab 0 1 0 1 Render Monkey_vp_70300906033</list>
+      <atom type="PostRestoreCommand"></atom>
+      <atom type="Icon"></atom>
+      <atom type="InputRemappingContext"></atom>
+      <atom type="Tooltip"></atom>
+      <atom type="SwitcherClass">normal</atom>
+      <atom type="SwitcherThumbnail"></atom>
+    </hash>
+    <hash type="Layout" key="base.vpgroupLayout6004" val="viewportGroup">
+      <atom type="IdealSize">1894 983</atom>
+      <list type="VDiv">0.0335707</list>
+      <list type="Port">primitive 0 1 1 2 vpgroupLayout6004_vp_85265906034</list>
+      <list type="Port">attrform 0 1 0 1 vpgroupLayout6004_vp_42889906035</list>
+      <atom type="PostRestoreCommand"></atom>
+      <atom type="Icon"></atom>
+      <atom type="InputRemappingContext"></atom>
+      <atom type="Tooltip"></atom>
+      <atom type="SwitcherClass">normal</atom>
+      <atom type="SwitcherThumbnail"></atom>
+    </hash>
+    <hash type="primitive" key="base.vpgroupLayout6004_vp_64215906022" val="listed">
+      <atom type="Type">2</atom>
+      <atom type="Shadow">1</atom>
+      <atom type="GI">1</atom>
+      <atom type="Reflect">1</atom>
+      <atom type="Refract">1</atom>
+      <atom type="Displace">1</atom>
+      <atom type="Draft Displace">1</atom>
+      <atom type="Fur">1</atom>
+      <atom type="DraftFur">0</atom>
+      <atom type="Volumetrics">1</atom>
+      <atom type="MotionBlur">1</atom>
+      <atom type="RenderProxy">1</atom>
+      <atom type="MeshUpdate">1</atom>
+      <atom type="MultiThread">1</atom>
+      <atom type="AllThreads">1</atom>
+      <atom type="Selected">0</atom>
+      <atom type="Visible">1</atom>
+      <atom type="LayerMode">1</atom>
+      <atom type="TrackBall">0</atom>
+      <atom type="Camera">0</atom>
+      <atom type="QualityMode">2</atom>
+      <atom type="MouseUpdate">1</atom>
+      <atom type="FullRes">1</atom>
+      <atom type="Render All Outputs">1</atom>
+      <atom type="Logging">0</atom>
+      <atom type="Statistics">0</atom>
+      <atom type="Heat Map">0</atom>
+      <atom type="Pause">0</atom>
+      <atom type="Show Controls">1</atom>
+      <atom type="Sel Highlighting">0</atom>
+      <atom type="Tool Activation">1</atom>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Preview</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+      <atom type="GLControls">0</atom>
+    </hash>
+    <hash type="primitive" key="base.vpgroupLayout6004_vp_06065906026" val="listed">
+      <atom type="Type">2</atom>
+      <atom type="Shadow">1</atom>
+      <atom type="GI">1</atom>
+      <atom type="Reflect">1</atom>
+      <atom type="Refract">1</atom>
+      <atom type="Displace">1</atom>
+      <atom type="Draft Displace">1</atom>
+      <atom type="Fur">1</atom>
+      <atom type="DraftFur">0</atom>
+      <atom type="Volumetrics">1</atom>
+      <atom type="MotionBlur">1</atom>
+      <atom type="RenderProxy">1</atom>
+      <atom type="MeshUpdate">1</atom>
+      <atom type="MultiThread">1</atom>
+      <atom type="AllThreads">1</atom>
+      <atom type="Selected">0</atom>
+      <atom type="Visible">1</atom>
+      <atom type="LayerMode">1</atom>
+      <atom type="TrackBall">0</atom>
+      <atom type="Camera">0</atom>
+      <atom type="QualityMode">2</atom>
+      <atom type="MouseUpdate">1</atom>
+      <atom type="FullRes">1</atom>
+      <atom type="Render All Outputs">1</atom>
+      <atom type="Logging">0</atom>
+      <atom type="Statistics">0</atom>
+      <atom type="Heat Map">0</atom>
+      <atom type="Pause">0</atom>
+      <atom type="Show Controls">1</atom>
+      <atom type="Sel Highlighting">0</atom>
+      <atom type="Tool Activation">1</atom>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Preview</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+      <atom type="GLControls">0</atom>
+    </hash>
+    <hash type="primitive" key="base.vpgroupLayout6004_vp_13568906030" val="listed">
+      <atom type="Type">2</atom>
+      <atom type="Shadow">1</atom>
+      <atom type="GI">1</atom>
+      <atom type="Reflect">1</atom>
+      <atom type="Refract">1</atom>
+      <atom type="Displace">1</atom>
+      <atom type="Draft Displace">1</atom>
+      <atom type="Fur">1</atom>
+      <atom type="DraftFur">0</atom>
+      <atom type="Volumetrics">1</atom>
+      <atom type="MotionBlur">1</atom>
+      <atom type="RenderProxy">1</atom>
+      <atom type="MeshUpdate">1</atom>
+      <atom type="MultiThread">1</atom>
+      <atom type="AllThreads">1</atom>
+      <atom type="Selected">0</atom>
+      <atom type="Visible">1</atom>
+      <atom type="LayerMode">1</atom>
+      <atom type="TrackBall">0</atom>
+      <atom type="Camera">0</atom>
+      <atom type="QualityMode">2</atom>
+      <atom type="MouseUpdate">1</atom>
+      <atom type="FullRes">1</atom>
+      <atom type="Render All Outputs">1</atom>
+      <atom type="Logging">0</atom>
+      <atom type="Statistics">0</atom>
+      <atom type="Heat Map">0</atom>
+      <atom type="Pause">0</atom>
+      <atom type="Show Controls">1</atom>
+      <atom type="Sel Highlighting">0</atom>
+      <atom type="Tool Activation">1</atom>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Preview</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+      <atom type="GLControls">0</atom>
+    </hash>
+    <hash type="primitive" key="base.vpgroupLayout6004_vp_85265906034" val="listed">
+      <atom type="Type">2</atom>
+      <atom type="Shadow">1</atom>
+      <atom type="GI">1</atom>
+      <atom type="Reflect">1</atom>
+      <atom type="Refract">1</atom>
+      <atom type="Displace">1</atom>
+      <atom type="Draft Displace">1</atom>
+      <atom type="Fur">1</atom>
+      <atom type="DraftFur">0</atom>
+      <atom type="Volumetrics">1</atom>
+      <atom type="MotionBlur">1</atom>
+      <atom type="RenderProxy">1</atom>
+      <atom type="MeshUpdate">1</atom>
+      <atom type="MultiThread">1</atom>
+      <atom type="AllThreads">1</atom>
+      <atom type="Selected">0</atom>
+      <atom type="Visible">1</atom>
+      <atom type="LayerMode">1</atom>
+      <atom type="TrackBall">0</atom>
+      <atom type="Camera">0</atom>
+      <atom type="QualityMode">2</atom>
+      <atom type="MouseUpdate">1</atom>
+      <atom type="FullRes">1</atom>
+      <atom type="Render All Outputs">1</atom>
+      <atom type="Logging">0</atom>
+      <atom type="Statistics">0</atom>
+      <atom type="Heat Map">0</atom>
+      <atom type="Pause">0</atom>
+      <atom type="Show Controls">1</atom>
+      <atom type="Sel Highlighting">0</atom>
+      <atom type="Tool Activation">1</atom>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Preview</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+      <atom type="GLControls">0</atom>
+    </hash>
+    <hash type="attrform" key="base.vpgroupLayout6004_vp_34978906023" val="listed">
+      <list type="ExportedSheet">61213840469:sheet</list>
+      <atom type="TrackFormEdSelection">0</atom>
+      <atom type="PreviousTabHash"></atom>
+      <atom type="Cookie">15891905423:StartCollapsed</atom>
+      <atom type="ViewportLock2">0 1</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">renderMonkey_header</atom>
+      <atom type="IdealLock">0 33</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="attrform" key="base.vpgroupLayout6004_vp_41014906027" val="listed">
+      <list type="ExportedSheet">61213840469:sheet</list>
+      <atom type="TrackFormEdSelection">0</atom>
+      <atom type="PreviousTabHash"></atom>
+      <atom type="Cookie">15891905423:StartCollapsed</atom>
+      <atom type="ViewportLock2">0 1</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">renderMonkey_header</atom>
+      <atom type="IdealLock">0 33</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="attrform" key="base.vpgroupLayout6004_vp_52091906031" val="listed">
+      <list type="ExportedSheet">61213840469:sheet</list>
+      <atom type="TrackFormEdSelection">0</atom>
+      <atom type="PreviousTabHash"></atom>
+      <atom type="Cookie">15891905423:StartCollapsed</atom>
+      <atom type="ViewportLock2">0 1</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">renderMonkey_header</atom>
+      <atom type="IdealLock">0 33</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="attrform" key="base.vpgroupLayout6004_vp_42889906035" val="listed">
+      <list type="ExportedSheet">61213840469:sheet</list>
+      <atom type="TrackFormEdSelection">0</atom>
+      <atom type="PreviousTabHash"></atom>
+      <atom type="Cookie">15891905423:StartCollapsed</atom>
+      <atom type="ViewportLock2">0 1</atom>
+      <atom type="MinHeader">1</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">renderMonkey_header</atom>
+      <atom type="IdealLock">0 33</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vptab" key="base.Render Monkey_vp_56281905364" val="listed">
+      <atom type="Hash">Uber_Tabs_Layout:tabbedvp</atom>
+      <atom type="CurrentTab">0</atom>
+      <list type="Tab" val="vpgroup base.ModelViewSingle_tab">
+        <atom type="Title">Model</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup ModelViewQuad_tab">
+        <atom type="Title">Model Quad</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Paint_and_Sculpt_tab">
+        <atom type="Title">Paint</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Topo_Editor_tab">
+        <atom type="Title">Topo</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup UV_Editor_tab">
+        <atom type="Title">UV</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Layout_tab">
+        <atom type="Title">Layout</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Setup_tab">
+        <atom type="Title">Setup</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Animate_tab">
+        <atom type="Title">Animate</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup Render_View_tab">
+        <atom type="Title">Render</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Tabbed Viewport</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vptab" key="base.Render Monkey_vp_84051906021" val="listed">
+      <atom type="Hash">36892905390:tabbedvp</atom>
+      <atom type="CurrentTab">2</atom>
+      <list type="Tab" val="vpgroup edit.94459905575:tabpreset">
+        <atom type="Title">Camera (Interactive)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup edit.75437905529:tabpreset">
+        <atom type="Title">Camera (Preview)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup base._clone0">
+        <atom type="Title">Final Render</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Tabbed Viewport</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vptab" key="base.Render Monkey_vp_23779906025" val="listed">
+      <atom type="Hash">36892905390:tabbedvp</atom>
+      <atom type="CurrentTab">2</atom>
+      <list type="Tab" val="vpgroup edit.94459905575:tabpreset">
+        <atom type="Title">Camera (Interactive)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup edit.75437905529:tabpreset">
+        <atom type="Title">Camera (Preview)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup base._clone0">
+        <atom type="Title">Final Render</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Tabbed Viewport</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vptab" key="base.Render Monkey_vp_62662906029" val="listed">
+      <atom type="Hash">36892905390:tabbedvp</atom>
+      <atom type="CurrentTab">2</atom>
+      <list type="Tab" val="vpgroup edit.94459905575:tabpreset">
+        <atom type="Title">Camera (Interactive)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup edit.75437905529:tabpreset">
+        <atom type="Title">Camera (Preview)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup base._clone0">
+        <atom type="Title">Final Render</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Tabbed Viewport</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vptab" key="base.Render Monkey_vp_70300906033" val="listed">
+      <atom type="Hash">36892905390:tabbedvp</atom>
+      <atom type="CurrentTab">2</atom>
+      <list type="Tab" val="vpgroup edit.94459905575:tabpreset">
+        <atom type="Title">Camera (Interactive)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup edit.75437905529:tabpreset">
+        <atom type="Title">Camera (Preview)</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <list type="Tab" val="vpgroup base._clone0">
+        <atom type="Title">Final Render</atom>
+        <atom type="IsUserTitle">1</atom>
+      </list>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Tabbed Viewport</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+    <hash type="vpgroup" key="base._clone0" val="listed">
+      <atom type="framePreset">vpgroupLayout6004</atom>
+      <atom type="instanceSource"></atom>
+      <atom type="ViewportLock2">0 0</atom>
+      <atom type="MinHeader">0</atom>
+      <atom type="QuadLock">0</atom>
+      <atom type="ViewportTitle">Viewport Group</atom>
+      <atom type="ViewportClass">vpapplication</atom>
+    </hash>
+  </atom>
+</configuration>
