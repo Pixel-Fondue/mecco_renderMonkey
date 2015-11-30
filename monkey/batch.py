@@ -35,6 +35,7 @@ def run(batch_file_path):
                 if os.path.isfile(task_path):
                     
                     try:
+                        util.debug("Opening scene.")
                         lx.eval('scene.open {%s} normal' % task_path)
                     except:
                         util.debug('Failed to open "%s". Skip task.' % os.path.basename(task_path))
@@ -45,6 +46,7 @@ def run(batch_file_path):
                     
                     
                     try:
+                        util.debug("Getting image saver.")
                         imagesaver = task['format'] if 'format' in task else defaults.get('filetype')
                         destination_extension = util.get_imagesaver(imagesaver)[2].lower()
                     except:
@@ -56,6 +58,7 @@ def run(batch_file_path):
                     
                     
                     try:
+                        util.debug("Parsing frames.")
                         frames = task['frames'] if 'frames' in task else util.get_scene_render_range()
                         frames_list = util.range_from_string(frames)
                     except:
@@ -68,7 +71,16 @@ def run(batch_file_path):
                          
 
                     try:
-                        output_pattern = task['suffix'] if 'suffix' in task else scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
+                        util.debug("Getting output pattern.")
+                        
+                        #Bug. Either of the following should work, and does work in isolation. Crashing MODO in this context:
+                        #scene_pattern = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
+                        #scene_pattern = lx.eval('item.channel item:{%s} name:{%s} value:?' % (scene.renderItem.id,lx.symbol.sICHAN_POLYRENDER_OUTPAT))
+                        
+                        #Because of bug above, using default value instead (for now):
+                        scene_pattern = defaults.get('output_pattern')
+                        
+                        output_pattern = task['suffix'] if 'suffix' in task else scene_pattern
                     except:
                         util.debug('Failed to parse suffix (i.e. output pattern). Skip task.')
                         util.debug(traceback.format_exc())
@@ -79,9 +91,14 @@ def run(batch_file_path):
                             
                             
                     try:
+                        util.debug("Getting pass groups.")
+                        
+                        # CRASH
+                        
                         pass_group_names = task['passgroups'] if 'passgroups' in task else None
                         pass_group_names = pass_group_names if isinstance(pass_group_names,list) else [pass_group_names]
                         
+                        util.debug("Making sure pass groups are legit...")
                         pass_groups = set()
                         for group in pass_group_names:
                             i = scene.item(group)
@@ -89,9 +106,12 @@ def run(batch_file_path):
                                 pass_groups.add(i)
                             else:
                                 util.debug('Could not find group called "%s". Skipping.' % group)
+                        util.debug("Pass groups now legit.")
                                 
+                        util.debug("Making master pass group.")
                         master_pass_group = create_master_pass_group(pass_groups)
                         master_pass_group = master_pass_group if master_pass_group else None
+                        util.debug("...success.")
                         
                     except:
                         util.debug('Failed to parse pass groups. Skip task.')
@@ -102,6 +122,7 @@ def run(batch_file_path):
                         
                     
                     try:
+                        util.debug("Getting destination.")
                         destination = task['destination'] if 'destination' in task else defaults.get('destination')
                         util.debug('Initial destination: %s' % destination)
                         
@@ -137,7 +158,7 @@ def run(batch_file_path):
                             break
                         
 
-                    
+                    util.debug("Begin rendering loop.")
                     for frame in frames_list:
                         util.debug("Rendering frame %04d" % frame)
                         

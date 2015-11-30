@@ -32,7 +32,7 @@ class CMD(lxu.command.BasicCommand):
             frames = monkey.util.range_from_string(range_string)
             
             if frames:
-                render_range(frames, group)
+                monkey.util.render_range(frames, group)
             else:
                 modo.dialogs.alert("Invalid Frame Range","error",'No frame range recognized in "%s".' % range_string)
                 return lx.symbol.e_FAILED

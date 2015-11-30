@@ -4,7 +4,9 @@ DEFAULTS = {
     'filetype':'JPG',
     'frames':'1',
     'debug':True,
-    'destination':'./frames/'
+    'annoy':True,
+    'destination':'./frames/',
+    'output_pattern':'[<pass>][<output>][<LR>]<FFFF>'
 }
 
 def get(key):

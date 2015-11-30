@@ -2,7 +2,7 @@
 
 # By Adam O'Hern for Mechanical Color LLC
 
-import monkey, modo, lx, lxu, traceback, os
+import monkey, modo, lx, lxu, traceback, os, json
 
 CMD_NAME = 'renderMonkey.batchTemplate'
 
@@ -17,19 +17,19 @@ class CMD(lxu.command.BasicCommand):
         try:
             tree = [
                 {
-                    "path":"~/Desktop/scene.lxo"
+                    "path":os.path.normpath(lx.eval("query platformservice alias ? {%s}" % "kit_mecco_renderMonkey:test/passGroups.lxo"))
                 },{
                     "path":"~/Desktop/scene1.lxo",
                     "format":"JPG",
                     "frames":"*",
-                    "destination":"./frames/filename.x"
+                    "destination":"./frames/filename.x",
                     "passgroups":'passgroup1'
                 },{
                     "path":"~/Desktop/scene2.lxo",
                     "format":"JPG",
                     "frames":"1-5",
-                    "destination":"./frames/filename2.xyz"
-                    "suffix":'[<pass>_][<output>_][<LR>_]<FFFF>'
+                    "destination":"./frames/filename2.xyz",
+                    "suffix":'[<pass>_][<output>_][<LR>_]<FFFF>',
                     "passgroups":['colorways','cameraAngles']
                 }
             ]
@@ -38,10 +38,10 @@ class CMD(lxu.command.BasicCommand):
                 modo.dialogs.customFile(
                     dtype='fileSave', 
                     title='Save Batch File Template',
-                    names=('json',),
-                    unames=('Batch File',),
-                    patterns=('*.json',),
-                    os.path.expanduser("~")
+                    names=['json'],
+                    unames=['Batch File'],
+                    patterns=['*.json'],
+                    ext=['json']
                 )
             )
             
@@ -49,21 +49,15 @@ class CMD(lxu.command.BasicCommand):
             target.write(json.dumps(tree, sort_keys=False, indent=4, separators=(',', ': ')))
             target.close()
             
-            readme = 
-            
-"""
-Only 'path' is required. All other parameters are optional, see default values below.
+            readme = """Only 'path' is required. All other parameters are optional, see default values below.
 
 *path* - (required) Should contain a valid OS path to a MODO scene file. 
 
 *format* - (default: *) Defaults to render output setting or, if none available, 16-bit EXR. Allows any of the following:
 """
             
-            readme += ["    %s: %s (%s)\n" % (i[0],i[1],i[2]) for i in get_imagesavers()] + "\n"
-            readme +=
-            
-"""
-*frames* - (default: *) A comma-delimited list of frame ranges in the format "start-end:step". Examples:
+            readme += "\n".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in monkey.util.get_imagesavers()]) + "\n\n"
+            readme += """*frames* - (default: *) A comma-delimited list of frame ranges in the format "start-end:step". Examples:
     "*" : [As defined in file.]         << Use frame frange defined in 'start' and 'end' render channels.
     "1" : [1]
     "1-5" : [1,2,3,4,5]
@@ -94,6 +88,10 @@ Only 'path' is required. All other parameters are optional, see default values b
     This is useful for pass groups containing orthogonal information, e.g. ['variations','views'] renders each view for each
     variation.
 """
+            
+            target = open(os.path.splitext(output_path)[0]+"_readme.txt",'w')
+            target.write(readme)
+            target.close()
                 
         except Exception:
             monkey.util.debug(traceback.format_exc())

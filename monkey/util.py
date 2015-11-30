@@ -1,6 +1,6 @@
 #python
 
-import lx, os, json, modo, defaults, traceback, re
+import lx, os, json, modo, defaults, traceback, re, sys
 
 from time import sleep
 from math import copysign
@@ -16,6 +16,10 @@ def debug(string):
     """
     if defaults.get('debug'):
         lx.out(string)
+        if defaults.get('annoy'):
+            if modo.dialogs.okCancel("debug",string) == 'cancel':
+                sys.exit()
+            
     
     
 def setFrames(first,last):
@@ -99,9 +103,7 @@ def get_imagesaver(key):
     debug('Looking for imagesaver "%s"' % key)
     
     savers = get_imagesavers()
-    debug('Available image savers:')
-    for i in savers:
-        debug("%s: %s (%s)" % (str(i[0]),str(i[1]),str(i[2])))
+    debug("Available image savers:\n%s" % "\n".join(["%s: %s (%s)" % (str(i[0]),str(i[1]),str(i[2])) for i in savers]))
         
     match = None
     for i in savers:
@@ -211,9 +213,9 @@ def expand_path(inputString):
     return full_path
 
 
-def range_from_string(inputString):
+def range_from_string(inputString="*"):
     """
-    By Simon Lundberg for Mechanical Color
+    By Simon Lundberg & Adam O'Hern for Mechanical Color
     
     function:
         parses a string on the form "1, 5, 10-20:2" into a range like this:
@@ -252,11 +254,17 @@ def range_from_string(inputString):
         legalChars = "0123456789-:, "
         cleanString = ""
         frames = []
+        
+        debug("Removing illegal characters.")
         for char in inputString:
             if char in legalChars:
                 cleanString += char
-
+        debug("Clean string: %s" % cleanString)
+        
         rangeStrings = re.findall(r"[-0123456789:]+", cleanString) #splits up by commas and spaces
+        debug('Range strings:' + ', '.join(['"%s"' % i for i in rangeStrings]))
+        
+        debug('Parsing range strings.')
         for rangeString in rangeStrings:
             if "-" in rangeString[1:]:
                 #is a sequence, so we need to parse it into a range
@@ -312,13 +320,16 @@ def range_from_string(inputString):
                 except:
                     parse_error(rangeString) #skip this one
 
+        debug('...finished parsing range strings.')
 
         #we now have our list of frames, but it's full of duplicates
         #let's filter the list so each frame exists only once
+        debug('Filtering unique frames.')
         frames = filter_uniques(frames)
 
         #All done! If frames, return frames, otherwise exit with error
         if frames:
+            debug('Returning: %s' % str(frames))
             return frames
         else:
             parse_error(inputString)
@@ -453,7 +464,7 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
             return
 
 
-def create_master_pass_group(groups,delimeter="_"):
+def create_master_pass_group(groups,delimeter="_x_"):
     """
     By Adam O'Hern for Mechanical Color
     
@@ -537,7 +548,7 @@ def render_frame(frame, useOutput=True, outputPath=None, outputFormat=None, clea
           returns True if frame completes without error.
     """
 
-    renderItem = modo.Scene().renderItem
+    renderItem = modo.Scene().renderItem.id
     #start by reading previous values
     first = lx.eval("item.channel first ? item:{%s}" % renderItem)
     last = lx.eval("item.channel last ? item:{%s}" % renderItem)
