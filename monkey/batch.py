@@ -79,8 +79,20 @@ def run(batch_file_path):
                             
                             
                     try:
-                        passgroups = task['passgroups'] if 'passgroups' in task else None
-                        passgroups = passgroups if isinstance(passgroups,list) else [passgroups]
+                        pass_group_names = task['passgroups'] if 'passgroups' in task else None
+                        pass_group_names = pass_group_names if isinstance(pass_group_names,list) else [pass_group_names]
+                        
+                        pass_groups = set()
+                        for group in pass_group_names:
+                            i = scene.item(group)
+                            if i:
+                                pass_groups.add(i)
+                            else:
+                                util.debug('Could not find group called "%s". Skipping.' % group)
+                                
+                        master_pass_group = create_master_pass_group(pass_groups)
+                        master_pass_group = master_pass_group if master_pass_group else None
+                        
                     except:
                         util.debug('Failed to parse pass groups. Skip task.')
                         util.debug(traceback.format_exc())
@@ -131,7 +143,14 @@ def run(batch_file_path):
                         
                         scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
                         util.setFrames(frame,frame)
-                        command = 'render.animation filename:{%s} format:%s' % (destination,imagesaver)
+                        
+                        args = util.build_arg_string({
+                                "filename":destination,
+                                "format":imagesaver,
+                                "group":master_pass_group.name
+                            })
+                        
+                        command = 'render.animation %s' % args
 
                         util.debug("Running command: %s" % command)
                         lx.eval(command)

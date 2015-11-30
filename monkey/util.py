@@ -509,7 +509,16 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
         lx.eval('layer.active active:off')
     
     
-        
+
+def build_arg_string(arg_dict):
+    arg_string = ''
+    for k,v in arg_dict.iteritems():
+        if v is not None:
+            v = str(v) if str(v).isalnum() else '{%s}' % str(v)
+            arg_string += " %s:%s" % (str(k),v)
+    return arg_string
+
+
         
 def render_frame(frame, useOutput=True, outputPath=None, outputFormat=None, clear=False, group=None):
     """    
