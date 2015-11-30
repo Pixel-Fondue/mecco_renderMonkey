@@ -1,5 +1,7 @@
 #python
 
+# By Adam O'Hern for Mechanical Color LLC
+
 import monkey, modo, lx, lxu, traceback, os
 
 CMD_NAME = 'renderMonkey.batch'
@@ -41,7 +43,10 @@ class CMD(lxu.command.BasicCommand):
                 batch_file_path = os.path.normpath(modo.dialogs.customFile(dtype='fileOpen', title='Select Batch File',names=('json',),unames=('Batch File',), patterns=('*.json',), path=self.last_path()))
                 self.last_path(os.path.dirname(batch_file_path))
                 
-                return monkey.batch.run(batch_file_path)
+                if batch_file_path:
+                    return monkey.batch.run(batch_file_path)
+                else:
+                    return lx.symbol.e_FAILED
                 
         except Exception:
             monkey.util.debug(traceback.format_exc())

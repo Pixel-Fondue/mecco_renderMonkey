@@ -3,6 +3,7 @@
 import lx, os, util, defaults, traceback, modo
 
 def run(batch_file_path):
+    scene = modo.Scene()
     restore = {}
 
     util.debug('Setting up job.')
@@ -55,15 +56,38 @@ def run(batch_file_path):
                     
                     
                     try:
-                        frames = task['frames'] if 'frames' in task else defaults.get('frames')
+                        frames = task['frames'] if 'frames' in task else util.get_scene_render_range()
                         frames_list = util.range_from_string(frames)
                     except:
                         util.debug('Failed to parse frame range. Skip task.')
                         util.debug(traceback.format_exc())
                         break
+                        
+                        
+                        
+                         
 
+                    try:
+                        output_pattern = task['suffix'] if 'suffix' in task else scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
+                    except:
+                        util.debug('Failed to parse suffix (i.e. output pattern). Skip task.')
+                        util.debug(traceback.format_exc())
+                        break                        
+                         
 
-                    
+                            
+                            
+                            
+                    try:
+                        passgroups = task['passgroups'] if 'passgroups' in task else None
+                        passgroups = passgroups if isinstance(passgroups,list) else [passgroups]
+                    except:
+                        util.debug('Failed to parse pass groups. Skip task.')
+                        util.debug(traceback.format_exc())
+                        break
+                        
+                        
+                        
                     
                     try:
                         destination = task['destination'] if 'destination' in task else defaults.get('destination')
@@ -105,6 +129,7 @@ def run(batch_file_path):
                     for frame in frames_list:
                         util.debug("Rendering frame %04d" % frame)
                         
+                        scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
                         util.setFrames(frame,frame)
                         command = 'render.animation filename:{%s} format:%s' % (destination,imagesaver)
 
