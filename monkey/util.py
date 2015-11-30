@@ -477,7 +477,9 @@ def create_master_pass_group(groups,delimeter="_"):
     for channel in channels:
         master_group.addChannel(channel)
 
-    combine(master_group,groups,channels,len(groups))
+    combine(master_group,groups,channels,len(groups)) 
+    
+    return master_group
     
         
 def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],delimeter="_"):
@@ -487,24 +489,24 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
     Recursively walks a list of render pass groups to create every possible combination. Intended for use with
     create_master_pass_group() function.
     """
-	if depth < max_depth:
-		passes = groups[0].itemGraph('itemGroups').forward()
-		
-		for p in passes:
-			p.actionClip.SetActive(1)
-			
-			subgroups = [g for g in groups]
-			del subgroups[0]
-			
-			combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
-	
-	elif depth == max_depth:
-		lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,delimeter.join(passname_parts)))
-		for c in channels:
-			lx.eval('channel.key channel:{%s:%s}' % (c.item.id,c.name))
-			lx.eval('channel.key mode:remove channel:{%s:%s}' % (c.item.id,c.name))
-		lx.eval('edit.apply')
-		lx.eval('layer.active active:off')	
+    if depth < max_depth:
+        passes = groups[0].itemGraph('itemGroups').forward()
+        
+        for p in passes:
+            p.actionClip.SetActive(1)
+            
+            subgroups = [g for g in groups]
+            del subgroups[0]
+            
+            combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
+    
+    elif depth == max_depth:
+        lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,delimeter.join(passname_parts)))
+        for c in channels:
+            lx.eval('channel.key channel:{%s:%s}' % (c.item.id,c.name))
+            lx.eval('channel.key mode:remove channel:{%s:%s}' % (c.item.id,c.name))
+        lx.eval('edit.apply')
+        lx.eval('layer.active active:off')
     
     
         
