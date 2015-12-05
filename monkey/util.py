@@ -1,6 +1,6 @@
 #python
 
-import lx, os, json, modo, defaults, traceback, re, sys
+import lx, os, json, modo, defaults, traceback, re, sys, yaml
 
 from time import sleep
 from math import copysign
@@ -90,7 +90,41 @@ def read_json(file_path):
 
     debug('Closing %s.' % os.path.basename(file_path))
     json_file.close()
-    return json_object
+    return json_object    
+    
+def read_yaml(file_path):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Returns a Python object (list or dict, as appropriate) from a given YAML file path.
+    We use YAML because it's easier and more human readable than JSON. It's harder to mess up,
+    easier to learn, and--imagine!--it supports commenting.
+    """
+    
+    debug('Reading file: %s' % file_path)
+    try:
+        yaml_file = open(file_path,'r')
+        debug("...success.")
+    except:
+        debug("...failed.")
+        debug(traceback.format_exc())
+        return False
+        
+    debug('Parsing YAML for %s' % os.path.basename(file_path))
+    try:
+        yaml_object = yaml.safe_load(yaml_file.read())
+        debug("...success.")
+    except:
+        debug("...failed.")
+        debug(traceback.format_exc())
+        
+        debug('Closing %s.' % os.path.basename(file_path))
+        yaml_file.close()
+        return False
+
+    debug('Closing %s.' % os.path.basename(file_path))
+    yaml_file.close()
+    return yaml_object
 
 
 def get_imagesaver(key):
