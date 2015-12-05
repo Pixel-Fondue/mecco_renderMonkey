@@ -1,6 +1,13 @@
 #python
 
-import lx, os, util, defaults, traceback, modo
+import lx, os, util, defaults, traceback, modo, symbols
+
+PATH = symbols.SCENE_PATH
+FORMAT = symbols.FORMAT
+FRAMES = symbols.FRAMES
+DESTINATION = symbols.DESTINATION
+PATTERN = symbols.PATTERN
+GROUPS = symbols.GROUPS
 
 def run(batch_file_path):
     
@@ -25,11 +32,11 @@ def run(batch_file_path):
         util.debug("Scanning for task.")
         for task in batch_json:
             
-            if 'path' in task:
+            if PATH in task:
                 
-                util.debug("Task path: %s" % task['path'])
+                util.debug("Task path: %s" % task[PATH])
                 
-                task_path = util.expand_path(task['path'])
+                task_path = util.expand_path(task[PATH])
                 util.debug("Expanded task path: %s" % task_path)
                 
                 if os.path.isfile(task_path):
@@ -48,7 +55,7 @@ def run(batch_file_path):
                     
                     try:
                         util.debug("Getting image saver.")
-                        imagesaver = task['format'] if 'format' in task else defaults.get('filetype')
+                        imagesaver = task[FORMAT] if FORMAT in task else defaults.get('filetype')
                         destination_extension = util.get_imagesaver(imagesaver)[2].lower()
                     except:
                         util.debug('Failed to get image saver "%s". Skip task.' % imagesaver)
@@ -60,7 +67,7 @@ def run(batch_file_path):
                     
                     try:
                         util.debug("Parsing frames.")
-                        frames = task['frames'] if 'frames' in task else util.get_scene_render_range()
+                        frames = task[FRAMES] if FRAMES in task else util.get_scene_render_range()
                         frames_list = util.range_from_string(frames)
                     except:
                         util.debug('Failed to parse frame range. Skip task.')
@@ -117,7 +124,7 @@ def run(batch_file_path):
                     try:
                         util.debug("Getting pass groups.")
                         
-                        pass_group_names = task['passgroups'] if 'passgroups' in task else None
+                        pass_group_names = task[GROUPS] if GROUPS in task else None
                         
                         if pass_group_names:
                             pass_group_names = pass_group_names if isinstance(pass_group_names,list) else [pass_group_names]
@@ -136,6 +143,7 @@ def run(batch_file_path):
                             master_pass_group = create_master_pass_group(pass_groups)
                             master_pass_group = master_pass_group if master_pass_group else None
                             util.debug("...success.")
+
                         
                     except:
                         util.debug('Failed to parse pass groups. Skip task.')
@@ -147,7 +155,7 @@ def run(batch_file_path):
                     
                     try:
                         util.debug("Getting destination.")
-                        destination = task['destination'] if 'destination' in task else defaults.get('destination')
+                        destination = task[DESTINATION] if DESTINATION in task else defaults.get('destination')
                         util.debug('Initial destination: %s' % destination)
                         
                         destination = util.expand_path(destination)

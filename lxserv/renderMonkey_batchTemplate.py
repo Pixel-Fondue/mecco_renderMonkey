@@ -2,9 +2,16 @@
 
 # By Adam O'Hern for Mechanical Color LLC
 
-import monkey, modo, lx, lxu, traceback, os, json
+import monkey, modo, lx, lxu, traceback, os, json, yaml
 
 CMD_NAME = 'renderMonkey.batchTemplate'
+
+PATH = monkey.symbols.SCENE_PATH
+FORMAT = monkey.symbols.FORMAT
+FRAMES = monkey.symbols.FRAMES
+DESTINATION = monkey.symbols.DESTINATION
+PATTERN = monkey.symbols.PATTERN
+GROUPS = monkey.symbols.GROUPS
 
     
 class CMD(lxu.command.BasicCommand):
@@ -17,17 +24,19 @@ class CMD(lxu.command.BasicCommand):
         try:
             tree = [
                 {
-                    "path":os.path.normpath(lx.eval("query platformservice alias ? {%s}" % "kit_mecco_renderMonkey:test/passGroups.lxo"))
+                    PATH:monkey.defaults.get('test_path')
                 },{
-                    "path":"~/Desktop/scene2.lxo",
-                    "format":"JPG",
-                    "frames":"1-5",
-                    "width":720,
-                    "height":480,
-                    "outputs":['Final Color Output','Alpha Output'],
-                    "destination":"./frames/filename2.xyz",
-                    "suffix":'[<pass>_][<output>_][<LR>_]<FFFF>',
-                    "passgroups":['colorways','cameraAngles']
+                    PATH:monkey.defaults.get('test_path'),
+                    FORMAT:monkey.defaults.get('filetype'),
+                    DESTINATION:monkey.defaults.get('test_output_path'),
+                    GROUPS:monkey.defaults.get('test_passgroup')
+                },{
+                    PATH:monkey.defaults.get('test_path'),
+                    FORMAT:monkey.defaults.get('filetype'),
+                    FRAMES:monkey.defaults.get('test_framerange'),
+                    DESTINATION:monkey.defaults.get('test_output_path'),
+                    PATTERN:monkey.defaults.get('output_pattern'),
+                    GROUPS:monkey.defaults.get('test_passgroups')
                 }
             ]
             
@@ -44,6 +53,22 @@ class CMD(lxu.command.BasicCommand):
             
             target = open(output_path,'w')
             target.write(json.dumps(tree, sort_keys=False, indent=4, separators=(',', ': ')))
+            target.close()
+            
+            
+            output_path = os.path.normpath(
+                modo.dialogs.customFile(
+                    dtype='fileSave', 
+                    title='Save Batch File Template',
+                    names=['yaml'],
+                    unames=['Batch File (YAML)'],
+                    patterns=['*.yaml'],
+                    ext=['yaml']
+                )
+            )
+            
+            target = open(output_path,'w')
+            target.write(yaml.dump(tree, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
             target.close()
             
             readme = """Only 'path' is required. All other parameters are optional, see default values below.
