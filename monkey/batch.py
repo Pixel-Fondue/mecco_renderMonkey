@@ -3,7 +3,7 @@
 import lx, os, util, defaults, traceback, modo
 
 def run(batch_file_path):
-    scene = modo.Scene()
+    
     restore = {}
 
     util.debug('Setting up job.')
@@ -37,12 +37,13 @@ def run(batch_file_path):
                     try:
                         util.debug("Opening scene.")
                         lx.eval('scene.open {%s} normal' % task_path)
+                        scene = modo.Scene()
+                        
                     except:
                         util.debug('Failed to open "%s". Skip task.' % os.path.basename(task_path))
                         util.debug(traceback.format_exc())
                         break
 
-                    
                     
                     
                     try:
@@ -73,16 +74,39 @@ def run(batch_file_path):
                     try:
                         util.debug("Getting output pattern.")
                         
-                        #Bug. Either of the following should work, and does work in isolation. Crashing MODO in this context:
-                        #scene_pattern = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
-                        #scene_pattern = lx.eval('item.channel item:{%s} name:{%s} value:?' % (scene.renderItem.id,lx.symbol.sICHAN_POLYRENDER_OUTPAT))
-                        
-                        #Because of bug above, using default value instead (for now):
-                        scene_pattern = defaults.get('output_pattern')
+                        scene_pattern = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
                         
                         output_pattern = task['suffix'] if 'suffix' in task else scene_pattern
                     except:
                         util.debug('Failed to parse suffix (i.e. output pattern). Skip task.')
+                        util.debug(traceback.format_exc())
+                        break        
+                         
+                            
+                            
+
+                    try:
+                        util.debug("Getting frame width/height.")
+                        
+                        scene_width = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).get()
+                        scene_height = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).get()
+                        
+                        width = task['width'] if 'width' in task else scene_width
+                        height = task['height'] if 'height' in task else scene_height
+                    except:
+                        util.debug('Something went wrong with width/height. Skip task.')
+                        util.debug(traceback.format_exc())
+                        break         
+                         
+                            
+                            
+
+                    try:
+                        util.debug("Getting render outputs.")
+                        
+                        outputs = task['outputs'] if 'outputs' in task else None
+                    except:
+                        util.debug('Something went wrong getting render outputs. Skip task.')
                         util.debug(traceback.format_exc())
                         break                        
                          
@@ -93,25 +117,25 @@ def run(batch_file_path):
                     try:
                         util.debug("Getting pass groups.")
                         
-                        # CRASH
-                        
                         pass_group_names = task['passgroups'] if 'passgroups' in task else None
-                        pass_group_names = pass_group_names if isinstance(pass_group_names,list) else [pass_group_names]
                         
-                        util.debug("Making sure pass groups are legit...")
-                        pass_groups = set()
-                        for group in pass_group_names:
-                            i = scene.item(group)
-                            if i:
-                                pass_groups.add(i)
-                            else:
-                                util.debug('Could not find group called "%s". Skipping.' % group)
-                        util.debug("Pass groups now legit.")
-                                
-                        util.debug("Making master pass group.")
-                        master_pass_group = create_master_pass_group(pass_groups)
-                        master_pass_group = master_pass_group if master_pass_group else None
-                        util.debug("...success.")
+                        if pass_group_names:
+                            pass_group_names = pass_group_names if isinstance(pass_group_names,list) else [pass_group_names]
+
+                            util.debug("Making sure pass groups are legit...")
+                            pass_groups = set()
+                            for group in pass_group_names:
+                                i = scene.item(group)
+                                if i:
+                                    pass_groups.add(i)
+                                else:
+                                    util.debug('Could not find group called "%s". Skipping.' % group)
+                            util.debug("Pass groups now legit.")
+
+                            util.debug("Making master pass group.")
+                            master_pass_group = create_master_pass_group(pass_groups)
+                            master_pass_group = master_pass_group if master_pass_group else None
+                            util.debug("...success.")
                         
                     except:
                         util.debug('Failed to parse pass groups. Skip task.')
@@ -163,12 +187,26 @@ def run(batch_file_path):
                         util.debug("Rendering frame %04d" % frame)
                         
                         scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
-                        util.setFrames(frame,frame)
+                        scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(frame)
+                        scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(frame)   
+                        scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).set(width)
+                        scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).set(height)
+                        
+                        if outputs:
+                            for o in scene.items(lx.symbol.sITYPE_RENDEROUTPUT):
+                                o.channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('off')
+                            for o in outputs:
+                                scene.item(o).channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('on')
+                            
+                        try:
+                            master_pass_group_name = master_pass_group.name
+                        except:
+                            master_pass_group_name = None
                         
                         args = util.build_arg_string({
                                 "filename":destination,
                                 "format":imagesaver,
-                                "group":master_pass_group.name
+                                "group":master_pass_group_name
                             })
                         
                         command = 'render.animation %s' % args

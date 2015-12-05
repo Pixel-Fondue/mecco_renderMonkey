@@ -19,15 +19,12 @@ class CMD(lxu.command.BasicCommand):
                 {
                     "path":os.path.normpath(lx.eval("query platformservice alias ? {%s}" % "kit_mecco_renderMonkey:test/passGroups.lxo"))
                 },{
-                    "path":"~/Desktop/scene1.lxo",
-                    "format":"JPG",
-                    "frames":"*",
-                    "destination":"./frames/filename.x",
-                    "passgroups":'passgroup1'
-                },{
                     "path":"~/Desktop/scene2.lxo",
                     "format":"JPG",
                     "frames":"1-5",
+                    "width":720,
+                    "height":480,
+                    "outputs":['Final Color Output','Alpha Output'],
                     "destination":"./frames/filename2.xyz",
                     "suffix":'[<pass>_][<output>_][<LR>_]<FFFF>',
                     "passgroups":['colorways','cameraAngles']
@@ -53,19 +50,25 @@ class CMD(lxu.command.BasicCommand):
 
 *path* - (required) Should contain a valid OS path to a MODO scene file. 
 
-*format* - (default: *) Defaults to render output setting or, if none available, 16-bit EXR. Allows any of the following:
+*format* - (default: "*") Defaults to render output setting or, if none available, 16-bit EXR. Allows any of the following:
 """
             
             readme += "\n".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in monkey.util.get_imagesavers()]) + "\n\n"
             readme += """*frames* - (default: *) A comma-delimited list of frame ranges in the format "start-end:step". Examples:
     "*" : [As defined in file.]         << Use frame frange defined in 'start' and 'end' render channels.
-    "1" : [1]
-    "1-5" : [1,2,3,4,5]
-    "5-1" : [5,4,3,2,1]                 << Frames rendered in the order expressed, not necessarily numerical order.
+    "1" : [1]                           << Single frame
+    "1-5" : [1,2,3,4,5]                 << Frame sequence rendered in order.
+    "5-1" : [5,4,3,2,1]                 << Frames rendered in reverse order.
     "0-10:2" : [0,2,4,6,8,10]           << Frames between zero and ten by twos.
     "1-21:5" : [1,6,11,16,21]           << Frames between one and twenty-one by fives.
     "1,1-5" : [1,2,3,4,5]               << Redundant frames will only be rendered once.
-    "(1 - 3),, 4-!@#5" : [1,2,3,4,5]    << Special and redundant characters are stripped.
+    "(1 - 3),, 4-!@#5" : [1,2,3,4,5]    << Extra characters are stripped.
+
+*width* - (default: scene) Frame width in pixels. If a width is supplied but no height--or vise verse--the scene aspect ratio will be maintained.
+
+*height* - (default: scene) Frame height in pixels. If a width is supplied but no height--or vise verse--the scene aspect ratio will be maintained.
+
+*outputs* - (default: scene) List of render outputs to save, by name or id. If none are provided, all available render outputs will be rendered as per scene settings.
 
 *destination* - (default: "./frames/") Where to save the rendered frames. Examples:
     "/already/perfectly/good/path/"     becomes     "/already/perfectly/good/path/"
@@ -89,7 +92,7 @@ class CMD(lxu.command.BasicCommand):
     variation.
 """
             
-            target = open(os.path.splitext(output_path)[0]+"_readme.txt",'w')
+            target = open(os.path.splitext(output_path)[0]+"_readme.md",'w')
             target.write(readme)
             target.close()
                 

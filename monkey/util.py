@@ -504,12 +504,13 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
         passes = groups[0].itemGraph('itemGroups').forward()
         
         for p in passes:
-            p.actionClip.SetActive(1)
-            
-            subgroups = [g for g in groups]
-            del subgroups[0]
-            
-            combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
+            if p.actionClip.Enabled():
+                p.actionClip.SetActive(1)
+
+                subgroups = [g for g in groups]
+                del subgroups[0]
+
+                combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
     
     elif depth == max_depth:
         lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,delimeter.join(passname_parts)))

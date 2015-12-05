@@ -4,7 +4,7 @@ DEFAULTS = {
     'filetype':'JPG',
     'frames':'1',
     'debug':True,
-    'annoy':True,
+    'annoy':False,
     'destination':'./frames/',
     'output_pattern':'[<pass>][<output>][<LR>]<FFFF>'
 }

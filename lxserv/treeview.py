@@ -3,7 +3,7 @@
 import lx
 import lxifc
  
-SERVERNAME = 'WhiskyTreeView'
+SERVERNAME = 'RenderMonkeyBatch'
  
 # --------------------------------------------------------------------------------------------------
 # Node styles
@@ -23,21 +23,27 @@ class TreeNode(object):
  
     _Primary = None
  
-    def __init__(self, name, price=-1.0, parent=None):
+    def __init__(self, name, value=None, parent=None):
         self.m_name = name
-        self.m_price = price
+        self.m_value = value
         self.m_parent = parent
         self.m_children = []
         self.state = 0
         self.selected = False
  
-        self.columns = (("Whisky", -1),
-                        ("Price", 90))
+
+        #For column sizes you can use proportions via negative values.  
+        #So -1 and -2 would mean that one column is half the size of the other 
+        #(total size would be 3 units, so the -1 column is 1 unit and -2 column is 2 units).  
+        #You can mix pixel sizes with proportional sizes, 
+        #so -1 and 90 means that one is 90 pixels and the other takes up the remaining space.
+        self.columns = (("Name", -1),
+                        ("Value", -3))
  
         self.toolTips = {}
  
-    def AddNode(self, name, price=-1.0):
-        self.m_children.append( TreeNode(name, price, self) )
+    def AddNode(self, name, value=""):
+        self.m_children.append( TreeNode(name, value, self) )
         return self.m_children[-1]
  
     def ClearSelection(self):
@@ -82,43 +88,47 @@ class TreeNode(object):
 # Build the structure
 # --------------------------------------------------------------------------------------------------
  
-_theTree = TreeNode('Whisky')
+_theTree = TreeNode('Tasks')
  
-spey = _theTree.AddNode('Speyside')
-spey.AddNode("Aberlour", 33.0)
-spey.AddNode("Balvenie", 47.0)
-spey.AddNode("Glenfiddich", 42.0)
-spey.AddNode("Singleton", 48.0)
-tom = spey.AddNode("Tomintoul 27yr", 115.99)
-tom.setToolTip(0,"yummmmmmmm!")
- 
+scenefile = _theTree.AddNode('file.lxo')
+
+scenefile_path = scenefile.AddNode("path", "/path/to/file/that/might/be/deep.lxo")
+scenefile_path.setToolTip(0,"")
+
+scenefile_frames = scenefile.AddNode("frames", "1-5,6,9-7")
+scenefile_frames.setToolTip(0,"")
+
+scenefile_destination = scenefile.AddNode("destination", "./frames")
+scenefile_destination.setToolTip(0,"")
+
+scenefile_format = scenefile.AddNode("format", "JPG")
+scenefile_format.setToolTip(0,"")
+
+scenefile_width = scenefile.AddNode("width", "")
+scenefile_width.setToolTip(0,"")
+
+scenefile_height = scenefile.AddNode("height", "")
+scenefile_height.setToolTip(0,"")
+
+scenefile_groups = scenefile.AddNode("groups", "")
+scenefile_groups.setToolTip(0,"")
+
+scenefile_outputs = scenefile.AddNode("outputs", "")
+scenefile_outputs.setToolTip(0,"")
+
 # expand the first node
-spey.setState(fTREE_VIEW_ITEM_EXPAND)
+scenefile.setState(fTREE_VIEW_ITEM_EXPAND)
+
+scenefile2 = _theTree.AddNode('file2.lxo')
+scenefile3 = _theTree.AddNode('file3.lxo')
  
-isle = _theTree.AddNode("Islands")
-Talisker = isle.AddNode("Talisker", 37.0)
- 
-# make Talisker an attribute of isle
-Talisker.setState(fTREE_VIEW_ITEM_ATTR | fTREE_VIEW_ROWCOLOR_RED)
- 
-jura = isle.AddNode("Jura")
-jura.AddNode("Origin", 34.0)
-jura.AddNode("Superstition", 31.0)
- 
-islay = _theTree.AddNode("Islay")
-islay.AddNode("Lagavulin", 80.0)
-Coal = islay.AddNode("Coal Ila Managers Choice", 465.0)
-Coal.setToolTip(1,"How much!?!?!")
- 
-eng = _theTree.AddNode("English")
-eng.AddNode("Nothing Worth Drinking")
-eng.setState(fTREE_VIEW_ROWCOLOR_ORANGE)
- 
+
+    
 # --------------------------------------------------------------------------------------------------
 # Tree View
 # --------------------------------------------------------------------------------------------------
  
-class WhiskyTreeView(lxifc.TreeView,
+class RenderMonkeyBatchView(lxifc.TreeView,
                     lxifc.Tree,
                     lxifc.ListenerPort,
                     lxifc.Attributes):
@@ -208,7 +218,7 @@ class WhiskyTreeView(lxifc.TreeView,
         """
  
         # create an instance of our current location in the tree
-        newTree = WhiskyTreeView(self.m_currentNode,self.m_currentIndex)
+        newTree = RenderMonkeyBatchView(self.m_currentNode,self.m_currentIndex)
  
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
@@ -340,6 +350,8 @@ class WhiskyTreeView(lxifc.TreeView,
             self.targetNode().SetSelected()
  
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
+            #Don't allow multi-selection.
+            _theTree.ClearSelection()
             self.targetNode().SetSelected()
  
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
@@ -390,13 +402,13 @@ class WhiskyTreeView(lxifc.TreeView,
  
         if index == 0:
             return node.m_name
-        elif node.m_price > 0.0:
-            return "%.2f" % node.m_price
+        elif node.m_value:
+            return node.m_value
         else:
             return ""
  
  
-tags = {lx.symbol.sSRV_USERNAME:  "whiskytreeview",
-        lx.symbol.sTREEVIEW_TYPE: "vpapplication WSTV whiskytreeview WhiskyTree"}
+tags = {lx.symbol.sSRV_USERNAME:  "RenderMonkeyBatch",
+        lx.symbol.sTREEVIEW_TYPE: "vpapplication WSTV RenderMonkeyBatchView RenderMonkey_Batch"}
  
-lx.bless(WhiskyTreeView, SERVERNAME, tags)
+lx.bless(RenderMonkeyBatchView, SERVERNAME, tags)

@@ -16,9 +16,6 @@ We wrote RM because we wanted to use it in our own work, and thought other peopl
 - **Batch rendering** - Line 'em up and knock 'em down: set up all of your render jobs from all of your scene files and let The Monkey do the rest.
 
 ##To Do
-- Add width/height parameters
-- Add outputs parameter for selecting render outputs
-- Allow per-output file format
 - Add "quick batch" command
 - Add "new batch" command
 - Add "open batch" command
