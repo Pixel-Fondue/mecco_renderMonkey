@@ -285,7 +285,7 @@ def range_from_string(inputString="*"):
             debug("Using scene render range: \"%s\"" % inputString)
         
         #first we clean up the string, removing any illegal characters
-        legalChars = "0123456789-:, "
+        legalChars = "0123456789-:,"
         cleanString = ""
         frames = []
         
@@ -295,7 +295,7 @@ def range_from_string(inputString="*"):
                 cleanString += char
         debug("Clean string: %s" % cleanString)
         
-        rangeStrings = re.findall(r"[-0123456789:]+", cleanString) #splits up by commas and spaces
+        rangeStrings = re.findall(r"[-0123456789:]+", cleanString) #splits up by commas
         debug('Range strings:' + ', '.join(['"%s"' % i for i in rangeStrings]))
         
         debug('Parsing range strings.')

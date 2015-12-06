@@ -1,7 +1,6 @@
 # !/usr/bin/env python
  
-import lx
-import lxifc
+import lx,lxifc,modo
  
 SERVERNAME = 'RenderMonkeyBatch'
  
@@ -30,7 +29,7 @@ class TreeNode(object):
         self.m_children = []
         self.state = 0
         self.selected = False
- 
+        
 
         #For column sizes you can use proportions via negative values.  
         #So -1 and -2 would mean that one column is half the size of the other 

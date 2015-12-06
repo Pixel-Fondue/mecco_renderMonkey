@@ -61,8 +61,8 @@ class CMD(lxu.command.BasicCommand):
 
             
             readme = "\n\n# Syntax is YAML (yaml.org), interpreted with pyYAML.\n"
-            readme = "# A proper code editor is highly recommended for editing.\n"
-            readme = "# Brackets (http://brackets.io) is free, cross-platform, and has built-in YAML support.\n\n"
+            readme += "# A proper code editor is highly recommended for editing.\n"
+            readme += "# Brackets (http://brackets.io) is free, cross-platform, and has built-in YAML support.\n\n"
             
             readme += "# Each list item is a render task.\n"
             readme += "# Only \"%s\" is required for a task to function. All other parameters are optional, see default values below.\n\n" % PATH
@@ -80,9 +80,9 @@ class CMD(lxu.command.BasicCommand):
             readme += "#     Spaces and special characters are ignored, and redundant frames are only rendered once.\n"
             readme += "#     Examples:\n\n"
             
-            readme += "#    '*' -> Start/end frames defined in scene file.\n"
-            rr = ['1','1-5','5-1','0-10:2','1-21:5','1,1-5','(1 - 3),, 4-!@#5']
-            readme += "#" + "\n#".join(["    '%s' -> %s" % (i,str(monkey.util.range_from_string(i))) for i in rr]) + "\n\n"
+            readme += "#    '*'                       Start/end frames defined in scene file.\n"
+            rr = ['1','1-5','5-1','0-10:2','1-21:5','1-3,10-16:2,20-23','1,1-5','(1 - 5),, 10-!@#15']
+            readme += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(monkey.util.range_from_string(i))) for i in rr]) + "\n\n"
 
             readme += "# \"%s\" - (default: scene) Frame width in pixels.\n" % WIDTH
             readme += "#     If a width is supplied but no height--or vise verse--the scene aspect ratio will be maintained.\n\n"
@@ -100,18 +100,19 @@ class CMD(lxu.command.BasicCommand):
             readme += "#    Using a file extension (e.g. 'filename.xyz') designates a file name, but the extension itself will be replaced as appropriate.\n"
             readme += "#    Examples:\n\n"
             
-            readme += "#    'frames/' -> /path/to/scene/file/frames\n"
-            readme += "#    '.frames/' -> /path/to/scene/file/frames\n"
-            readme += "#    '/path/with/filename.xyz' -> /path/with/file.jpg\n",
+            readme += "#    frames/                         /path/to/scene/file/frames\n"
+            readme += "#    .frames/                        /path/to/scene/file/frames\n"
+            readme += "#    /path/with/filename.xyz         /path/with/file.jpg\n"
             rr = [
                 "/already/perfectly/good/path/",
                 "/path/with/no_trailing_slash",
-                "~/fruit/loops/",
-                "kit_mecco_renderMonkey:path/to/righteousness"
+                "~/path/to/righteousness",
+                "kit_mecco_renderMonkey:path/"
             ]
-            readme += "#" + "\n#".join(["    '%s' -> %s" % (i,str(monkey.util.expand_path(i))) for i in rr]) + "\n\n"
+            readme += "#" + "\n#".join(["    %s%s%s" % (i," "*(32-len(i)),str(monkey.util.expand_path(i))) for i in rr]) + "\n\n"
     
             readme += "# \"%s\" - (default: *) Sets the output pattern for file naming. Defaults to the scene file setting.\n" % PATTERN
+            readme += "#     Note that unlike other fields, output patterns must be wrapped in single quotes (').\n"
             readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"
 
             readme += "# \"%s\" - (default: None) Pass groups to render for each frame.\n" % GROUPS
