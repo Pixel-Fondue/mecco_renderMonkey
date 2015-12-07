@@ -8,6 +8,10 @@ from math import copysign
 DEBUG = True
 
 
+def update_status():
+    
+
+
 def debug(string):
     """
     By Adam O'Hern for Mechanical Color
@@ -125,6 +129,18 @@ def read_yaml(file_path):
     debug('Closing %s.' % os.path.basename(file_path))
     yaml_file.close()
     return yaml_object
+
+def write_yaml(data,output_path):
+    debug("Writing YAML to '%s'." % output_path)
+    try:
+        target = open(output_path,'w')
+        target.write(yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
+        target.close()
+        debug("...success.")
+        return True
+    except:
+        debug("...failed. Return False." % output_path)
+        return False
 
 
 def get_imagesaver(key):
