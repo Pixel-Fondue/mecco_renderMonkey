@@ -100,16 +100,22 @@ class CMD(lxu.command.BasicCommand):
             readme += "#    Using a file extension (e.g. 'filename.xyz') designates a file name, but the extension itself will be replaced as appropriate.\n"
             readme += "#    Examples:\n\n"
             
-            readme += "#    frames/                         /path/to/scene/file/frames\n"
-            readme += "#    .frames/                        /path/to/scene/file/frames\n"
-            readme += "#    /path/with/filename.xyz         /path/with/file.jpg\n"
+            indent = 32
+            
             rr = [
-                "/already/perfectly/good/path/",
-                "/path/with/no_trailing_slash",
-                "~/path/to/righteousness",
-                "kit_mecco_renderMonkey:path/"
+                ['frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
+                ['.frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
+                [os.sep + os.path.join('path','with','filename.xyz'), os.path.normpath(os.sep + os.path.join('path','with','filename.jpg'))]
             ]
-            readme += "#" + "\n#".join(["    %s%s%s" % (i," "*(32-len(i)),str(monkey.util.expand_path(i))) for i in rr]) + "\n\n"
+            readme += "#" + "\n#".join(["    %s%s%s" % (i[0]," "*(indent-len(i[0])),i[1]) for i in rr]) + "\n"
+
+            rr = [
+                os.sep + os.path.join('already','perfectly','good','path') + os.sep,
+                os.sep + os.path.join('path','with','no','trailing_slash'),
+                os.path.join('~','path','to','righteousness'),
+                "kit_mecco_renderMonkey:path" + os.sep
+            ]
+            readme += "#" + "\n#".join(["    %s%s%s" % (i," "*(indent-len(i)),str(monkey.util.expand_path(i))) for i in rr]) + "\n\n"
     
             readme += "# \"%s\" - (default: *) Sets the output pattern for file naming. Defaults to the scene file setting.\n" % PATTERN
             readme += "#     Note that unlike other fields, output patterns must be wrapped in single quotes (').\n"
