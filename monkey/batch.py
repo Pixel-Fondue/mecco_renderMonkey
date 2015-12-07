@@ -11,6 +11,7 @@ GROUPS = symbols.GROUPS
 WIDTH = symbols.WIDTH
 HEIGHT = symbols.HEIGHT
 OUTPUTS = symbols.OUTPUTS
+CAMERA = symbols.CAMERA
 
 def run(batch_file_path):
     
@@ -145,6 +146,34 @@ def run(batch_file_path):
                     except:
                         util.debug('Something went wrong getting render outputs. Skip task.')
                         util.debug(traceback.format_exc())
+                        break         
+                         
+                            
+                            
+
+                    try:
+                        util.debug("Getting render camera.")
+                        camera = task[CAMERA] if CAMERA in task else None
+                        
+                        if camera:
+                            try:
+                                if not scene.item(camera).type == lx.symbol.sITYPE_CAMERA:
+                                    camera = None
+                                    raise
+                            except:
+                                util.debug('Could not set render camera. Skip task.')
+                                util.debug(traceback.format_exc())
+                                break
+                                
+                            for i in outputs:
+                                if scene.item(i) and scene.item(i).type == lx.symbol.sITYPE_RENDEROUTPUT:
+                                    output_items.add(scene.item(i))
+                                else:
+                                    util.debug("'%s' is not a valid render output." % i)
+                        
+                    except:
+                        util.debug('Something went wrong getting render outputs. Skip task.')
+                        util.debug(traceback.format_exc())
                         break                        
                          
 
@@ -239,6 +268,9 @@ def run(batch_file_path):
                         scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(frame)   
                         scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).set(width)
                         scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).set(height)
+                        
+                        if camera:
+                            lx.eval('render.camera {%s}' % camera)
                         
                         if outputs_items:
                             for o in scene.items(lx.symbol.sITYPE_RENDEROUTPUT):

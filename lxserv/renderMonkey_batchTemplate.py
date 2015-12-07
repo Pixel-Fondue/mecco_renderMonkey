@@ -15,6 +15,7 @@ GROUPS = monkey.symbols.GROUPS
 WIDTH = monkey.symbols.WIDTH
 HEIGHT = monkey.symbols.HEIGHT
 OUTPUTS = monkey.symbols.OUTPUTS
+CAMERA = monkey.symbols.CAMERA
 
     
 class CMD(lxu.command.BasicCommand):
@@ -40,6 +41,7 @@ class CMD(lxu.command.BasicCommand):
                     DESTINATION:monkey.defaults.get('test_output_path'),
                     PATTERN:monkey.defaults.get('output_pattern'),
                     GROUPS:monkey.defaults.get('test_passgroups')
+                    CAMERA:monkey.defaults.get('test_camera')
                 }
             ]
             

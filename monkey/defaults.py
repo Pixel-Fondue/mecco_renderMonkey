@@ -13,7 +13,8 @@ DEFAULTS = {
     'test_output_path': os.path.normpath(os.path.expanduser('~/Desktop/filename.xyz')),
     'test_passgroup':'views',
     'test_passgroups':['views','colors','shapes'],
-    'test_framerange':'1-3,5,10-8'
+    'test_framerange':'1-3,5,10-8',
+    'test_camera':'Camera'
 }
 
 def get(key):
