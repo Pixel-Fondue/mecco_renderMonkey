@@ -8,10 +8,6 @@ from math import copysign
 DEBUG = True
 
 
-def update_status():
-    
-
-
 def debug(string):
     """
     By Adam O'Hern for Mechanical Color

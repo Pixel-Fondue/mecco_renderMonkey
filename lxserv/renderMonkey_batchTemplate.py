@@ -16,6 +16,7 @@ WIDTH = monkey.symbols.WIDTH
 HEIGHT = monkey.symbols.HEIGHT
 OUTPUTS = monkey.symbols.OUTPUTS
 CAMERA = monkey.symbols.CAMERA
+RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
     
 class CMD(lxu.command.BasicCommand):
@@ -40,8 +41,9 @@ class CMD(lxu.command.BasicCommand):
                     FRAMES:monkey.defaults.get('test_framerange'),
                     DESTINATION:monkey.defaults.get('test_output_path'),
                     PATTERN:monkey.defaults.get('output_pattern'),
-                    GROUPS:monkey.defaults.get('test_passgroups')
-                    CAMERA:monkey.defaults.get('test_camera')
+                    GROUPS:monkey.defaults.get('test_passgroups'),
+                    CAMERA:monkey.defaults.get('test_camera'),
+                    RENDER_CHANNELS:monkey.defaults.get('test_render_channels')
                 }
             ]
             
@@ -124,7 +126,12 @@ class CMD(lxu.command.BasicCommand):
     
             readme += "# \"%s\" - (default: *) Sets the output pattern for file naming. Defaults to the scene file setting.\n" % PATTERN
             readme += "#     Note that unlike other fields, output patterns must be wrapped in single quotes (').\n"
-            readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"
+            readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"    
+            
+            readme += "# \"%s\" - (default: None) A series of channel:value pairs for the scene render item.\n" % RENDER_CHANNELS
+            readme += "#     Used to define arbitrary render settings on a per-task basis.\n"
+            readme += "#     Channel name must be a valid MODO render channel name. (Discoverable via command history.)\n"
+            readme += "#     Note that any invalid channel:value pair will cause the entire task to be skipped.\n\n"
 
             readme += "# \"%s\" - (default: None) Pass groups (by name or id) to render for each frame.\n" % GROUPS
             readme += "#     If a list of groups is provided, it will multiply each successive group by the former.\n"

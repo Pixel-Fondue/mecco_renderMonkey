@@ -12,6 +12,7 @@ WIDTH = symbols.WIDTH
 HEIGHT = symbols.HEIGHT
 OUTPUTS = symbols.OUTPUTS
 CAMERA = symbols.CAMERA
+RENDER_CHANNELS = symbols.RENDER_CHANNELS
 STATUS = symbols.STATUS
 
 def run(batch_file_path):
@@ -248,7 +249,9 @@ def run(batch_file_path):
                         util.debug(traceback.format_exc())
                         break
 
-
+                        
+                    
+                    render_channels = task[RENDER_CHANNELS] if RENDER_CHANNELS in task else []
                     status = task[STATUS] if STATUS in task else None
                         
                         
@@ -274,11 +277,20 @@ def run(batch_file_path):
                             
                             util.debug("Setting render channels.")
                             try:
+                                if render_channels:
+                                    for channel, value in render_channels:
+                                        try:
+                                            scene.renderItem.channel(channel).set(value)
+                                        except:
+                                            debug("%s could not be set. Skip task.")
+                                            break
+                                
                                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
                                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(frame)
                                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(frame)   
                                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).set(width)
                                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).set(height)
+                                
                                 if camera:
                                     lx.eval('render.camera {%s}' % camera)
                             except:

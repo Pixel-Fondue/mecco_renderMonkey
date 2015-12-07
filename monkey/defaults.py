@@ -14,7 +14,8 @@ DEFAULTS = {
     'test_passgroup':'views',
     'test_passgroups':['views','colors','shapes'],
     'test_framerange':'1-3,5,10-8',
-    'test_camera':'Camera'
+    'test_camera':'Camera',
+    'test_render_channels':{'irrCache':False,'globLimit':5,'aa':'s128'}
 }
 
 def get(key):
