@@ -92,8 +92,11 @@ class CMD(lxu.command.BasicCommand):
             readme += "# \"%s\" - (default: scene) Frame height in pixels.\n" % HEIGHT
             readme += "#     If a width is supplied but no height--or vise verse--the scene aspect ratio will be maintained.\n\n"
 
-            readme += "# \"%s\" - (default: scene) List of render outputs to save, by name or id.\n" % OUTPUTS
+            readme += "# \"%s\" - (default: scene) List of render outputs (by name or id) to save, by name or id.\n" % OUTPUTS
             readme += "#     If none are provided, all available render outputs will be rendered as per scene settings.\n\n"
+
+            readme += "# \"%s\" - (default: scene) Camera (by name or id) to use for rendering.\n" % CAMERA
+            readme += "#     If none is provided, the one defined in the scene will be used.\n\n"
 
             readme += "# \"%s\" - (default: %s) Where to save the rendered frames.\n" % (DESTINATION,monkey.defaults.get('destination'))
             readme += "#    NOTE: Parsing is rather primitive. If the string begins with \"~\", it assumes you're parsing a user folder.\n"
@@ -123,7 +126,7 @@ class CMD(lxu.command.BasicCommand):
             readme += "#     Note that unlike other fields, output patterns must be wrapped in single quotes (').\n"
             readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"
 
-            readme += "# \"%s\" - (default: None) Pass groups to render for each frame.\n" % GROUPS
+            readme += "# \"%s\" - (default: None) Pass groups (by name or id) to render for each frame.\n" % GROUPS
             readme += "#     If a list of groups is provided, it will multiply each successive group by the former.\n"
             readme += "#     For example, ['group1','group2'] renders each pass of group2 for each pass of group1.\n"
             readme += "#     This is useful for pass groups containing orthogonal information,\n"
