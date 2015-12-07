@@ -38,7 +38,7 @@ class CMD(lxu.command.BasicCommand):
                 },{
                     PATH:monkey.defaults.get('test_path'),
                     FORMAT:monkey.defaults.get('filetype'),
-                    FRAMES:monkey.defaults.get('test_framerange'),
+                    FRAMES:"1",
                     DESTINATION:monkey.defaults.get('test_output_path'),
                     PATTERN:monkey.defaults.get('output_pattern'),
                     GROUPS:monkey.defaults.get('test_passgroups'),

@@ -1,11 +1,13 @@
 #python
 
-import lx, os, json, modo, defaults, traceback, re, sys, yaml
+import lx, os, json, modo, defaults, traceback, re, sys, yaml, symbols, random
 
 from time import sleep
 from math import copysign
 
 DEBUG = True
+STATUS = symbols.STATUS
+STATUS_AVAILABLE = symbols.STATUS_AVAILABLE
 
 
 def debug(string):
@@ -15,11 +17,47 @@ def debug(string):
     Prints a string to lx.out() if defaults.get('debug') returns True. (See defaults.py)
     """
     if defaults.get('debug'):
-        lx.out(string)
+        lx.out("debug: %s" % string)
         if defaults.get('annoy'):
             if modo.dialogs.okCancel("debug",string) == 'cancel':
                 sys.exit()
             
+    
+def status(string):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Prints a string to lx.out()
+    """
+    
+    lx.out("status: %s" % string)
+    
+    
+def test_writeable(test_dir_path):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Easier to ask forgiveness than permission.
+    If the test path doesn't exist, tries to create it. If it can't, returns False.
+    Then writes to a file in the target directory. If it can't, returns False.
+    If all is well, returns True.
+    """
+    
+    if not os.path.exists(test_dir_path):
+        try:
+            os.mkdir(destination_dirname)
+        except OSError:
+            return False
+        
+    test_path = os.path.join(test_dir_path,"tmp_%s.txt" % random.randint(100000,999999))
+    try:
+        test = open(test_path,'w')
+        test.write("Testing write permissions.")
+        test.close()
+        os.remove(test_path)
+        return True
+    except:
+        return False
     
     
 def setFrames(first,last):
@@ -54,10 +92,9 @@ def toConsole(state):
     Enables or disables console logging. Useful for render monitoring.
     """
     
-    pass
-#    debug('log.toConsole %s' % str(state))
-#    lx.eval('log.toConsole %s' % str(state))
-#    lx.eval('log.toConsoleRolling %s' % str(state))
+    debug('log.toConsole %s' % str(state))
+    lx.eval('log.toConsole %s' % str(state))
+    lx.eval('log.toConsoleRolling %s' % str(state))
     
     
 def read_json(file_path):
@@ -539,6 +576,64 @@ def create_master_pass_group(groups,delimeter="_x_"):
     return master_group
     
         
+def set_task_status(batch_file_path,task_index,status):
+    debug("Setting task status to '%s'." % status)
+    batch = read_yaml(batch_file_path)
+    
+    try:
+        if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
+            batch[task_index][STATUS] = []
+
+        batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not i.startswith(symbols.TASK)]
+        batch[task_index][STATUS].append("%s %s" % (TASK,status))
+        
+        write_yaml(batch,batch_file_path)
+        debug("...success.")
+        return True
+    except:
+        debug("...failed. Return False")
+        return False
+    
+def get_task_status(batch_file_path,task_index):
+    debug("Getting status for task.")
+    batch = read_yaml(batch_file_path)
+    
+    if STATUS in batch[task_index]:
+        for i in batch[task_index][STATUS]:
+            if i.startswith(symbols.TASK) and not STATUS_AVAILABLE in i:
+                return i
+    
+    return STATUS_AVAILABLE
+        
+def set_frame_status(batch_file_path,task_index,frame_number,status):
+    debug("Setting frame status to '%s'." % status)
+    batch = read_yaml(batch_file_path)
+
+    try:
+        if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
+            batch[task_index][STATUS] = []
+
+        batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not int(re.search('^[0-9]*',i).group(0)) == frame_number]
+        batch[task_index][STATUS].append("%04d %s" % (frame_number,status))
+        
+        write_yaml(batch,batch_file_path)
+        debug("...success.")
+        return True
+    except:
+        debug("...failed. Return False")
+        return False
+    
+def get_frame_status(batch_file_path,task_index,frame_number):
+    debug("Getting frame status for frame %s." % frame_number)
+    batch = read_yaml(batch_file_path)
+    
+    if STATUS in batch[task_index]:
+        for i in batch[task_index][STATUS]:
+            if int(re.search('^[0-9]*',i).group(0)) == frame_number and not STATUS_AVAILABLE in i:
+                return i
+    
+    return STATUS_AVAILABLE
+        
 def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],delimeter="_"):
     """
     By Adam O'Hern for Mechanical Color
@@ -546,6 +641,9 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
     Recursively walks a list of render pass groups to create every possible combination. Intended for use with
     create_master_pass_group() function.
     """
+    if not isinstance(groups,list) and not isinstance(groups,set):
+        groups = [groups]
+    
     if depth < max_depth:
         passes = groups[0].itemGraph('itemGroups').forward()
         
@@ -559,12 +657,13 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
                 combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
     
     elif depth == max_depth:
-        lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,delimeter.join(passname_parts)))
+        layer_name = delimeter.join(passname_parts)
+        lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,layer_name))
         for c in channels:
             lx.eval('channel.key channel:{%s:%s}' % (c.item.id,c.name))
             lx.eval('channel.key mode:remove channel:{%s:%s}' % (c.item.id,c.name))
         lx.eval('edit.apply')
-        lx.eval('layer.active active:off')
+#        lx.eval('layer.active layer:{%s} active:off type:pass' % layer_name)
     
     
 
