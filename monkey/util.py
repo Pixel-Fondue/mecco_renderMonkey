@@ -161,6 +161,8 @@ def read_yaml(file_path):
     Returns a Python object (list or dict, as appropriate) from a given YAML file path.
     We use YAML because it's easier and more human readable than JSON. It's harder to mess up,
     easier to learn, and--imagine!--it supports commenting.
+    
+    Note: YAML does not support hard tabs (\t), so this script replaces those with four spaces ('    ').
     """
     
     try:
@@ -170,7 +172,7 @@ def read_yaml(file_path):
         return False
         
     try:
-        yaml_object = yaml.safe_load(yaml_file.read())
+        yaml_object = yaml.safe_load(re.sub('\\t','    ',yaml_file.read()))
     except:
         debug(traceback.format_exc())
         yaml_file.close()
