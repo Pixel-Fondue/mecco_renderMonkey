@@ -5,7 +5,6 @@ import lx, os, json, modo, defaults, traceback, re, sys, yaml, symbols, random
 from time import sleep
 from math import copysign
 
-DEBUG = True
 STATUS = symbols.STATUS
 STATUS_AVAILABLE = symbols.STATUS_AVAILABLE
 
@@ -15,19 +14,29 @@ def debug(string):
     By Adam O'Hern for Mechanical Color
     
     Prints a string to lx.out() if defaults.get('debug') returns True. (See defaults.py)
+    Intended for developer debugging only; user messages should use 'status'.
     """
     if defaults.get('debug'):
         lx.out("debug: %s" % string)
-        if defaults.get('annoy'):
-            if modo.dialogs.okCancel("debug",string) == 'cancel':
-                sys.exit()
             
+def annoy(string):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Essentially a breakpoint function for debugging purposes.
+    Prints a string to lx.out() and, if defaults.get('annoy') returns True, throws a dialog as well. (See defaults.py)
+    """
+    if defaults.get('annoy'):
+        lx.out("annoy: %s" % string)
+        if defaults.get('annoy'):
+            if modo.dialogs.okCancel("annoy","\n".join([string,traceback.print_stack(limit=3)])) == 'cancel':
+                sys.exit()
     
 def status(string):
     """
     By Adam O'Hern for Mechanical Color
     
-    Prints a string to lx.out()
+    Prints a string to lx.out(). Differs from "debug" only in that it's always enabled. Useful for user-related messages.
     """
     
     lx.out("status: %s" % string)
@@ -85,6 +94,7 @@ def get_scene_render_range():
     
     return "%s-%s" % (start,end)
     
+    
 def toConsole(state):
     """
     By Adam O'Hern for Mechanical Color
@@ -104,30 +114,22 @@ def read_json(file_path):
     Returns a Python object (list or dict, as appropriate) from a given JSON file path.
     """
     
-    debug('Reading file: %s' % file_path)
     try:
         json_file = open(file_path,'r')
-        debug("...success.")
     except:
-        debug("...failed.")
         debug(traceback.format_exc())
         return False
         
-    debug('Parsing JSON for %s' % os.path.basename(file_path))
     try:
         json_object = json.loads(json_file.read())
-        debug("...success.")
     except:
-        debug("...failed.")
         debug(traceback.format_exc())
-        
-        debug('Closing %s.' % os.path.basename(file_path))
         json_file.close()
         return False
 
-    debug('Closing %s.' % os.path.basename(file_path))
     json_file.close()
     return json_object    
+    
     
 def read_yaml(file_path):
     """
@@ -138,41 +140,30 @@ def read_yaml(file_path):
     easier to learn, and--imagine!--it supports commenting.
     """
     
-    debug('Reading file: %s' % file_path)
     try:
         yaml_file = open(file_path,'r')
-        debug("...success.")
     except:
-        debug("...failed.")
         debug(traceback.format_exc())
         return False
         
-    debug('Parsing YAML for %s' % os.path.basename(file_path))
     try:
         yaml_object = yaml.safe_load(yaml_file.read())
-        debug("...success.")
     except:
-        debug("...failed.")
         debug(traceback.format_exc())
-        
-        debug('Closing %s.' % os.path.basename(file_path))
         yaml_file.close()
         return False
 
-    debug('Closing %s.' % os.path.basename(file_path))
     yaml_file.close()
     return yaml_object
 
+
 def write_yaml(data,output_path):
-    debug("Writing YAML to '%s'." % output_path)
     try:
         target = open(output_path,'w')
         target.write(yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
         target.close()
-        debug("...success.")
         return True
     except:
-        debug("...failed. Return False." % output_path)
         return False
 
 
@@ -183,10 +174,7 @@ def get_imagesaver(key):
     Returns a tuple with three elements: name, username, and file extension.
     """
     
-    debug('Looking for imagesaver "%s"' % key)
-    
     savers = get_imagesavers()
-    debug("Available image savers:\n%s" % "\n".join(["%s: %s (%s)" % (str(i[0]),str(i[1]),str(i[2])) for i in savers]))
         
     match = None
     for i in savers:
@@ -194,11 +182,6 @@ def get_imagesaver(key):
             match = i
             break
 
-    if match:
-        debug('...found %s (%s)' % (i[1],i[2]))
-    else:
-        debug('...not found.')
-        
     return match
 
 
@@ -247,7 +230,6 @@ def expand_path(inputString):
     contains a ":" anywhere at all, it assumes a MODO path alias.
     """
     
-    debug('Parsing path: %s' % inputString)
     inputString = os.path.normpath(inputString)
     
     
@@ -259,7 +241,6 @@ def expand_path(inputString):
         try:
             full_path = os.path.expanduser(inputString)
         except:
-            debug('Could not expand user folder. Path cannot be parsed.')
             return False
         
         
@@ -274,7 +255,6 @@ def expand_path(inputString):
     else:
         try:
             current_scene_path = os.path.dirname(lx.eval('query sceneservice scene.file ? current'))
-            debug('Scene path: %s' % current_scene_path)
         except:
             debug('Could not get current scene folder. Path cannot be parsed.')
             return False
@@ -286,13 +266,10 @@ def expand_path(inputString):
         
         
     if not os.path.splitext(full_path)[1]:
-        debug('Adding trailing slash:')
         full_path = os.path.join(full_path,'')
         debug('...%s' % full_path)
         
     full_path = os.path.normpath(full_path)
-    
-    debug('Full path: %s' % full_path)
     return full_path
 
 
@@ -326,28 +303,20 @@ def range_from_string(inputString="*"):
             sortedList = range_from_string(myRangeString).sort()
     """
     try:
-        debug("Parsing render range: \"%s\"" % inputString)
-        
-        
         if inputString == "*":
             inputString = get_scene_render_range()
-            debug("Using scene render range: \"%s\"" % inputString)
         
         #first we clean up the string, removing any illegal characters
         legalChars = "0123456789-:,"
         cleanString = ""
         frames = []
         
-        debug("Removing illegal characters.")
         for char in inputString:
             if char in legalChars:
                 cleanString += char
-        debug("Clean string: %s" % cleanString)
         
         rangeStrings = re.findall(r"[-0123456789:]+", cleanString) #splits up by commas
-        debug('Range strings:' + ', '.join(['"%s"' % i for i in rangeStrings]))
         
-        debug('Parsing range strings.')
         for rangeString in rangeStrings:
             if "-" in rangeString[1:]:
                 #is a sequence, so we need to parse it into a range
@@ -403,16 +372,13 @@ def range_from_string(inputString="*"):
                 except:
                     parse_error(rangeString) #skip this one
 
-        debug('...finished parsing range strings.')
 
         #we now have our list of frames, but it's full of duplicates
         #let's filter the list so each frame exists only once
-        debug('Filtering unique frames.')
         frames = filter_uniques(frames)
 
         #All done! If frames, return frames, otherwise exit with error
         if frames:
-            debug('Returning: %s' % str(frames))
             return frames
         else:
             parse_error(inputString)
@@ -577,7 +543,6 @@ def create_master_pass_group(groups,delimeter="_x_"):
     
         
 def set_task_status(batch_file_path,task_index,status):
-    debug("Setting task status to '%s'." % status)
     batch = read_yaml(batch_file_path)
     
     try:
@@ -585,17 +550,15 @@ def set_task_status(batch_file_path,task_index,status):
             batch[task_index][STATUS] = []
 
         batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not i.startswith(symbols.TASK)]
-        batch[task_index][STATUS].append("%s %s" % (TASK,status))
+        batch[task_index][STATUS].append("%s %s" % (symbols.TASK,status))
         
         write_yaml(batch,batch_file_path)
-        debug("...success.")
         return True
     except:
-        debug("...failed. Return False")
+        status("Problem writing task status to batch file.")
         return False
     
 def get_task_status(batch_file_path,task_index):
-    debug("Getting status for task.")
     batch = read_yaml(batch_file_path)
     
     if STATUS in batch[task_index]:
@@ -606,7 +569,6 @@ def get_task_status(batch_file_path,task_index):
     return STATUS_AVAILABLE
         
 def set_frame_status(batch_file_path,task_index,frame_number,status):
-    debug("Setting frame status to '%s'." % status)
     batch = read_yaml(batch_file_path)
 
     try:
@@ -617,14 +579,12 @@ def set_frame_status(batch_file_path,task_index,frame_number,status):
         batch[task_index][STATUS].append("%04d %s" % (frame_number,status))
         
         write_yaml(batch,batch_file_path)
-        debug("...success.")
         return True
     except:
-        debug("...failed. Return False")
+        status("Problem writing frame status to batch file.")
         return False
     
 def get_frame_status(batch_file_path,task_index,frame_number):
-    debug("Getting frame status for frame %s." % frame_number)
     batch = read_yaml(batch_file_path)
     
     if STATUS in batch[task_index]:
@@ -638,8 +598,8 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
     """
     By Adam O'Hern for Mechanical Color
     
-    Recursively walks a list of render pass groups to create every possible combination. Intended for use with
-    create_master_pass_group() function.
+    Recursively walks a list of render pass groups to create every possible combination, excluding disabled passes. 
+    Intended for use with create_master_pass_group() function.
     """
     if not isinstance(groups,list) and not isinstance(groups,set):
         groups = [groups]

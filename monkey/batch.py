@@ -42,28 +42,29 @@ def run(batch_file_path):
         
         
         if not util.get_task_status(batch_file_path,task_index) == STATUS_AVAILABLE:
-            util.debug("'%s'. Skip task." % util.get_task_status(batch_file_path,task_index))
+            util.status("Task %s status: '%s'. Skip task." % (task_index,util.get_task_status(batch_file_path,task_index)))
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             continue
         
 
         if PATH not in task:
-            util.debug("No path specified. Skip task.")
+            util.status("No path specified for task %s. Skip task." % task_index)
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             continue
-
-        util.status("Begin task: %s" % task[PATH])
-
+        
         task_path = util.expand_path(task[PATH])
-        util.debug("Expanded task path: %s" % task_path)
-
 
         if not os.path.isfile(task_path):
-            util.debug('"%s" not found. Skip task.' % os.path.basename(task_path))
+            util.status('"%s" not found. Skip task.' % os.path.basename(task_path))
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             continue
+            
 
-        util.debug("Opening scene.")
+            
+        
+        
+        util.status("Begin task %s (%s)" % (task_index,os.path.basename(task_path)))
+            
         try:
             lx.eval('scene.open {%s} normal' % task_path)
             scene = modo.Scene()
@@ -74,10 +75,9 @@ def run(batch_file_path):
             continue
 
 
+            
+            
 
-
-
-        util.debug("Parsing frames.")
         try:
             frames = task[FRAMES] if FRAMES in task else util.get_scene_render_range()
             frames_list = util.range_from_string(frames)
@@ -95,22 +95,21 @@ def run(batch_file_path):
             continue
 
         if not frames_list:
-            util.status("No frames to render. Skip task.")
+            util.status("No valid frames to render. Skip task.")
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             lx.eval('!scene.close')
             continue
 
         if not [i for i in frames_list if util.get_frame_status(batch_file_path,task_index,i) == STATUS_AVAILABLE]:
-            util.status("No available_frames. Skip task.")
+            util.status("No available frames. Skip task.")
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             lx.eval('!scene.close')
             continue
 
 
 
+            
 
-
-        util.debug("Getting image saver.")
         try:
             imagesaver = task[FORMAT] if FORMAT in task else defaults.get('filetype')
             if not util.get_imagesaver(imagesaver):
@@ -129,7 +128,6 @@ def run(batch_file_path):
 
 
 
-        util.debug("Getting output pattern.")
         try:
             scene_pattern = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).get()
             output_pattern = task[PATTERN] if PATTERN in task else scene_pattern
@@ -140,10 +138,9 @@ def run(batch_file_path):
             continue        
 
 
+            
 
 
-
-        util.debug("Getting frame width/height.")
         try:
             scene_width = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).get()
             scene_height = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).get()
@@ -171,7 +168,6 @@ def run(batch_file_path):
 
 
 
-        util.debug("Getting render outputs.")
         try:
             outputs = task[OUTPUTS] if OUTPUTS in task else None
 
@@ -181,7 +177,7 @@ def run(batch_file_path):
                     if scene.item(i) and scene.item(i).type == lx.symbol.sITYPE_RENDEROUTPUT:
                         output_items.add(scene.item(i))
                     else:
-                        util.status("'%s' is not a valid render output." % i)
+                        util.status("'%s' is not a valid render output. Ignore." % i)
 
         except:
             util.status('Something went wrong getting render outputs. Skip task.')
@@ -193,7 +189,6 @@ def run(batch_file_path):
 
 
 
-        util.debug("Getting render camera.")
         try:
             camera = task[CAMERA] if CAMERA in task else None
 
@@ -207,7 +202,7 @@ def run(batch_file_path):
                     continue
 
         except:
-            util.status('Something went wrong getting render outputs. Skip task.')
+            util.status('Something went wrong setting the render camera. Skip task.')
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
             lx.eval('!scene.close')
             continue                        
@@ -217,7 +212,6 @@ def run(batch_file_path):
 
 
 
-        util.debug("Checking pass groups.")    
         try:
             pass_group_names = task[GROUPS] if GROUPS in task else None
 
@@ -230,18 +224,14 @@ def run(batch_file_path):
                     if i:
                         pass_groups.add(i)
                     else:
-                        util.debug('Could not find group called "%s". Skipping group.' % group)
+                        util.debug('Could not find group called "%s". Ignore.' % group)
 
                 if len(pass_groups) > 1:
-                    util.debug("Creating master pass group from provided pass groups.")
                     master_pass_group = util.create_master_pass_group(list(pass_groups))
                     master_pass_group = master_pass_group if master_pass_group else None
-                    util.debug("...success.")
                 elif len(pass_groups) == 1:
-                    util.debug("Only one valid pass group provided. Using as-is.")
                     master_pass_group = list(pass_groups)[0]
                 else:
-                    util.debug("No valid pass groups provided. Using as-is.")
                     master_pass_group = None
                          
 
@@ -255,13 +245,9 @@ def run(batch_file_path):
 
 
 
-        util.debug("Getting destination.")
         try:
             destination = task[DESTINATION] if DESTINATION in task else defaults.get('destination')
-            util.debug('Initial destination: %s' % destination)
-
             destination = util.expand_path(destination)
-            util.debug('Expanded destination: %s' % destination)
 
             if os.path.splitext(destination)[1]:
                 destination_filename = os.path.splitext(os.path.basename(destination))[0]
@@ -270,11 +256,7 @@ def run(batch_file_path):
                 destination_filename = os.path.splitext(os.path.basename(task_path))[0]
                 destination_dirname = destination
 
-            util.debug('Destination dirname: %s' % destination_dirname)
-            util.debug('Destination filename: %s' % destination_filename)
-
             destination = os.path.sep.join([destination_dirname,destination_filename])
-            util.debug('Final destination: %s' % destination)
 
         except:
             util.status('Failed to establish valid destination. Skip task.')
@@ -283,7 +265,6 @@ def run(batch_file_path):
             continue
 
 
-        util.debug('Testing write permissions.')
         if not util.test_writeable(destination_dirname):
             util.status("Could not write to destination. Skip task.")
             util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
@@ -294,93 +275,101 @@ def run(batch_file_path):
 
         render_channels = task[RENDER_CHANNELS] if RENDER_CHANNELS in task else {}
 
+        if render_channels:
+            try:
+                for channel, value in render_channels.iteritems():
+                    try:
+                        scene.renderItem.channel(channel).set(value)
+                    except:
+                        util.status("%s could not be set. Skip task.")
+                        lx.eval('!scene.close')
+                        continue
+            except:
+                util.debug("Failed to set rener channels. Skip task.")
+                util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
+                lx.eval('!scene.close')
+                continue
+
+                
+        try:
+            scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
+            scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).set(width)
+            scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).set(height)
+
+        except:
+            util.debug("Failed to set render channels. Skip task.")
+            util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
+            lx.eval('!scene.close')
+            continue
+
+        
+        if camera:
+            try:
+                lx.eval('render.camera {%s}' % camera)
+            except:
+                util.debug("Failed to set render camera. Skip task.")
+                util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
+                lx.eval('!scene.close')
+                continue
+
+
+        try:
+            if output_items:
+                for o in scene.items(lx.symbol.sITYPE_RENDEROUTPUT):
+                    o.channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('off')
+                for o in output_items:
+                    o.channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('on')
+        except:
+            util.debug("Failed to set output visibility. Skip task.")
+            util.set_task_status(batch_file_path,task_index,STATUS_FAILED)
+            lx.eval('!scene.close')
+            continue
+
+
+        try:
+            master_pass_group_name = master_pass_group.name
+        except:
+            util.debug("Failed to set master pass group name. Ignore.")
+            master_pass_group_name = None
+            
 
 
 
-        util.debug("Begin rendering loop.")
+        util.status("Rendering frames: %s" % str(frames_list))
         for frame in frames_list:
-
-            if (util.get_frame_status(batch_file_path,task_index,frame) == STATUS_AVAILABLE):
-
-                util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_IN_PROGRESS)
-
-                util.debug("Setting up frame %04d..." % frame)
-
-                util.debug("Setting render channels.")
-                try:
-                    if render_channels:
-                        util.debug("render_channels: %s" % render_channels)
-                        for channel, value in render_channels.iteritems():
-                            try:
-                                util.debug("Setting '%s' to '%s'" % (channel,str(value)))
-                                scene.renderItem.channel(channel).set(value)
-                            except:
-                                debug("%s could not be set. Skip task.")
-                                util.debug("Unexpected error: %s" % sys.exc_info()[0])
-                                util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_FAILED)
-                                continue
-
-                    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_OUTPAT).set(output_pattern)
-                    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(frame)
-                    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(frame)   
-                    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESX).set(width)
-                    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_RESY).set(height)
-
-                    if camera:
-                        lx.eval('render.camera {%s}' % camera)
-                except:
-                    util.debug("Failed to set render channels. Skip.")
-                    util.debug("Unexpected error: %s" % sys.exc_info()[0])
-                    util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_FAILED)
-                    continue
-
-
-
-                util.debug("Setting output visibility.")
-                try:
-                    if output_items:
-                        for o in scene.items(lx.symbol.sITYPE_RENDEROUTPUT):
-                            o.channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('off')
-                        for o in output_items:
-                            o.channel(lx.symbol.sICHAN_LOCATOR_VISIBLE).set('on')
-                    util.debug("...success.")
-                except:
-                    util.debug("Failed to set output visibility. Skip.")
-                    util.debug("Unexpected error: %s" % sys.exc_info()[0])
-                    util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_FAILED)
-                    continue
-
-
-                util.debug("Setting master pass group name.")
-                try:
-                    master_pass_group_name = master_pass_group.name
-                    util.debug("...success.")
-                except:
-                    master_pass_group_name = None
-                    util.debug("Failed to set master pass group name. Using None.")
-
-
-
-                args = util.build_arg_string({
-                        "filename":destination,
-                        "format":imagesaver,
-                        "group":master_pass_group_name
-                    })
-
-                command = 'render.animation %s' % args
-
-                util.debug("Running command: %s" % command)
-                try:
-                    lx.eval(command)
-                    util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_COMPLETE)
-
-                except:
-                    util.debug('Render failed. Skip frame.' % os.path.basename(task_path))
-
-            else:
+            
+            try:
+                scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(frame)
+                scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(frame)  
+            except:
+                util.debug("Failed to set first/last frames to %04d. Skip frame." % frame)
+                continue
+                
+                
+            if not util.get_frame_status(batch_file_path,task_index,frame) == STATUS_AVAILABLE:
                 util.debug("%s. Skip frame." % util.get_frame_status(batch_file_path,task_index,frame))
+                continue
+                
+                
+            util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_IN_PROGRESS)
+            util.status("Rendering frame %04d." % frame)
 
-        util.debug('Completed task "%s". Closing.' % os.path.basename(task_path))
+            args = util.build_arg_string({
+                    "filename":destination,
+                    "format":imagesaver,
+                    "group":master_pass_group_name
+                })
+
+            command = 'render.animation %s' % args
+            
+            try:
+                lx.eval(command)
+                util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_COMPLETE)
+            except:
+                util.debug('"%s" failed. Skip frame.' % command)
+
+            
+        util.debug('Completed task %s (%s). Continue.' % (task_index,os.path.basename(task_path)))
         util.set_task_status(batch_file_path,task_index,STATUS_COMPLETE)
         lx.eval('!scene.close')
 
