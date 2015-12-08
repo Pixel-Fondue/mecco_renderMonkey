@@ -50,7 +50,9 @@ class CMD(lxu.command.BasicCommand):
                 else:
                     return lx.symbol.e_FAILED
                 
-        except Exception:
+        except SystemExit:
+            pass
+        except:
             monkey.util.debug(traceback.format_exc())
     
     

@@ -38,12 +38,15 @@ class CMD(lxu.command.BasicCommand):
                 },{
                     PATH:monkey.defaults.get('test_path'),
                     FORMAT:monkey.defaults.get('filetype'),
-                    FRAMES:"1",
+                    FRAMES:monkey.defaults.get('test_single_frame'),
                     DESTINATION:monkey.defaults.get('test_output_path'),
                     PATTERN:monkey.defaults.get('output_pattern'),
                     GROUPS:monkey.defaults.get('test_passgroups'),
                     CAMERA:monkey.defaults.get('test_camera'),
-                    RENDER_CHANNELS:monkey.defaults.get('test_render_channels')
+                    RENDER_CHANNELS:monkey.defaults.get('test_render_channels'),
+                    OUTPUTS:monkey.defaults.get('test_outputs'),
+                    WIDTH:monkey.defaults.get('test_width'),
+                    HEIGHT:monkey.defaults.get('test_height')
                 }
             ]
             

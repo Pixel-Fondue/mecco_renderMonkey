@@ -29,7 +29,7 @@ def annoy(string):
     if defaults.get('annoy'):
         lx.out("annoy: %s" % string)
         if defaults.get('annoy'):
-            if modo.dialogs.okCancel("annoy","\n".join([string,traceback.print_stack(limit=3)])) == 'cancel':
+            if modo.dialogs.okCancel("annoy",string) == 'cancel': 
                 sys.exit()
     
 def status(string):
@@ -41,6 +41,29 @@ def status(string):
     
     lx.out("status: %s" % string)
     
+    
+def batch_has_progress(batch_list):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Returns True if the supplied batch list contains any status markers.
+    """
+    for i in batch_list:
+        if STATUS in i: return True
+    return False
+    
+def batch_reset(batch_list):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Resets all status markers on a partially finished batch.
+    """
+    new_batch_list = []
+    for i in batch_list:
+        if STATUS in i:
+            del i[STATUS]
+        new_batch_list.append(i)
+    return new_batch_list
     
 def test_writeable(test_dir_path):
     """
