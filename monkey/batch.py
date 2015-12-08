@@ -30,23 +30,26 @@ def run(batch_file_path):
     lx.eval('pref.value render.threads auto')
 
     batch = util.read_yaml(batch_file_path)
-
+    
     if not batch:
         util.status("Unable to read YAML.")
         return lx.symbol.e_FAILED
     
 
-    if util.batch_has_progress(batch):
-        reset = modo.dialogs.yesNoCancel('Reset Batch',"Batch file in progress. Reset and start over?\nYes: Reset\nNo: Use as-is\nCancel: Abort")
+    if util.batch_has_status(batch_file_path):
+        reset = modo.dialogs.yesNoCancel('Reset Batch',"Batch file in progress. Reset and start over?\n\nYes: Reset\nNo: Continue\nCancel: Abort")
         if reset in ('ok','yes'):
-            util.status("Resetting batch and saving to file.")
-            batch = util.batch_reset(batch)
-            util.write_yaml(batch,batch_file_path)
+            util.status("Resetting batch file.")
+            if not util.batch_status_reset(batch_file_path):
+                util.status("Could not reset status file. Abort.")
+                sys.exit()
         elif reset == "cancel":
             util.status("User cancel.")
             sys.exit()
         else:
             util.status("Continue batch as-is.")
+    else:
+        util.batch_status_create(batch,batch_file_path)
             
             
         

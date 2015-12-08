@@ -41,29 +41,60 @@ def status(string):
     
     lx.out("status: %s" % string)
     
+def batch_status_file(batch_file_path):
+    """
+    By Adam O'Hern for Mechanical Color
     
-def batch_has_progress(batch_list):
+    Returns the correct path for a batch file's status sidecar file.
+    """
+    split = os.path.splitext(batch_file_path)
+    return "%s_%s%s" % (split[0],symbols.STATUS_FILE_SUFFIX,split[1])
+    
+def batch_status_create(data,batch_file_path):
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    Creates a sidecar file to monitor batch progress if none exists.
+    """
+    if not os.path.isfile(batch_status_file(batch_file_path)):
+        status_file = open(batch_status_file(batch_file_path),'w')
+        status_file.write(yamlize(data))
+        status_file.close()
+    
+def batch_has_status(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
     
     Returns True if the supplied batch list contains any status markers.
     """
-    for i in batch_list:
-        if STATUS in i: return True
+    if os.path.isfile(batch_status_file(batch_file_path)):
+        return True
+    
     return False
     
-def batch_reset(batch_list):
+def batch_status_reset(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
     
     Resets all status markers on a partially finished batch.
     """
-    new_batch_list = []
-    for i in batch_list:
-        if STATUS in i:
-            del i[STATUS]
-        new_batch_list.append(i)
-    return new_batch_list
+    try:
+        status_file = open(batch_status_file(batch_file_path),'w')
+    except:
+        debug(traceback.format_exc())
+        return False
+        
+    data = read_yaml(batch_file_path)
+        
+    try:
+        status_file.write(yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
+    except:
+        debug(traceback.format_exc())
+        status_file.close()
+        return False
+
+    status_file.close()
+    return True
     
 def test_writeable(test_dir_path):
     """
@@ -181,11 +212,13 @@ def read_yaml(file_path):
     yaml_file.close()
     return yaml_object
 
+def yamlize(data):
+    return yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-")
 
 def write_yaml(data,output_path):
     try:
         target = open(output_path,'w')
-        target.write(yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
+        target.write(yamlize(data))
         target.close()
         return True
     except:
@@ -568,7 +601,11 @@ def create_master_pass_group(groups,delimeter="_x_"):
     
         
 def set_task_status(batch_file_path,task_index,status):
+    batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
+    
+    if not batch:
+        return False
     
     try:
         if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
@@ -584,7 +621,11 @@ def set_task_status(batch_file_path,task_index,status):
         return False
     
 def get_task_status(batch_file_path,task_index):
+    batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
+    
+    if not batch:
+        return STATUS_AVAILABLE
     
     if STATUS in batch[task_index]:
         for i in batch[task_index][STATUS]:
@@ -594,7 +635,11 @@ def get_task_status(batch_file_path,task_index):
     return STATUS_AVAILABLE
         
 def set_frame_status(batch_file_path,task_index,frame_number,status):
+    batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
+    
+    if not batch:
+        return False
 
     try:
         if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
@@ -610,7 +655,11 @@ def set_frame_status(batch_file_path,task_index,frame_number,status):
         return False
     
 def get_frame_status(batch_file_path,task_index,frame_number):
+    batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
+    
+    if not batch:
+        return STATUS_AVAILABLE
     
     if STATUS in batch[task_index]:
         for i in batch[task_index][STATUS]:
