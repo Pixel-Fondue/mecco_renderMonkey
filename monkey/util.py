@@ -587,7 +587,7 @@ def create_master_pass_group(groups,delimeter="_x_"):
     for group in groups:
         for channel in group.groupChannels:
             channels.add(channel)
-        for action in group.itemGraph('itemGroups').forward():
+        for action in [i for i in groups[0].itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP]:
             action.actionClip.SetActive(0)
 
     master_group = scene.addGroup(delimeter.join([g.name for g in groups]),'render')
@@ -679,7 +679,7 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
         groups = [groups]
     
     if depth < max_depth:
-        passes = groups[0].itemGraph('itemGroups').forward()
+        passes = [i for i in groups[0].itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP]
         
         for p in passes:
             if p.actionClip.Enabled():
