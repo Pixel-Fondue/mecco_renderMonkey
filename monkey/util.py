@@ -694,10 +694,12 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
         layer_name = delimeter.join(passname_parts)
         lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,layer_name))
         for c in channels:
-            lx.eval('channel.key channel:{%s:%s}' % (c.item.id,c.name))
-            lx.eval('channel.key mode:remove channel:{%s:%s}' % (c.item.id,c.name))
+            try:
+                #Set channel to its current value; sets channel to 'edit' layer for absorption into the new pass.
+                c.set(c.get())
+            except:
+                debug('Something went wrong setting channel "" to "".' % (c.name,c.get()))
         lx.eval('edit.apply')
-#        lx.eval('layer.active layer:{%s} active:off type:pass' % layer_name)
     
     
 
