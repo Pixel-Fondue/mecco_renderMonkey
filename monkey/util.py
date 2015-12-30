@@ -554,14 +554,10 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
     if user value does not exist, it creates it first
     """
     try:
-        #first we try to just set the value
-        #if it fails, it's probably because it does not exist
         lx.eval("!user.value {%s} {%s}" % (name, value))
         if username:
             lx.eval("!user.def name:{%s} attr:username value:{%s}" % (name, username))
     except:
-        #it failed; probably does not exist
-        #we try to create it and set it instead
         try:
             lx.eval("!user.defNew {%s} {%s} {%s}" % (name, valueType, life))
             lx.eval("!user.value {%s} {%s}" % (name, value))
