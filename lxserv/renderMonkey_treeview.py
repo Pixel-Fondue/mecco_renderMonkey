@@ -148,12 +148,11 @@ class TreeNode(object):
 # -------------------------------------------------------------------------
 
 
-class RenderMonkeyBatch(
-    lxifc.TreeView,
-    lxifc.Tree,
-    lxifc.ListenerPort,
-    lxifc.Attributes
-):
+class RenderMonkeyBatch(lxifc.TreeView,
+                        lxifc.Tree,
+                        lxifc.ListenerPort,
+                        lxifc.Attributes
+                        ):
 
     # Gloabal list of all created tree views.
     # These are used for shape and attribute changes
