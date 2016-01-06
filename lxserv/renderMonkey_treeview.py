@@ -53,10 +53,10 @@ class TreeNode(object):
     _Primary = None
 
     def __init__(self, name, value=None, parent=None):
-        self.m_name = name
-        self.m_value = value
-        self.m_parent = parent
-        self.m_children = []
+        self.name = name
+        self.value = value
+        self.parent = parent
+        self.children = []
         self.state = 0
         self.selected = False
 
@@ -73,8 +73,8 @@ class TreeNode(object):
         self.toolTips = {}
 
     def AddNode(self, name, value=""):
-        self.m_children.append(TreeNode(name, value, self))
-        return self.m_children[-1]
+        self.children.append(TreeNode(name, value, self))
+        return self.children[-1]
 
     def ClearSelection(self):
 
@@ -83,7 +83,7 @@ class TreeNode(object):
 
         self.SetSelected(False)
 
-        for child in self.m_children:
+        for child in self.children:
             child.ClearSelection()
 
     def SetSelected(self, val=True):
@@ -169,13 +169,13 @@ class RenderMonkeyBatch(lxifc.TreeView,
                  treeData=None
                  ):
 
-        self.m_currentIndex = curIndex
-        self.m_batchFilePath = batchFilePath
-        self.m_treeData = treeData
-        self.m_tree = self.build_empty_tree()
+        self.currentIndex = curIndex
+        self.batchFilePath = batchFilePath
+        self.treeData = treeData
+        self.tree = self.build_empty_tree()
         
         if node is None:
-            self.m_currentNode = self.m_tree
+            self.m_currentNode = self.tree
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -237,7 +237,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
         """
             Returns the targeted layer node in the current tier
         """
-        return self.m_currentNode.m_children[self.m_currentIndex]
+        return self.m_currentNode.children[self.currentIndex]
 
     # -------------------------------------------------------------------------
     # Each time the tree is spawned, we create a copy of ourselves at current
@@ -250,7 +250,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
         """
 
         # create an instance of our current location in the tree
-        newTree = RenderMonkeyBatch(self.m_currentNode, self.m_currentIndex)
+        newTree = RenderMonkeyBatch(self.m_currentNode, self.currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
@@ -274,29 +274,29 @@ class RenderMonkeyBatch(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        m_parent = self.m_currentNode.m_parent
+        parent = self.m_currentNode.parent
 
-        if m_parent:
-            self.m_currentIndex = m_parent.m_children.index(self.m_currentNode)
-            self.m_currentNode = m_parent
+        if parent:
+            self.currentIndex = parent.children.index(self.m_currentNode)
+            self.m_currentNode = parent
 
     def tree_ToChild(self):
         """
             Move to the child tier and set the selected node
         """
-        self.m_currentNode = self.m_currentNode.m_children[self.m_currentIndex]
+        self.m_currentNode = self.m_currentNode.children[self.currentIndex]
 
     def tree_ToRoot(self):
         """
             Move back to the root tier of the tree
         """
-        self.m_currentNode = self.m_tree
+        self.m_currentNode = self.tree
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self.m_currentNode == self.m_tree:
+        if self.m_currentNode == self.tree:
             return True
         else:
             return False
@@ -306,7 +306,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
             If the current tier has no children then it is
             considered a leaf
         """
-        if len(self.m_currentNode.m_children) > 0:
+        if len(self.m_currentNode.children) > 0:
             return False
         else:
             return True
@@ -316,20 +316,20 @@ class RenderMonkeyBatch(lxifc.TreeView,
             Returns the number of nodes in this tier of
             the tree
         """
-        return len(self.m_currentNode.m_children)
+        return len(self.m_currentNode.children)
 
     def tree_Current(self):
         """
             Returns the index of the currently targeted item in
             this tier
         """
-        return self.m_currentIndex
+        return self.currentIndex
 
     def tree_SetCurrent(self, index):
         """
             Sets the index of the item to target in this tier
         """
-        self.m_currentIndex = index
+        self.currentIndex = index
 
     def tree_ItemState(self, guid):
         """
@@ -356,10 +356,10 @@ class RenderMonkeyBatch(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ColumnCount(self):
-        return len(self.m_tree.columns)
+        return len(self.tree.columns)
 
     def treeview_ColumnByIndex(self, columnIndex):
-        return self.m_tree.columns[columnIndex]
+        return self.tree.columns[columnIndex]
 
     def treeview_ToPrimary(self):
         """
@@ -377,37 +377,37 @@ class RenderMonkeyBatch(lxifc.TreeView,
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self.m_tree.ClearSelection()
+            self.tree.ClearSelection()
             self.targetNode().SetSelected()
 
-            if self.targetNode().m_value == SELECT_BATCH_FILE_PROMPT:
-                self.m_tree.ClearSelection()
+            if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
+                self.tree.ClearSelection()
 
                 self.select_batch_file()
 
-            elif self.targetNode().m_value == UPDATE_FROM_FILE:
-                self.m_tree.ClearSelection()
+            elif self.targetNode().value == UPDATE_FROM_FILE:
+                self.tree.ClearSelection()
 
-                data = self.update_treeData_from_file(self.m_batchFilePath)
-                self.m_tree = self.build_tree(data)
+                data = self.update_treeData_from_file(self.batchFilePath)
+                self.tree = self.build_tree(data)
 
-            elif self.targetNode().m_value == REPLACE_BATCH_FILE:
-                self.m_tree.ClearSelection()
+            elif self.targetNode().value == REPLACE_BATCH_FILE:
+                self.tree.ClearSelection()
 
                 path = self.select_batch_file()
                 data = self.update_treeData_from_file(path)
-                self.m_tree = self.build_tree(data)
+                self.tree = self.build_tree(data)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             # Don't allow multi-selection.
-            self.m_tree.ClearSelection()
+            self.tree.ClearSelection()
             self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self.m_tree.ClearSelection()
+            self.tree.ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
         lx.notimpl()
@@ -454,9 +454,9 @@ class RenderMonkeyBatch(lxifc.TreeView,
 
     def select_batch_file(self):
         try:
-            self.m_batchFilePath = monkey.util.yaml_open_dialog()
+            self.batchFilePath = monkey.util.yaml_open_dialog()
 
-            return self.m_batchFilePath
+            return self.batchFilePath
         except:
             lx.out(traceback.print_exc())
             return False
@@ -480,7 +480,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
                 paths_list = [paths_list]
 
             for path in paths_list:
-                i = self.m_tree.AddNode(os.path.basename(path))
+                i = self.tree.AddNode(os.path.basename(path))
 
             return True
 
@@ -491,7 +491,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
     def update_treeData_from_file(self, file_path=None):
         try:
             if file_path is None:
-                file_path = self.m_batchFilePath
+                file_path = self.batchFilePath
 
             return monkey.util.read_yaml(file_path)
         except:
@@ -501,7 +501,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
     def save_treeData_to_file(self, file_path=None):
         try:
             if file_path is None:
-                file_path = self.m_batchFilePath
+                file_path = self.batchFilePath
 
             return monkey.util.write_yaml(self.treeData, file_path)
         except:
@@ -511,7 +511,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
     def save_treeData_as(self, file_path=None):
         try:
             if file_path is None:
-                file_path = self.m_batchFilePath
+                file_path = self.batchFilePath
 
             return self.save_treeData_to_file(
                 monkey.util.yaml_save_dialog()
@@ -548,15 +548,15 @@ class RenderMonkeyBatch(lxifc.TreeView,
     # -------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(self.m_tree.columns)
+        return len(self.tree.columns)
 
     def attr_GetString(self, index):
         node = self.targetNode()
 
         if index == 0:
-            return node.m_name
-        elif node.m_value:
-            return node.m_value
+            return node.name
+        elif node.value:
+            return node.value
         else:
             return ""
 
