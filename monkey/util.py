@@ -160,6 +160,48 @@ def toConsole(state):
     lx.eval('log.toConsole %s' % str(state))
     lx.eval('log.toConsoleRolling %s' % str(state))
     
+def yaml_save_dialog():
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    File dialog requesting YAML file destination.
+    """
+    
+    try:
+        return os.path.normpath(
+            modo.dialogs.customFile(
+                dtype='fileSave', 
+                title='Save Batch File Template',
+                names=['yaml'],
+                unames=['Batch File (YAML)'],
+                patterns=['*.yaml'],
+                ext=['yaml']
+            )
+        )
+    except:
+        return False
+    
+def yaml_open_dialog():
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    File dialog requesting YAML file source.
+    """
+    
+    try:
+        return os.path.normpath(
+            modo.dialogs.customFile(
+                dtype='fileOpen',
+                title='Select Batch File',
+                names=('yaml',),
+                unames=('renderMonkey Batch File',),
+                patterns=('*.yaml',),
+                path=self.last_path()
+            )
+        )
+
+    except:
+        return False
     
 def read_json(file_path):
     """

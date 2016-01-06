@@ -40,8 +40,7 @@ class CMD(lxu.command.BasicCommand):
             
             if mode == 'run':
 
-                batch_file_path = os.path.normpath(modo.dialogs.customFile(dtype='fileOpen', title='Select Batch File',names=('yaml',),unames=('renderMonkey Batch File',), patterns=('*.yaml',), path=self.last_path()))
-                self.last_path(os.path.dirname(batch_file_path))
+                batch_file_path = monkey.util.yaml_open_dialog()
                 
                 monkey.util.debug("Using batch file:\n%s" % batch_file_path)
                 
