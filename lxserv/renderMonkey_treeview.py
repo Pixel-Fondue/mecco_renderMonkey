@@ -153,7 +153,7 @@ class RenderMonkeyBatch(
     lxifc.Tree,
     lxifc.ListenerPort,
     lxifc.Attributes
-    ):
+):
 
     # Gloabal list of all created tree views.
     # These are used for shape and attribute changes
@@ -535,7 +535,7 @@ class RenderMonkeyBatch(
                 if i[PATH]:
                     j = tree.AddNode(TASK, os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
-                        j.AddNode(k,)
+                        j.AddNode(k, v)
             tree.AddNode(EMPTY, ADD_TASK)
             tree.AddNode(EMPTY, UPDATE_FROM_FILE)
             tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
