@@ -169,18 +169,13 @@ class RenderMonkeyBatch(lxifc.TreeView,
                  treeData=None
                  ):
 
-        if node is None:
-            self.m_currentNode = self.build_empty_tree()
-
         self.m_currentIndex = curIndex
-
-        if batchFilePath is None:
-            self.m_batchFilePath = self.select_batch_file()
-
-        if treeData is None:
-            self.m_treeData = self.update_treeData_from_file(batchFilePath)
-
-        self.tree = self.build_tree(self.m_treeData)
+        self.m_batchFilePath = batchFilePath
+        self.m_treeData = treeData
+        self.m_tree = self.build_empty_tree()
+        
+        if node is None:
+            self.m_currentNode = self.m_tree
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -354,10 +349,10 @@ class RenderMonkeyBatch(lxifc.TreeView,
     # Tree view
     # -------------------------------------------------------------------------
 
-    def treeview_StoreState(self, guid):
+    def treeview_StoreState(self, uid):
         lx.notimpl()
 
-    def treeview_RestoreState(self, guid):
+    def treeview_RestoreState(self, uid):
         lx.notimpl()
 
     def treeview_ColumnCount(self):
