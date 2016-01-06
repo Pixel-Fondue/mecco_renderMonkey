@@ -1,6 +1,10 @@
 # python
 
-import lx, lxifc, modo, monkey, traceback
+import lx
+import lxifc
+import modo
+import monkey
+import traceback
 
 import wingdbstub
 
