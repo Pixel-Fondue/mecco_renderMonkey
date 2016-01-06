@@ -82,7 +82,7 @@ class TreeNode(object):
         for child in self.m_children:
             child.ClearSelection()
 
-    def SetSelected(self, al=True):
+    def SetSelected(self, val=True):
 
         if val:
             self.setPrimary(self)
@@ -92,20 +92,20 @@ class TreeNode(object):
         return self.selected
 
     @classmethod
-    def setPrimary(cls, rimary=None):
+    def setPrimary(cls, primary=None):
         cls._Primary = primary
 
     @classmethod
     def getPrimary(cls):
         return cls._Primary
 
-    def setState(self, lag):
+    def setState(self, flag):
         self.state = self.state | flag
 
-    def setToolTip(self, dx, ip):
+    def setToolTip(self, idx, tip):
         self.toolTips[idx] = tip
 
-    def getToolTip(self, dx):
+    def getToolTip(self, idx):
         if idx in self.toolTips:
             return self.toolTips[idx]
 
@@ -184,7 +184,7 @@ class RenderMonkeyBatch(
     # -------------------------------------------------------------------------
 
     @classmethod
-    def addListenerClient(cls, istener):
+    def addListenerClient(cls, listener):
         """
             Whenever a new tree view is created, we will add
             a copy of its listener so that it can be notified
@@ -194,7 +194,7 @@ class RenderMonkeyBatch(
         cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
 
     @classmethod
-    def removeListenerClient(cls, istener):
+    def removeListenerClient(cls, listener):
         """
             When a view is destroyed, it will be removed from
             the list of clients that need notification.
@@ -217,14 +217,14 @@ class RenderMonkeyBatch(
 
     # -----------------------------------------------------------------------
 
-    def lport_AddListener(self, bj):
+    def lport_AddListener(self, obj):
         """
             Called from core code with the object that wants to
             bind to the listener port
         """
         self.addListenerClient(obj)
 
-    def lport_RemoveListener(self, bj):
+    def lport_RemoveListener(self, obj):
         """
             Called from core when a listener needs to be removed from
             the port.
@@ -351,10 +351,10 @@ class RenderMonkeyBatch(
     # Tree view
     # -------------------------------------------------------------------------
 
-    def treeview_StoreState(self, uid):
+    def treeview_StoreState(self, guid):
         lx.notimpl()
 
-    def treeview_RestoreState(self, uid):
+    def treeview_RestoreState(self, guid):
         lx.notimpl()
 
     def treeview_ColumnCount(self):
@@ -478,7 +478,7 @@ class RenderMonkeyBatch(
             if not paths_list:
                 return False
 
-            if not isinstance(paths_list, ist):
+            if not isinstance(paths_list, list):
                 paths_list = [paths_list]
 
             for path in paths_list:
@@ -505,7 +505,7 @@ class RenderMonkeyBatch(
             if file_path is None:
                 file_path = self.m_batchFilePath
 
-            return monkey.util.write_yaml(self.treeData, ile_path)
+            return monkey.util.write_yaml(self.treeData, file_path)
         except:
             lx.out(traceback.print_exc())
             return False
