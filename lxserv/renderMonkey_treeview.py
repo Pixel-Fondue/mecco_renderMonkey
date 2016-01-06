@@ -175,7 +175,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
         self.tree = self.build_empty_tree()
         
         if node is None:
-            self.m_currentNode = self.tree
+            self.currentNode = self.tree
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -237,7 +237,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
         """
             Returns the targeted layer node in the current tier
         """
-        return self.m_currentNode.children[self.currentIndex]
+        return self.currentNode.children[self.currentIndex]
 
     # -------------------------------------------------------------------------
     # Each time the tree is spawned, we create a copy of ourselves at current
@@ -250,7 +250,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
         """
 
         # create an instance of our current location in the tree
-        newTree = RenderMonkeyBatch(self.m_currentNode, self.currentIndex)
+        newTree = RenderMonkeyBatch(self.currentNode, self.currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
@@ -274,29 +274,29 @@ class RenderMonkeyBatch(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        parent = self.m_currentNode.parent
+        parent = self.currentNode.parent
 
         if parent:
-            self.currentIndex = parent.children.index(self.m_currentNode)
-            self.m_currentNode = parent
+            self.currentIndex = parent.children.index(self.currentNode)
+            self.currentNode = parent
 
     def tree_ToChild(self):
         """
             Move to the child tier and set the selected node
         """
-        self.m_currentNode = self.m_currentNode.children[self.currentIndex]
+        self.currentNode = self.currentNode.children[self.currentIndex]
 
     def tree_ToRoot(self):
         """
             Move back to the root tier of the tree
         """
-        self.m_currentNode = self.tree
+        self.currentNode = self.tree
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self.m_currentNode == self.tree:
+        if self.currentNode == self.tree:
             return True
         else:
             return False
@@ -306,7 +306,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
             If the current tier has no children then it is
             considered a leaf
         """
-        if len(self.m_currentNode.children) > 0:
+        if len(self.currentNode.children) > 0:
             return False
         else:
             return True
@@ -316,7 +316,7 @@ class RenderMonkeyBatch(lxifc.TreeView,
             Returns the number of nodes in this tier of
             the tree
         """
-        return len(self.m_currentNode.children)
+        return len(self.currentNode.children)
 
     def tree_Current(self):
         """
@@ -365,8 +365,8 @@ class RenderMonkeyBatch(lxifc.TreeView,
         """
             Move the tree to the primary selection
         """
-        if self.m_currentNode._Primary:
-            self.m_currentNode = self.m_currentNode._Primary
+        if self.currentNode._Primary:
+            self.currentNode = self.currentNode._Primary
             self.tree_ToParent()
             return True
         return False
