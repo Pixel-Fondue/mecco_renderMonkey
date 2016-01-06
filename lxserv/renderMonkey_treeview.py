@@ -530,7 +530,7 @@ class RenderMonkeyBatch(
             if not treeData:
                 return False
 
-            tree = TreeNode()
+            tree = TreeNode(TREE_ROOT_TITLE)
             for i in treeData:
                 if i[PATH]:
                     j = tree.AddNode(TASK, os.path.basename(i[PATH]))
