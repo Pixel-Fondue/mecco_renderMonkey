@@ -126,15 +126,15 @@ class rm_Batch:
         self._batchFilePath = batchFilePath
         self._batch = batch
         
-        if self.batchFilePath:
+        if self._batchFilePath:
             self.update_batch_from_file()
         
         self.rebuild_tree()
 
     def select_batch_file(self):
         try:
-            self.batchFilePath = monkey.util.yaml_open_dialog()
-            return self.batchFilePath
+            self._batchFilePath = monkey.util.yaml_open_dialog()
+            return self._batchFilePath
         except:
             lx.out(traceback.print_exc())
             return False
@@ -201,8 +201,8 @@ class rm_Batch:
             if file_path:
                 return monkey.util.write_yaml(self._batch, file_path)
             
-            elif self.batchFilePath:
-                return monkey.util.write_yaml(self._batch, self.batchFilePath)
+            elif self._batchFilePath:
+                return monkey.util.write_yaml(self._batch, self._batchFilePath)
 
             else:
                 return self.save_batch_as()
@@ -289,7 +289,7 @@ class rm_BatchView(lxifc.TreeView,
         self._currentIndex = curIndex
         self._currentNode = node
         
-        if self._currentNode is None:
+        if not self._currentNode:
             self._currentNode = _BATCH.tree()
 
     # -------------------------------------------------------------------------
