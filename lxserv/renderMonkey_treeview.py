@@ -123,8 +123,8 @@ class TreeNode(object):
 class rm_Batch:
     
     def __init__(self, batchFilePath='', batch=[]):
-        self.batchFilePath = batchFilePath
-        self.batch = batch
+        self._batchFilePath = batchFilePath
+        self._batch = batch
         
         if self.batchFilePath:
             self.update_batch_from_file()
@@ -142,9 +142,9 @@ class rm_Batch:
     def add_task(self, batch=[]):
         try:
             if batch:
-                self.batch = batch
+                self._batch = batch
                 
-            if not self.batch:
+            if not self._batch:
                 return False
             
             paths_list = modo.dialogs.fileOpen(
@@ -161,7 +161,7 @@ class rm_Batch:
                 paths_list = [paths_list]
 
             for path in paths_list:
-                self.batch.append({
+                self._batch.append({
                     PATH: path,
                     FORMAT: monkey.defaults.get('filetype'),
                     FRAMES: monkey.defaults.get('frames'),
@@ -177,7 +177,7 @@ class rm_Batch:
 
             self.rebuild_tree()
                 
-            return self.batch
+            return self._batch
 
         except:
             lx.out(traceback.print_exc())
@@ -186,12 +186,12 @@ class rm_Batch:
     def update_batch_from_file(self, file_path=None):
         try:
             if file_path is None:
-                file_path = self.batchFilePath
+                file_path = self._batchFilePath
 
-            self.batch = monkey.util.read_yaml(file_path)
+            self._batch = monkey.util.read_yaml(file_path)
             self.rebuild_tree()
             
-            return self.batch
+            return self._batch
         except:
             lx.out(traceback.print_exc())
             return False
@@ -199,10 +199,10 @@ class rm_Batch:
     def save_batch_to_file(self, file_path=None):
         try:
             if file_path:
-                return monkey.util.write_yaml(self.batch, file_path)
+                return monkey.util.write_yaml(self._batch, file_path)
             
             elif self.batchFilePath:
-                return monkey.util.write_yaml(self.batch, self.batchFilePath)
+                return monkey.util.write_yaml(self._batch, self.batchFilePath)
 
             else:
                 return self.save_batch_as()
@@ -214,7 +214,7 @@ class rm_Batch:
     def save_batch_as(self, file_path=None):
         try:
             if file_path:
-                self.batchFilePath = file_path
+                self._batchFilePath = file_path
                 return self.save_batch_to_file()
             else:
                 return self.save_batch_to_file(
@@ -227,21 +227,21 @@ class rm_Batch:
     def rebuild_tree(self, batch=None):
         try:
             if batch:
-                self.batch = batch
+                self._batch = batch
 
-            if not self.batch:
+            if not self._batch:
                 return self.build_empty_tree()
 
-            self.tree = TreeNode(TREE_ROOT_TITLE)
-            for i in self.batch:
+            self._tree = TreeNode(TREE_ROOT_TITLE)
+            for i in self._batch:
                 if i[PATH]:
-                    j = self.tree.AddNode(TASK, os.path.basename(i[PATH]))
+                    j = self._tree.AddNode(TASK, os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
                         j.AddNode(k, v)
-            self.tree.AddNode(EMPTY, ADD_TASK)
-            self.tree.AddNode(EMPTY, UPDATE_FROM_FILE)
-            self.tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
-            return self.tree
+            self._tree.AddNode(EMPTY, ADD_TASK)
+            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
+            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
+            return self._tree
 
         except:
             lx.out(traceback.print_exc())
@@ -249,21 +249,21 @@ class rm_Batch:
         
     def build_empty_tree(self):
         try:
-            self.tree = TreeNode(TREE_ROOT_TITLE)
-            self.tree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
-            return self.tree
+            self._tree = TreeNode(TREE_ROOT_TITLE)
+            self._tree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
+            return self._tree
         except:
             lx.out(traceback.print_exc())
             return False
         
     def tree(self):
-        return self.tree
+        return self._tree
     
     def batch(self):
-        return self.batch
+        return self._batch
     
     def batch_file_path(self):
-        return self.batchFilePath
+        return self._batchFilePath
 
 # -------------------------------------------------------------------------
 # Tree View
@@ -286,11 +286,11 @@ class rm_BatchView(lxifc.TreeView,
 
     def __init__(self, node=None, curIndex=0):
 
-        self.currentIndex = curIndex
-        self.currentNode = node
+        self._currentIndex = curIndex
+        self._currentNode = node
         
-        if self.currentNode is None:
-            self.currentNode = _BATCH.tree()
+        if self._currentNode is None:
+            self._currentNode = _BATCH.tree()
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -352,7 +352,7 @@ class rm_BatchView(lxifc.TreeView,
         """
             Returns the targeted layer node in the current tier
         """
-        return self.currentNode.children[self.currentIndex]
+        return self._currentNode.children[self._currentIndex]
 
     # -------------------------------------------------------------------------
     # Each time the tree is spawned, we create a copy of ourselves at current
@@ -365,7 +365,7 @@ class rm_BatchView(lxifc.TreeView,
         """
 
         # create an instance of our current location in the tree
-        newTree = rm_BatchView(self.currentNode, self.currentIndex)
+        newTree = rm_BatchView(self._currentNode, self._currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
@@ -389,29 +389,29 @@ class rm_BatchView(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        parent = self.currentNode.parent
+        parent = self._currentNode.parent
 
         if parent:
-            self.currentIndex = parent.children.index(self.currentNode)
-            self.currentNode = parent
+            self._currentIndex = parent.children.index(self._currentNode)
+            self._currentNode = parent
 
     def tree_ToChild(self):
         """
             Move to the child tier and set the selected node
         """
-        self.currentNode = self.currentNode.children[self.currentIndex]
+        self._currentNode = self._currentNode.children[self._currentIndex]
 
     def tree_ToRoot(self):
         """
             Move back to the root tier of the tree
         """
-        self.currentNode = _BATCH.tree()
+        self._currentNode = _BATCH.tree()
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self.currentNode == _BATCH.tree():
+        if self._currentNode == _BATCH.tree():
             return True
         else:
             return False
@@ -421,7 +421,7 @@ class rm_BatchView(lxifc.TreeView,
             If the current tier has no children then it is
             considered a leaf
         """
-        if len(self.currentNode.children) > 0:
+        if len(self._currentNode.children) > 0:
             return False
         else:
             return True
@@ -431,20 +431,20 @@ class rm_BatchView(lxifc.TreeView,
             Returns the number of nodes in this tier of
             the tree
         """
-        return len(self.currentNode.children)
+        return len(self._currentNode.children)
 
     def tree_Current(self):
         """
             Returns the index of the currently targeted item in
             this tier
         """
-        return self.currentIndex
+        return self._currentIndex
 
     def tree_SetCurrent(self, index):
         """
             Sets the index of the item to target in this tier
         """
-        self.currentIndex = index
+        self._currentIndex = index
 
     def tree_ItemState(self, guid):
         """
@@ -480,8 +480,8 @@ class rm_BatchView(lxifc.TreeView,
         """
             Move the tree to the primary selection
         """
-        if self.currentNode._Primary:
-            self.currentNode = self.currentNode._Primary
+        if self._currentNode._Primary:
+            self._currentNode = self._currentNode._Primary
             self.tree_ToParent()
             return True
         return False
