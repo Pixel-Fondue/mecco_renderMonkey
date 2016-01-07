@@ -120,7 +120,7 @@ class TreeNode(object):
 # -------------------------------------------------------------------------
 
 
-class rm_Batch():
+class rm_Batch:
     
     def __init__(self, batchFilePath='', batch=[]):
         self.batchFilePath = batchFilePath
