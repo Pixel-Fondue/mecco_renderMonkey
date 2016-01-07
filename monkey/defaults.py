@@ -9,7 +9,9 @@ DEFAULTS = {
     'annoy':True,
     'destination':'./frames/',
     'output_pattern':'[<pass>][<output>][<LR>]<FFFF>',
-    'test_path': os.path.normpath(lx.eval("query platformservice alias ? {%s}" % "kit_mecco_renderMonkey:test/passGroups.lxo")),
+    'test_path': os.path.normpath(
+        lx.eval("query platformservice alias ? {%s}" % "kit_mecco_renderMonkey:test/passGroups.lxo")
+    ),
     'test_output_path': os.path.normpath(os.path.expanduser('~/Desktop/filename.xyz')),
     'test_passgroup':'views',
     'test_passgroups':['views','colors','shapes'],

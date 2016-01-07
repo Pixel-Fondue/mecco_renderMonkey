@@ -122,7 +122,7 @@ class TreeNode(object):
 
 class rm_Batch():
     
-    def __init__(self, batchFilePath=None, batch=None):
+    def __init__(self, batchFilePath='', batch=[]):
         self.batchFilePath = batchFilePath
         self.batch = batch
         
@@ -139,11 +139,14 @@ class rm_Batch():
             lx.out(traceback.print_exc())
             return False
 
-    def add_task(self, batch=None):
+    def add_task(self, batch=[]):
         try:
-            if batch is None:
-                batch = self.batch
-
+            if batch:
+                self.batch = batch
+                
+            if not self.batch:
+                return False
+            
             paths_list = modo.dialogs.fileOpen(
                 ftype=LXO_FILE,
                 title=OPEN_FILE_DIALOG_TITLE,
@@ -158,9 +161,23 @@ class rm_Batch():
                 paths_list = [paths_list]
 
             for path in paths_list:
-                i = self.tree.AddNode(os.path.basename(path))
+                self.batch.append({
+                    PATH: path,
+                    FORMAT: monkey.defaults.get('filetype'),
+                    FRAMES: monkey.defaults.get('frames'),
+                    DESTINATION: monkey.defaults.get('destination'),
+                    PATTERN: monkey.defaults.get('output_pattern'),
+                    GROUPS: [],
+                    WIDTH: None,
+                    HEIGHT: None,
+                    OUTPUTS: '',
+                    CAMERA: '',
+                    RENDER_CHANNELS: {}
+                })
 
-            return True
+            self.rebuild_tree()
+                
+            return self.batch
 
         except:
             lx.out(traceback.print_exc())
@@ -172,6 +189,8 @@ class rm_Batch():
                 file_path = self.batchFilePath
 
             self.batch = monkey.util.read_yaml(file_path)
+            self.rebuild_tree()
+            
             return self.batch
         except:
             lx.out(traceback.print_exc())
@@ -179,44 +198,50 @@ class rm_Batch():
 
     def save_batch_to_file(self, file_path=None):
         try:
-            if file_path is None:
-                file_path = self.batchFilePath
+            if file_path:
+                return monkey.util.write_yaml(self.batch, file_path)
+            
+            elif self.batchFilePath:
+                return monkey.util.write_yaml(self.batch, self.batchFilePath)
 
-            return monkey.util.write_yaml(self.batch, file_path)
+            else:
+                return self.save_batch_as()
+            
         except:
             lx.out(traceback.print_exc())
             return False
 
     def save_batch_as(self, file_path=None):
         try:
-            if file_path is None:
-                file_path = self.batchFilePath
-
-            return self.save_batch_to_file(
-                monkey.util.yaml_save_dialog()
-            )
+            if file_path:
+                self.batchFilePath = file_path
+                return self.save_batch_to_file()
+            else:
+                return self.save_batch_to_file(
+                    monkey.util.yaml_save_dialog()
+                )
         except:
             lx.out(traceback.print_exc())
             return False
 
     def rebuild_tree(self, batch=None):
         try:
-            if batch is None:
-                batch = self.batch
+            if batch:
+                self.batch = batch
 
-            if not batch:
+            if not self.batch:
                 return self.build_empty_tree()
 
-            tree = TreeNode(TREE_ROOT_TITLE)
-            for i in batch:
+            self.tree = TreeNode(TREE_ROOT_TITLE)
+            for i in self.batch:
                 if i[PATH]:
-                    j = tree.AddNode(TASK, os.path.basename(i[PATH]))
+                    j = self.tree.AddNode(TASK, os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
                         j.AddNode(k, v)
-            tree.AddNode(EMPTY, ADD_TASK)
-            tree.AddNode(EMPTY, UPDATE_FROM_FILE)
-            tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
-            return tree
+            self.tree.AddNode(EMPTY, ADD_TASK)
+            self.tree.AddNode(EMPTY, UPDATE_FROM_FILE)
+            self.tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
+            return self.tree
 
         except:
             lx.out(traceback.print_exc())
@@ -224,13 +249,21 @@ class rm_Batch():
         
     def build_empty_tree(self):
         try:
-            emptyTree = TreeNode(TREE_ROOT_TITLE)
-            emptyTree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
-            self.tree = emptyTree
+            self.tree = TreeNode(TREE_ROOT_TITLE)
+            self.tree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
             return self.tree
         except:
             lx.out(traceback.print_exc())
             return False
+        
+    def tree(self):
+        return self.tree
+    
+    def batch(self):
+        return self.batch
+    
+    def batch_file_path(self):
+        return self.batchFilePath
 
 # -------------------------------------------------------------------------
 # Tree View
@@ -257,7 +290,7 @@ class rm_BatchView(lxifc.TreeView,
         self.currentNode = node
         
         if self.currentNode is None:
-            self.currentNode = _BATCH.tree
+            self.currentNode = _BATCH.tree()
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -372,13 +405,13 @@ class rm_BatchView(lxifc.TreeView,
         """
             Move back to the root tier of the tree
         """
-        self.currentNode = _BATCH.tree
+        self.currentNode = _BATCH.tree()
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self.currentNode == _BATCH.tree:
+        if self.currentNode == _BATCH.tree():
             return True
         else:
             return False
@@ -438,10 +471,10 @@ class rm_BatchView(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ColumnCount(self):
-        return len(_BATCH.tree.columns)
+        return len(_BATCH.tree().columns)
 
     def treeview_ColumnByIndex(self, columnIndex):
-        return _BATCH.tree.columns[columnIndex]
+        return _BATCH.tree().columns[columnIndex]
 
     def treeview_ToPrimary(self):
         """
@@ -459,37 +492,34 @@ class rm_BatchView(lxifc.TreeView,
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH.tree.ClearSelection()
+            _BATCH.tree().ClearSelection()
             self.targetNode().SetSelected()
 
             if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
-                _BATCH.tree.ClearSelection()
-
+                _BATCH.tree().ClearSelection()
                 _BATCH.select_batch_file()
 
             elif self.targetNode().value == UPDATE_FROM_FILE:
-                _BATCH.tree.ClearSelection()
-
-                data = _BATCH.update_batch_from_file()
-                _BATCH.tree = _BATCH.rebuild_tree()
+                _BATCH.tree().ClearSelection()
+                _BATCH.update_batch_from_file()
+                _BATCH.rebuild_tree()
 
             elif self.targetNode().value == REPLACE_BATCH_FILE:
-                _BATCH.tree.ClearSelection()
-
+                _BATCH.tree().ClearSelection()
                 _BATCH.select_batch_file()
                 _BATCH.update_batch_from_file()
-                _BATCH.tree = _BATCH.rebuild_tree()
+                _BATCH.rebuild_tree()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             # Don't allow multi-selection.
-            _BATCH.tree.ClearSelection()
+            _BATCH.tree().ClearSelection()
             self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            _BATCH.tree.ClearSelection()
+            _BATCH.tree().ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
         lx.notimpl()
@@ -526,7 +556,7 @@ class rm_BatchView(lxifc.TreeView,
     # -------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(_BATCH.tree.columns)
+        return len(_BATCH.tree().columns)
 
     def attr_GetString(self, index):
         node = self.targetNode()
