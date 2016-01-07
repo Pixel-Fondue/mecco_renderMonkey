@@ -6,8 +6,11 @@ import modo
 import monkey
 import traceback
 
-import wingdbstub
-
+try:
+    import wingdbstub
+except:
+    pass
+    
 SERVERNAME = 'RenderMonkeyBatch'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
@@ -49,7 +52,7 @@ fTREE_VIEW_ROWCOLOR_RED = 0x00010000
 # -------------------------------------------------------------------------
 
 
-class TreeNode(object):
+class rm_TreeNode(object):
 
     _Primary = None
 
@@ -74,7 +77,7 @@ class TreeNode(object):
         self.toolTips = {}
 
     def AddNode(self, name, value=""):
-        self.children.append(TreeNode(name, value, self))
+        self.children.append(rm_TreeNode(name, value, self))
         return self.children[-1]
 
     def ClearSelection(self):
@@ -232,7 +235,7 @@ class rm_Batch:
             if not self._batch:
                 return self.build_empty_tree()
 
-            self._tree = TreeNode(TREE_ROOT_TITLE)
+            self._tree = rm_TreeNode(TREE_ROOT_TITLE)
             for i in self._batch:
                 if i[PATH]:
                     j = self._tree.AddNode(TASK, os.path.basename(i[PATH]))
@@ -249,7 +252,7 @@ class rm_Batch:
         
     def build_empty_tree(self):
         try:
-            self._tree = TreeNode(TREE_ROOT_TITLE)
+            self._tree = rm_TreeNode(TREE_ROOT_TITLE)
             self._tree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
             return self._tree
         except:
@@ -490,25 +493,28 @@ class rm_BatchView(lxifc.TreeView,
         return self.targetNode().isSelected()
 
     def treeview_Select(self, mode):
+        if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
+            _BATCH.tree().ClearSelection()
+            self.targetNode().SetSelected(False)
+            _BATCH.select_batch_file()
+
+        elif self.targetNode().value == UPDATE_FROM_FILE:
+            _BATCH.tree().ClearSelection()
+            self.targetNode().SetSelected(False)
+            _BATCH.update_batch_from_file()
+            _BATCH.rebuild_tree()
+
+        elif self.targetNode().value == REPLACE_BATCH_FILE:
+            _BATCH.tree().ClearSelection()
+            self.targetNode().SetSelected(False)
+            _BATCH.select_batch_file()
+            _BATCH.update_batch_from_file()
+            _BATCH.rebuild_tree()
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             _BATCH.tree().ClearSelection()
+            self.targetNode().SetSelected(False)
             self.targetNode().SetSelected()
-
-            if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
-                _BATCH.tree().ClearSelection()
-                _BATCH.select_batch_file()
-
-            elif self.targetNode().value == UPDATE_FROM_FILE:
-                _BATCH.tree().ClearSelection()
-                _BATCH.update_batch_from_file()
-                _BATCH.rebuild_tree()
-
-            elif self.targetNode().value == REPLACE_BATCH_FILE:
-                _BATCH.tree().ClearSelection()
-                _BATCH.select_batch_file()
-                _BATCH.update_batch_from_file()
-                _BATCH.rebuild_tree()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             # Don't allow multi-selection.
@@ -559,12 +565,12 @@ class rm_BatchView(lxifc.TreeView,
         return len(_BATCH.tree().columns)
 
     def attr_GetString(self, index):
-        node = self.targetNode()
-
         if index == 0:
-            return node.name
-        elif node.value:
-            return node.value
+            return self.targetNode().name
+        
+        elif self.targetNode().value:
+            return self.targetNode().value
+        
         else:
             return ""
 
