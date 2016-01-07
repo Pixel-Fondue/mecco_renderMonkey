@@ -365,7 +365,7 @@ class rm_BatchView(lxifc.TreeView,
         """
 
         # create an instance of our current location in the tree
-        newTree = RenderMonkeyBatch(self.currentNode, self.currentIndex)
+        newTree = rm_BatchView(self.currentNode, self.currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
