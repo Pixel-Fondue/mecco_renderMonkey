@@ -127,9 +127,9 @@ class rm_Batch():
         self.batch = batch
         
         if self.batchFilePath:
-            self.update_batch_from_file(self.batchFilePath)
+            self.update_batch_from_file()
         
-        self.tree = self.rebuild_tree()
+        self.rebuild_tree()
 
     def select_batch_file(self):
         try:
@@ -251,10 +251,7 @@ class rm_BatchView(lxifc.TreeView,
     # These are used for shape and attribute changes
     _listenerClients = {}
 
-    def __init__(self,
-                 node=None,
-                 curIndex=0,
-                 ):
+    def __init__(self, node=None, curIndex=0):
 
         self.currentIndex = curIndex
         self.currentNode = node
