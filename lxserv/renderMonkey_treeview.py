@@ -20,6 +20,7 @@ ADD_TASK = '(add task...)'
 UPDATE_FROM_FILE = '(update)'
 REPLACE_BATCH_FILE = '(open batch file...)'
 ADD_PARAMETER = '(add parameter...)'
+IDENT = 'RMTV'
 sSRV_USERNAME = "rendermonkeybatch"
 NICE_NAME = "RenderMonkey_Batch"
 OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
@@ -128,6 +129,7 @@ class rm_Batch:
     def __init__(self, batchFilePath='', batch=[]):
         self._batchFilePath = batchFilePath
         self._batch = batch
+        self._tree = rm_TreeNode(TREE_ROOT_TITLE)
         
         if self._batchFilePath:
             self.update_batch_from_file()
@@ -258,12 +260,6 @@ class rm_Batch:
         except:
             lx.out(traceback.print_exc())
             return False
-        
-    def tree(self):
-        return self._tree
-    
-    def batch(self):
-        return self._batch
     
     def batch_file_path(self):
         return self._batchFilePath
@@ -293,7 +289,7 @@ class rm_BatchView(lxifc.TreeView,
         self._currentNode = node
         
         if not self._currentNode:
-            self._currentNode = _BATCH.tree()
+            self._currentNode = _BATCH._tree
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -408,13 +404,13 @@ class rm_BatchView(lxifc.TreeView,
         """
             Move back to the root tier of the tree
         """
-        self._currentNode = _BATCH.tree()
+        self._currentNode = _BATCH._tree
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self._currentNode == _BATCH.tree():
+        if self._currentNode == _BATCH._tree:
             return True
         else:
             return False
@@ -474,10 +470,10 @@ class rm_BatchView(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ColumnCount(self):
-        return len(_BATCH.tree().columns)
+        return len(_BATCH._tree.columns)
 
     def treeview_ColumnByIndex(self, columnIndex):
-        return _BATCH.tree().columns[columnIndex]
+        return _BATCH._tree.columns[columnIndex]
 
     def treeview_ToPrimary(self):
         """
@@ -494,38 +490,38 @@ class rm_BatchView(lxifc.TreeView,
 
     def treeview_Select(self, mode):
         if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected(False)
             _BATCH.select_batch_file()
 
         elif self.targetNode().value == UPDATE_FROM_FILE:
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected(False)
             _BATCH.update_batch_from_file()
             _BATCH.rebuild_tree()
 
         elif self.targetNode().value == REPLACE_BATCH_FILE:
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected(False)
             _BATCH.select_batch_file()
             _BATCH.update_batch_from_file()
             _BATCH.rebuild_tree()
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected(False)
             self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             # Don't allow multi-selection.
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            _BATCH.tree().ClearSelection()
+            _BATCH._tree.ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
         lx.notimpl()
@@ -562,7 +558,7 @@ class rm_BatchView(lxifc.TreeView,
     # -------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(_BATCH.tree().columns)
+        return len(_BATCH._tree.columns)
 
     def attr_GetString(self, index):
         if index == 0:
@@ -575,7 +571,7 @@ class rm_BatchView(lxifc.TreeView,
             return ""
 
 
-sTREEVIEW_TYPE = " ".join(('vpapplication', 'WSTV', sSRV_USERNAME, NICE_NAME))
+sTREEVIEW_TYPE = " ".join(('vpapplication', IDENT, sSRV_USERNAME, NICE_NAME))
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE}
