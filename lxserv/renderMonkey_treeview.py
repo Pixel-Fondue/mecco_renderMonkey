@@ -307,9 +307,10 @@ class rm_BatchView(lxifc.TreeView,
     def __init__(self, node=None, curIndex=0):
 
         self._currentIndex = curIndex
-        self._currentNode = node
         
-        if not self._currentNode:
+        if node:
+            self._currentNode = node
+        else:
             self._currentNode = _BATCH._tree
 
     # -------------------------------------------------------------------------
@@ -518,7 +519,6 @@ class rm_BatchView(lxifc.TreeView,
             self.targetNode().SetSelected()
             if self.targetNode().name == EMPTY:
                 _BATCH.doSomething(self.targetNode().value)
-                self._currentNode = _BATCH._tree
                 self.notify_NewShape()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
