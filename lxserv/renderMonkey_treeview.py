@@ -263,6 +263,19 @@ class rm_Batch:
     
     def batch_file_path(self):
         return self._batchFilePath
+    
+    def doSomething(self, value):
+        if value == SELECT_BATCH_FILE_PROMPT:
+            self.select_batch_file()
+
+        elif value == UPDATE_FROM_FILE:
+            self.update_batch_from_file()
+            self.rebuild_tree()
+
+        elif value == REPLACE_BATCH_FILE:
+            self.select_batch_file()
+            self.update_batch_from_file()
+            self.rebuild_tree()
 
 # -------------------------------------------------------------------------
 # Tree View
@@ -489,33 +502,16 @@ class rm_BatchView(lxifc.TreeView,
         return self.targetNode().isSelected()
 
     def treeview_Select(self, mode):
-        if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
-            _BATCH._tree.ClearSelection()
-            self.targetNode().SetSelected(False)
-            _BATCH.select_batch_file()
 
-        elif self.targetNode().value == UPDATE_FROM_FILE:
-            _BATCH._tree.ClearSelection()
-            self.targetNode().SetSelected(False)
-            _BATCH.update_batch_from_file()
-            _BATCH.rebuild_tree()
-
-        elif self.targetNode().value == REPLACE_BATCH_FILE:
-            _BATCH._tree.ClearSelection()
-            self.targetNode().SetSelected(False)
-            _BATCH.select_batch_file()
-            _BATCH.update_batch_from_file()
-            _BATCH.rebuild_tree()
-
-        if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH._tree.ClearSelection()
-            self.targetNode().SetSelected(False)
-            self.targetNode().SetSelected()
-
-        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-            # Don't allow multi-selection.
+        if (
+            mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY
+            or mode == lx.symbol.iTREEVIEW_SELECT_ADD
+        ):
+                
             _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
+            if self.targetNode().name == EMPTY:
+                _BATCH.doSomething(self.targetNode().value)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
