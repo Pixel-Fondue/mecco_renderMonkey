@@ -274,9 +274,7 @@ class rm_Batch:
     def batch_file_path(self):
         return self._batchFilePath
     
-    def doSomething(self, value):
-        pass
-
+    
 # -------------------------------------------------------------------------
 # Tree View
 # -------------------------------------------------------------------------
@@ -528,6 +526,8 @@ class rm_BatchView(lxifc.TreeView,
 
             elif self.targetNode().value == REPLACE_BATCH_FILE:
                 return CMD_requestBatchFile
+            
+        lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
         lx.notimpl()
@@ -591,7 +591,6 @@ class requestBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
         _BATCH.update_batch_from_file(path)
-        _BATCH.rebuild_tree()
         rm_BatchView.notify_NewShape()
         
 lx.bless(requestBatchFile, CMD_requestBatchFile)
