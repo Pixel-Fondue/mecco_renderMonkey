@@ -275,18 +275,7 @@ class rm_Batch:
         return self._batchFilePath
     
     def doSomething(self, value):
-        if value == SELECT_BATCH_FILE_PROMPT:
-            lx.eval('monkey.requestBatchFile')
-
-        elif value == UPDATE_FROM_FILE:
-            self.update_batch_from_file()
-            self.rebuild_tree()
-
-        elif value == REPLACE_BATCH_FILE:
-            lx.eval('monkey.requestBatchFile')
-            self.update_batch_from_file()
-            self.rebuild_tree()
-            rm_BatchView.notify_NewShape()
+        pass
 
 # -------------------------------------------------------------------------
 # Tree View
@@ -520,8 +509,7 @@ class rm_BatchView(lxifc.TreeView,
                 
             _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
-            if self.targetNode().name == EMPTY:
-                _BATCH.doSomething(self.targetNode().value)
+            
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
@@ -530,7 +518,16 @@ class rm_BatchView(lxifc.TreeView,
             _BATCH._tree.ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
-        lx.notimpl()
+        if self.targetNode().name == EMPTY:
+            
+            if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
+                return CMD_requestBatchFile
+
+            elif self.targetNode().value == UPDATE_FROM_FILE:
+                pass
+
+            elif self.targetNode().value == REPLACE_BATCH_FILE:
+                return CMD_requestBatchFile
 
     def treeview_BatchCommand(self, columnIndex):
         lx.notimpl()
@@ -594,5 +591,7 @@ class requestBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
         _BATCH.update_batch_from_file(path)
-		
+        _BATCH.rebuild_tree()
+        rm_BatchView.notify_NewShape()
+        
 lx.bless(requestBatchFile, CMD_requestBatchFile)
