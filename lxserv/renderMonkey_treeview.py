@@ -7,6 +7,7 @@ import modo
 import monkey
 import traceback
 import os
+import sys
 
 try:
     import wingdbstub
@@ -254,6 +255,7 @@ class rm_Batch:
             self._tree.AddNode(EMPTY, ADD_TASK)
             self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
             self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
+            
             return self._tree
 
         except:
@@ -284,6 +286,7 @@ class rm_Batch:
             lx.eval('monkey.requestBatchFile')
             self.update_batch_from_file()
             self.rebuild_tree()
+            rm_BatchView.notify_NewShape()
 
 # -------------------------------------------------------------------------
 # Tree View
@@ -519,7 +522,6 @@ class rm_BatchView(lxifc.TreeView,
             self.targetNode().SetSelected()
             if self.targetNode().name == EMPTY:
                 _BATCH.doSomething(self.targetNode().value)
-                self.notify_NewShape()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
