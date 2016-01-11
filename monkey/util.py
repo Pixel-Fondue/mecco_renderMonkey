@@ -189,16 +189,18 @@ def yaml_open_dialog():
     """
     
     try:
-        return os.path.normpath(
+        path = os.path.normpath(
             modo.dialogs.customFile(
                 dtype='fileOpen',
                 title='Select Batch File',
                 names=('yaml',),
                 unames=('renderMonkey Batch File',),
                 patterns=('*.yaml',),
-                path=self.last_path()
+                path=None
             )
         )
+        
+        return path
 
     except:
         return False

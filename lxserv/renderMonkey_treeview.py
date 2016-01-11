@@ -1,10 +1,12 @@
 # python
 
 import lx
+import lxu
 import lxifc
 import modo
 import monkey
 import traceback
+import os
 
 try:
     import wingdbstub
@@ -25,6 +27,8 @@ sSRV_USERNAME = "rendermonkeybatch"
 NICE_NAME = "RenderMonkey_Batch"
 OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
 LXO_FILE = '$LXOB'
+
+CMD_requestBatchFile = "monkey.requestBatchFile"
 
 PATH = monkey.symbols.SCENE_PATH
 FORMAT = monkey.symbols.FORMAT
@@ -118,6 +122,7 @@ class rm_TreeNode(object):
         if idx in self.toolTips:
             return self.toolTips[idx]
 
+
         
 # -------------------------------------------------------------------------
 # Batch data model
@@ -135,14 +140,6 @@ class rm_Batch:
             self.update_batch_from_file()
         
         self.rebuild_tree()
-
-    def select_batch_file(self):
-        try:
-            self._batchFilePath = monkey.util.yaml_open_dialog()
-            return self._batchFilePath
-        except:
-            lx.out(traceback.print_exc())
-            return False
 
     def add_task(self, batch=[]):
         try:
@@ -192,6 +189,8 @@ class rm_Batch:
         try:
             if file_path is None:
                 file_path = self._batchFilePath
+            else:
+                self._batchFilePath = file_path
 
             self._batch = monkey.util.read_yaml(file_path)
             self.rebuild_tree()
@@ -242,7 +241,16 @@ class rm_Batch:
                 if i[PATH]:
                     j = self._tree.AddNode(TASK, os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
-                        j.AddNode(k, v)
+                        if isinstance(v,(list,tuple)):
+                            l = j.AddNode(k,EMPTY)
+                            for m in v:
+                                l.AddNode(EMPTY,m)
+                        elif isinstance(v,dict):
+                            l = j.AddNode(k,EMPTY)
+                            for m, n in v.iteritems():
+                                l.AddNode(m,n)
+                        else:
+                            j.AddNode(k, v)
             self._tree.AddNode(EMPTY, ADD_TASK)
             self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
             self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
@@ -266,14 +274,14 @@ class rm_Batch:
     
     def doSomething(self, value):
         if value == SELECT_BATCH_FILE_PROMPT:
-            self.select_batch_file()
+            lx.eval('monkey.requestBatchFile')
 
         elif value == UPDATE_FROM_FILE:
             self.update_batch_from_file()
             self.rebuild_tree()
 
         elif value == REPLACE_BATCH_FILE:
-            self.select_batch_file()
+            lx.eval('monkey.requestBatchFile')
             self.update_batch_from_file()
             self.rebuild_tree()
 
@@ -503,10 +511,8 @@ class rm_BatchView(lxifc.TreeView,
 
     def treeview_Select(self, mode):
 
-        if (
-            mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY
-            or mode == lx.symbol.iTREEVIEW_SELECT_ADD
-        ):
+        if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY or \
+           mode == lx.symbol.iTREEVIEW_SELECT_ADD:
                 
             _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
@@ -573,3 +579,16 @@ tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE}
 
 lx.bless(rm_BatchView, SERVERNAME, tags)
+
+
+# -------------------------------------------------------------------------
+# Command for requesting a path
+# -------------------------------------------------------------------------
+
+
+class requestBatchFile(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        path = monkey.util.yaml_open_dialog()
+        _BATCH.update_batch_from_file(path)
+		
+lx.bless(requestBatchFile, CMD_requestBatchFile)
