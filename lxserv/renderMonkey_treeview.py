@@ -518,6 +518,8 @@ class rm_BatchView(lxifc.TreeView,
             self.targetNode().SetSelected()
             if self.targetNode().name == EMPTY:
                 _BATCH.doSomething(self.targetNode().value)
+                self._currentNode = _BATCH._tree
+                self.notify_NewShape()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
