@@ -108,7 +108,7 @@ def test_writeable(test_dir_path):
     
     if not os.path.exists(test_dir_path):
         try:
-            os.mkdir(destination_dirname)
+            os.mkdir(test_dir_path)
         except OSError:
             return False
         

@@ -15,11 +15,11 @@ except:
     pass
     
 SERVERNAME = 'RenderMonkeyBatch'
-EMPTY_PROMPT = '(no batch file selected)'
+EMPTY_PROMPT = '(no tasks)'
 ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
-TASK = 'task'
+TASK = 'Task'
 EMPTY = ''
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add parameter...)'
@@ -34,6 +34,8 @@ LXO_FILE = '$LXOB'
 VPTYPE = 'vpapplication'
 
 CMD_requestBatchFile = "monkey.requestBatchFile"
+CMD_addBatchTask = "monkey.addBatchTask"
+CMD_runCurrentBatch = "monkey.runCurrentBatch"
 
 PATH = monkey.symbols.SCENE_PATH
 FORMAT = monkey.symbols.FORMAT
@@ -153,21 +155,8 @@ class rm_Batch:
         
         self.rebuild_tree()
 
-    def add_task(self, batch=[]):
+    def add_task(self, paths_list):
         try:
-            if batch:
-                self._batch = batch
-                
-            if not self._batch:
-                return False
-            
-            paths_list = modo.dialogs.fileOpen(
-                ftype=LXO_FILE,
-                title=OPEN_FILE_DIALOG_TITLE,
-                multi=True,
-                path=None
-            )
-
             if not paths_list:
                 return False
 
@@ -189,6 +178,7 @@ class rm_Batch:
                     RENDER_CHANNELS: {}
                 })
 
+            self.save_batch_to_file()
             self.rebuild_tree()
                 
             return self._batch
@@ -197,6 +187,48 @@ class rm_Batch:
             lx.out(traceback.print_exc())
             return False
 
+    def clear_all_task_parameters(self, task_index):
+        try:
+            self._batch[task_index] = {}
+                
+            self.save_batch_to_file()
+            self.rebuild_tree()
+                
+            return self._batch[task_index]
+
+        except:
+            lx.out(traceback.print_exc())
+            return False
+
+    def clear_task_parameters(self, task_index, parameters_list):
+        try:
+            for p in parameters_list:
+                if p in self._batch[task_index]:
+                    del self._batch[task_index][p]
+                
+            self.save_batch_to_file()
+            self.rebuild_tree()
+                
+            return self._batch[task_index]
+
+        except:
+            lx.out(traceback.print_exc())
+            return False
+        
+    def edit_task(self, task_index, parameters_dict):
+        try:
+            for k, v in parameters_dict.iteritems():
+                self._batch[task_index][k] = v
+
+            self.save_batch_to_file()
+            self.rebuild_tree()
+                
+            return self._batch[task_index]
+
+        except:
+            lx.out(traceback.print_exc())
+            return False
+        
     def update_batch_from_file(self, file_path=None):
         try:
             if file_path is None:
@@ -249,25 +281,25 @@ class rm_Batch:
                 return self.build_empty_tree()
 
             self.kill_the_kids()
-            for i in self._batch:
+            for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(TASK, os.path.basename(i[PATH]))
+                    j = self._tree.AddNode(TASK+" "+"{:0>2d}".format(o), os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
                             l = j.AddNode(k,EMPTY)
                             for n, m in enumerate(v):
                                 l.AddNode(n+1,m)
-                            l.AddNode(EMPTY,ADD_GENERIC)
+#                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
                             l = j.AddNode(k,EMPTY)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n)
-                            l.AddNode(EMPTY,ADD_GENERIC)
+#                            l.AddNode(EMPTY,ADD_GENERIC)
                         else:
                             j.AddNode(k, v)
-                    j.AddNode(ADD_PARAM,EMPTY)
+#                    j.AddNode(ADD_PARAM,EMPTY)
                             
-            self._tree.AddNode(ADD_TASK,EMPTY)
+#            self._tree.AddNode(ADD_TASK,EMPTY)
 #            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
 #            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
             
@@ -280,7 +312,7 @@ class rm_Batch:
     def build_empty_tree(self):
         try:
             self.kill_the_kids()
-            self._tree.AddNode(EMPTY, EMPTY_PROMPT)
+            self._tree.AddNode(EMPTY,EMPTY_PROMPT)
             return self._tree
         except:
             lx.out(traceback.print_exc())
@@ -590,7 +622,7 @@ lx.bless(rm_BatchView, SERVERNAME, tags)
 
 
 # -------------------------------------------------------------------------
-# Command for requesting a path
+# Request a batch file
 # -------------------------------------------------------------------------
 
 
@@ -602,3 +634,43 @@ class requestBatchFile(lxu.command.BasicCommand):
             rm_BatchView.notify_NewShape()
         
 lx.bless(requestBatchFile, CMD_requestBatchFile)
+
+
+# -------------------------------------------------------------------------
+# Request an LXO file and add a task
+# -------------------------------------------------------------------------
+
+
+class addBatchTask(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        paths_list = modo.dialogs.fileOpen(
+                ftype=LXO_FILE,
+                title=OPEN_FILE_DIALOG_TITLE,
+                multi=True,
+                path=None
+            )
+        if paths_list:
+            _BATCH.add_task(paths_list)
+            rm_BatchView.notify_NewShape()
+        
+lx.bless(addBatchTask, CMD_addBatchTask)
+
+
+# -------------------------------------------------------------------------
+# Run the currently open batch
+# -------------------------------------------------------------------------
+
+
+class runCurrentBatch(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        if _BATCH._batchFilePath:
+            return monkey.batch.run(_BATCH._batchFilePath)
+
+# WIP - NEED  NOTIFIER TO UPDATE THIS WHEN TREE UPDATES
+#    def basic_Enable(self, msg):
+#        if _BATCH._batchFilePath:
+#            return True
+#        else:
+#            return False
+        
+lx.bless(runCurrentBatch, CMD_runCurrentBatch)
