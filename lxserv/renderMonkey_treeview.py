@@ -15,6 +15,7 @@ except:
     pass
     
 SERVERNAME = 'RenderMonkeyBatch'
+EMPTY_PROMPT = '(no batch file selected)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
 TASK = 'task'
@@ -124,7 +125,10 @@ class rm_TreeNode(object):
         if idx in self.toolTips:
             return self.toolTips[idx]
 
-
+    def getValue(self):
+        return str(self.value)
+        
+        
         
 # -------------------------------------------------------------------------
 # Batch data model
@@ -238,7 +242,7 @@ class rm_Batch:
             if not self._batch:
                 return self.build_empty_tree()
 
-            self._tree = rm_TreeNode(TREE_ROOT_TITLE)
+            self.kill_the_kids()
             for i in self._batch:
                 if i[PATH]:
                     j = self._tree.AddNode(TASK, os.path.basename(i[PATH]))
@@ -253,9 +257,10 @@ class rm_Batch:
                                 l.AddNode(m,n)
                         else:
                             j.AddNode(k, v)
-            self._tree.AddNode(EMPTY, ADD_TASK)
-            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
-            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
+                            
+#            self._tree.AddNode(EMPTY, ADD_TASK)
+#            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
+#            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
             
             return self._tree
 
@@ -265,9 +270,16 @@ class rm_Batch:
         
     def build_empty_tree(self):
         try:
-            self._tree = rm_TreeNode(TREE_ROOT_TITLE)
-            self._tree.AddNode(EMPTY, SELECT_BATCH_FILE_PROMPT)
+            self.kill_the_kids()
+            self._tree.AddNode(EMPTY, EMPTY_PROMPT)
             return self._tree
+        except:
+            lx.out(traceback.print_exc())
+            return False
+    
+    def kill_the_kids(self):
+        try:
+            self._tree.children = []
         except:
             lx.out(traceback.print_exc())
             return False
@@ -297,12 +309,11 @@ class rm_BatchView(lxifc.TreeView,
 
     def __init__(self, node=None, curIndex=0):
 
+        if node is None:
+            node = _BATCH._tree
+
+        self._currentNode = node
         self._currentIndex = curIndex
-        
-        if node:
-            self._currentNode = node
-        else:
-            self._currentNode = _BATCH._tree
 
     # -------------------------------------------------------------------------
     # Listener port
@@ -420,7 +431,7 @@ class rm_BatchView(lxifc.TreeView,
         """
             Check if the current tier in the tree is the root tier
         """
-        if self._currentNode == _BATCH._tree:
+        if self._currentNode is _BATCH._tree:
             return True
         else:
             return False
@@ -554,8 +565,8 @@ class rm_BatchView(lxifc.TreeView,
         if index == 0:
             return self.targetNode().name
         
-        elif self.targetNode().value:
-            return self.targetNode().value
+        elif self.targetNode().getValue():
+            return self.targetNode().getValue()
         
         else:
             return ""
@@ -577,7 +588,8 @@ lx.bless(rm_BatchView, SERVERNAME, tags)
 class requestBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
-        _BATCH.update_batch_from_file(path)
-        rm_BatchView.notify_NewShape()
+        if path:
+            _BATCH.update_batch_from_file(path)
+            rm_BatchView.notify_NewShape()
         
 lx.bless(requestBatchFile, CMD_requestBatchFile)
