@@ -205,6 +205,30 @@ def yaml_open_dialog():
     except:
         return False
     
+def yaml_save_dialog():
+    """
+    By Adam O'Hern for Mechanical Color
+    
+    File dialog requesting YAML file source.
+    """
+    
+    try:
+        output_path = os.path.normpath(
+                modo.dialogs.customFile(
+                    dtype='fileSave', 
+                    title='Save Batch File Template',
+                    names=['yaml'],
+                    unames=['Batch File (YAML)'],
+                    patterns=['*.yaml'],
+                    ext=['yaml']
+                )
+            )
+        
+        return output_path
+
+    except:
+        return False
+    
 def read_json(file_path):
     """
     By Adam O'Hern for Mechanical Color

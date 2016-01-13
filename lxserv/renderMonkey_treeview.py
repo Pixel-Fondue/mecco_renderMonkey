@@ -36,6 +36,8 @@ VPTYPE = 'vpapplication'
 CMD_requestBatchFile = "monkey.requestBatchFile"
 CMD_addBatchTask = "monkey.addBatchTask"
 CMD_runCurrentBatch = "monkey.runCurrentBatch"
+CMD_exampleBatch = "monkey.exampleBatch"
+CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
 
 PATH = monkey.symbols.SCENE_PATH
 FORMAT = monkey.symbols.FORMAT
@@ -643,14 +645,22 @@ lx.bless(requestBatchFile, CMD_requestBatchFile)
 
 class addBatchTask(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        paths_list = modo.dialogs.fileOpen(
-                ftype=LXO_FILE,
-                title=OPEN_FILE_DIALOG_TITLE,
-                multi=True,
+        paths_list = os.path.normpath(
+            modo.dialogs.customFile(
+                dtype='fileOpen',
+                title='Select Scene File',
+                names=('lxo',),
+                unames=('MODO Scene file',),
+                patterns=('*.lxo',),
                 path=None
             )
+        )
+        if not isinstance(paths_list,list):
+            paths_list = [paths_list]
+            
         if paths_list:
-            _BATCH.add_task(paths_list)
+            for path in paths_list:
+                _BATCH.add_task(path)
             rm_BatchView.notify_NewShape()
         
 lx.bless(addBatchTask, CMD_addBatchTask)
@@ -674,3 +684,43 @@ class runCurrentBatch(lxu.command.BasicCommand):
 #            return False
         
 lx.bless(runCurrentBatch, CMD_runCurrentBatch)
+
+
+
+# -------------------------------------------------------------------------
+# Export batch template and open
+# -------------------------------------------------------------------------
+
+
+class exampleBatch(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        path = monkey.util.yaml_save_dialog()
+        if path:
+            lx.eval('renderMonkey.batchTemplate {%s}' % path)
+            _BATCH.update_batch_from_file(path)
+            rm_BatchView.notify_NewShape()
+        
+        
+lx.bless(exampleBatch, CMD_exampleBatch)
+
+
+
+# -------------------------------------------------------------------------
+# Open batch in text editor
+# -------------------------------------------------------------------------
+
+
+class openBatchInFilesystem(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        if _BATCH._batchFilePath:
+            lx.eval('file.open {%s}' % _BATCH._batchFilePath)
+            
+# WIP - NEED  NOTIFIER TO UPDATE THIS WHEN TREE UPDATES
+#    def basic_Enable(self, msg):
+#        if _BATCH._batchFilePath:
+#            return True
+#        else:
+#            return False
+        
+        
+lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)

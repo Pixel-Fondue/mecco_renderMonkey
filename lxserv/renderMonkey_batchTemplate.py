@@ -24,6 +24,9 @@ class CMD(lxu.command.BasicCommand):
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
         self.startPath = None
+        
+        self.dyna_Add('path', lx.symbol.sTYPE_STRING)
+        self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
     
     def basic_Execute(self, msg, flags):
         try:
@@ -50,16 +53,19 @@ class CMD(lxu.command.BasicCommand):
                 }
             ]
             
-            output_path = os.path.normpath(
-                modo.dialogs.customFile(
-                    dtype='fileSave', 
-                    title='Save Batch File Template',
-                    names=['yaml'],
-                    unames=['Batch File (YAML)'],
-                    patterns=['*.yaml'],
-                    ext=['yaml']
+            if self.dyna_IsSet(0):
+                output_path = self.dyna_String(0)
+            else:
+                output_path = os.path.normpath(
+                    modo.dialogs.customFile(
+                        dtype='fileSave', 
+                        title='Save Batch File Template',
+                        names=['yaml'],
+                        unames=['Batch File (YAML)'],
+                        patterns=['*.yaml'],
+                        ext=['yaml']
+                    )
                 )
-            )
             
             target = open(output_path,'w')
             target.write(yaml.dump(tree, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
