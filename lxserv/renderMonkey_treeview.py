@@ -22,6 +22,7 @@ TREE_ROOT_TITLE = 'Tasks'
 TASK = 'task'
 EMPTY = ''
 ADD_TASK = '(add task...)'
+ADD_PARAM = '(add parameter...)'
 UPDATE_FROM_FILE = '(update)'
 REPLACE_BATCH_FILE = '(open batch file...)'
 ADD_PARAMETER = '(add parameter...)'
@@ -50,11 +51,12 @@ RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 # Node styles
 # -------------------------------------------------------------------------
 
+# Icons added via markup in the string itself.
+# "\x03(i:uiicon_bm_overlay) Some text" < Adds icon resource "bm_overlay" to cell
+
 fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
 fTREE_VIEW_ATTR_EXPAND = 0x00000004
-fTREE_VIEW_ROWCOLOR_ORANGE = 0x00050000
-fTREE_VIEW_ROWCOLOR_RED = 0x00010000
 
 # -------------------------------------------------------------------------
 # Generic layer node object that represents each entry in the tree
@@ -128,6 +130,9 @@ class rm_TreeNode(object):
 
     def getValue(self):
         return str(self.value)
+    
+    def getName(self):
+        return str(self.name)
         
         
         
@@ -257,10 +262,10 @@ class rm_Batch:
                             l = j.AddNode(k,EMPTY)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n)
-                            l.AddNode(ADD_GENERIC,EMPTY)
+                            l.AddNode(EMPTY,ADD_GENERIC)
                         else:
                             j.AddNode(k, v)
-                    j.AddNode(ADD_GENERIC,EMPTY)
+                    j.AddNode(ADD_PARAM,EMPTY)
                             
             self._tree.AddNode(ADD_TASK,EMPTY)
 #            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
@@ -567,7 +572,7 @@ class rm_BatchView(lxifc.TreeView,
 
     def attr_GetString(self, index):
         if index == 0:
-            return self.targetNode().name
+            return self.targetNode().getName()
         
         elif self.targetNode().getValue():
             return self.targetNode().getValue()
