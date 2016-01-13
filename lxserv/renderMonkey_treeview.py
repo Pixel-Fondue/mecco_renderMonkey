@@ -250,9 +250,9 @@ class rm_Batch:
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
                             l = j.AddNode(k,EMPTY)
-                            for m in v:
-                                l.AddNode(EMPTY,m)
-                            l.AddNode(ADD_GENERIC,EMPTY)
+                            for n, m in enumerate(v):
+                                l.AddNode(n+1,m)
+                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
                             l = j.AddNode(k,EMPTY)
                             for m, n in v.iteritems():
@@ -260,7 +260,7 @@ class rm_Batch:
                             l.AddNode(ADD_GENERIC,EMPTY)
                         else:
                             j.AddNode(k, v)
-                    l.AddNode(ADD_GENERIC,EMPTY)
+                    j.AddNode(ADD_GENERIC,EMPTY)
                             
             self._tree.AddNode(ADD_TASK,EMPTY)
 #            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
