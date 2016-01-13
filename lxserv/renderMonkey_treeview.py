@@ -28,6 +28,7 @@ sSRV_USERNAME = "rendermonkeybatch"
 NICE_NAME = "RenderMonkey_Batch"
 OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
 LXO_FILE = '$LXOB'
+VPTYPE = 'vpapplication'
 
 CMD_requestBatchFile = "monkey.requestBatchFile"
 
@@ -382,15 +383,12 @@ class rm_BatchView(lxifc.TreeView,
         newTreeObj = lx.object.Tree(newTree)
 
         if mode == lx.symbol.iTREE_PARENT:
-            # move the tree to the parent tier
             newTreeObj.ToParent()
 
         elif mode == lx.symbol.iTREE_CHILD:
-            # move tree to child tier
             newTreeObj.ToChild()
 
         elif mode == lx.symbol.iTREE_ROOT:
-            # move tree to root tier
             newTreeObj.ToRoot()
 
         return newTreeObj
@@ -516,17 +514,6 @@ class rm_BatchView(lxifc.TreeView,
             _BATCH._tree.ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
-        if self.targetNode().name == EMPTY:
-            
-            if self.targetNode().value == SELECT_BATCH_FILE_PROMPT:
-                return CMD_requestBatchFile
-
-            elif self.targetNode().value == UPDATE_FROM_FILE:
-                pass
-
-            elif self.targetNode().value == REPLACE_BATCH_FILE:
-                return CMD_requestBatchFile
-            
         lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
@@ -574,7 +561,7 @@ class rm_BatchView(lxifc.TreeView,
             return ""
 
 
-sTREEVIEW_TYPE = " ".join(('vpapplication', IDENT, sSRV_USERNAME, NICE_NAME))
+sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE}
