@@ -16,6 +16,7 @@ except:
     
 SERVERNAME = 'RenderMonkeyBatch'
 EMPTY_PROMPT = '(no batch file selected)'
+ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
 TASK = 'task'
@@ -80,7 +81,7 @@ class rm_TreeNode(object):
         # so -1 and 90 means that one is 90 pixels
         # and the other takes up the remaining space.
         self.columns = (("Name", -1),
-                        ("Value", -3))
+                        ("Value", -4))
 
         self.toolTips = {}
 
@@ -251,14 +252,17 @@ class rm_Batch:
                             l = j.AddNode(k,EMPTY)
                             for m in v:
                                 l.AddNode(EMPTY,m)
+                            l.AddNode(ADD_GENERIC,EMPTY)
                         elif isinstance(v,dict):
                             l = j.AddNode(k,EMPTY)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n)
+                            l.AddNode(ADD_GENERIC,EMPTY)
                         else:
                             j.AddNode(k, v)
+                    l.AddNode(ADD_GENERIC,EMPTY)
                             
-#            self._tree.AddNode(EMPTY, ADD_TASK)
+            self._tree.AddNode(ADD_TASK,EMPTY)
 #            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
 #            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
             
