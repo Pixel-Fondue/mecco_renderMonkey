@@ -51,7 +51,9 @@ def run(batch_file_path):
     else:
         util.batch_status_create(batch,batch_file_path)
             
-            
+    StdDialog = lx.service.StdDialog()
+    main_monitor = lx.object.Monitor(StdDialog.MonitorAllocate('Running Batch'))
+    main_monitor.Initialize(len(batch))
         
     util.debug("Scanning for task.")
     for task_index, task in enumerate(batch):
@@ -370,6 +372,7 @@ def run(batch_file_path):
 
         util.status("Rendering frames: %s" % str(frames_list))
         for frame in frames_list:
+            main_monitor.Increment(1/len(frames_list))
             
             try:
                 scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(frame)

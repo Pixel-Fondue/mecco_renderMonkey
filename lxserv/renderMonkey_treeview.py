@@ -74,8 +74,9 @@ class rm_TreeNode(object):
 
     _Primary = None
 
-    def __init__(self, name, value=None, parent=None):
-        self.name = name
+    def __init__(self, key, value=None, parent=None, name=None):
+        self.key = key
+        self.name = name if name else key
         self.value = value
         self.parent = parent
         self.children = []
@@ -94,8 +95,8 @@ class rm_TreeNode(object):
 
         self.toolTips = {}
 
-    def AddNode(self, name, value=""):
-        self.children.append(rm_TreeNode(name, value, self))
+    def AddNode(self, key, value=None, name=None):
+        self.children.append(rm_TreeNode(key, value, self, name))
         return self.children[-1]
 
     def ClearSelection(self):
@@ -141,6 +142,9 @@ class rm_TreeNode(object):
     def getName(self):
         return str(self.name)
     
+    def getKey(self):
+        return str(self.key)
+    
     def getSelectedChildren(self,recursive=True):
         sel = []
         for i in self.children:
@@ -163,6 +167,7 @@ class rm_TreeNode(object):
         for i in path:
             indexPath.append(i.name)
         return indexPath
+    
 
 # -------------------------------------------------------------------------
 # Batch data model
@@ -309,12 +314,12 @@ class rm_Batch:
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(o, os.path.basename(i[PATH]))
+                    j = self._tree.AddNode(o, os.path.basename(i[PATH]), " ".join((TASK,str(o+1))))
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
                             l = j.AddNode(k,LIST)
                             for n, m in enumerate(v):
-                                l.AddNode(n,m)
+                                l.AddNode(n,m,n+1)
 #                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
                             l = j.AddNode(k,DICT)
