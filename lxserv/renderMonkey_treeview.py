@@ -20,6 +20,8 @@ ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
 TASK = 'Task'
+LIST = '(list)'
+DICT = '(dict)'
 EMPTY = ''
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add parameter...)'
@@ -38,6 +40,7 @@ CMD_addBatchTask = "monkey.addBatchTask"
 CMD_runCurrentBatch = "monkey.runCurrentBatch"
 CMD_exampleBatch = "monkey.exampleBatch"
 CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
+CMD_echoSelected = "monkey.echoSelected"
 
 PATH = monkey.symbols.SCENE_PATH
 FORMAT = monkey.symbols.FORMAT
@@ -137,9 +140,30 @@ class rm_TreeNode(object):
     
     def getName(self):
         return str(self.name)
+    
+    def getSelectedChildren(self,recursive=True):
+        sel = []
+        for i in self.children:
+            if i.isSelected():
+                sel.append(i)
+            if recursive:
+                sel += i.getSelectedChildren()
+                
+        return sel
+    
+    def getPath(self,path=[]):
+        if self.parent:
+            return self.parent.getPath() + [self]
+        else:
+            return path
         
-        
-        
+    def getIndexPath(self):
+        path = self.getPath()
+        indexPath = []
+        for i in path:
+            indexPath.append(i.name)
+        return indexPath
+
 # -------------------------------------------------------------------------
 # Batch data model
 # -------------------------------------------------------------------------
@@ -150,7 +174,7 @@ class rm_Batch:
     def __init__(self, batchFilePath='', batch=[]):
         self._batchFilePath = batchFilePath
         self._batch = batch
-        self._tree = rm_TreeNode(TREE_ROOT_TITLE)
+        self._tree = rm_TreeNode(TREE_ROOT_TITLE,LIST)
         
         if self._batchFilePath:
             self.update_batch_from_file()
@@ -285,15 +309,15 @@ class rm_Batch:
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(TASK+" "+"{:0>2d}".format(o), os.path.basename(i[PATH]))
+                    j = self._tree.AddNode(o, os.path.basename(i[PATH]))
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
-                            l = j.AddNode(k,EMPTY)
+                            l = j.AddNode(k,LIST)
                             for n, m in enumerate(v):
-                                l.AddNode(n+1,m)
+                                l.AddNode(n,m)
 #                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
-                            l = j.AddNode(k,EMPTY)
+                            l = j.AddNode(k,DICT)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n)
 #                            l.AddNode(EMPTY,ADD_GENERIC)
@@ -724,3 +748,23 @@ class openBatchInFilesystem(lxu.command.BasicCommand):
         
         
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
+
+
+
+# -------------------------------------------------------------------------
+# Remove selected task
+# -------------------------------------------------------------------------
+
+
+class echoSelected(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        sel = _BATCH._tree.getSelectedChildren()
+        for i in sel:
+            path = i.getPath()
+            idxPath = i.getIndexPath()
+            lx.out(len(path))
+            lx.out(idxPath)
+            
+lx.bless(echoSelected, CMD_echoSelected)
+
+
