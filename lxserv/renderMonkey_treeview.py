@@ -69,6 +69,11 @@ RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 # "\03(c:color)Some Text" < Where "color" is a string representing a decimal
 # integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
 
+def bitwise_color(r,g,b):
+	return 0x01000000 | ((r << 16) | (g << 8 | b))
+
+RED = '\03(c:%s)' % bitwise_color(255,0,0)
+
 # The below "c:4113" is a special case pre-defined gray color for text,
 # which is why the format is different from that of arbitrary colors above.
 GRAY = '\03(c:4113)'
