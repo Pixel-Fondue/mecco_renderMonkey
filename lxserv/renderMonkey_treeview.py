@@ -20,8 +20,10 @@ ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
 TASK = 'Task'
-LIST = '(list)'
-DICT = '(dict)'
+SCENE = 'Scene'
+ITEM = 'item'
+LIST = 'list'
+DICT = 'dict'
 EMPTY = ''
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add parameter...)'
@@ -34,6 +36,7 @@ NICE_NAME = "RenderMonkey_Batch"
 OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
 LXO_FILE = '$LXOB'
 VPTYPE = 'vpapplication'
+SP = " "
 
 CMD_requestBatchFile = "monkey.requestBatchFile"
 CMD_addBatchTask = "monkey.addBatchTask"
@@ -60,6 +63,23 @@ RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
 # Icons added via markup in the string itself.
 # "\x03(i:uiicon_bm_overlay) Some text" < Adds icon resource "bm_overlay" to cell
+
+# Likewise, colors and fonts are added via markup flags.
+
+# "\03(c:color)Some Text" < Where "color" is a string representing a decimal
+# integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
+
+# The below "c:4113" is a special case pre-defined gray color for text,
+# which is why the format is different from that of arbitrary colors above.
+GRAY = '\03(c:4113)'
+
+# Italics and bold are done with:
+# "\03(c:font)" where "font" is the string "FONT_DEFAULT", "FONT_NORMAL",
+# "FONT_BOLD" or "FONT_ITALIC"
+
+BOLD = '\03(c:FONT_BOLD)'
+ITALIC = '\03(c:FONT_ITALIC)'
+
 
 fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
@@ -314,15 +334,15 @@ class rm_Batch:
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(o, os.path.basename(i[PATH]), " ".join((TASK,str(o+1))))
+                    j = self._tree.AddNode(o, BOLD + os.path.basename(i[PATH]), " ".join((BOLD,SCENE,str(o+1))))
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
-                            l = j.AddNode(k,LIST)
+                            l = j.AddNode(k,GRAY+LIST)
                             for n, m in enumerate(v):
-                                l.AddNode(n,m,n+1)
+                                l.AddNode(n,m,GRAY + ITEM + SP + str(n+1))
 #                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
-                            l = j.AddNode(k,DICT)
+                            l = j.AddNode(k,GRAY+DICT)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n)
 #                            l.AddNode(EMPTY,ADD_GENERIC)
