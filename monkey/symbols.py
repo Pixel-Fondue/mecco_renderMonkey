@@ -1,13 +1,21 @@
 #python
 
+CMD_requestBatchFile = "monkey.requestBatchFile"
+CMD_addBatchTask = "monkey.addBatchTask"
+CMD_runCurrentBatch = "monkey.runCurrentBatch"
+CMD_exampleBatch = "monkey.exampleBatch"
+CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
+CMD_echoSelected = "monkey.echoSelected"
+CMD_removeSelected = "monkey.removeSelected"
+
 SCENE_PATH = "scene"
 FORMAT = "format"
 FRAMES = "frames"
 DESTINATION = "destination"
 PATTERN = "suffix"
 GROUPS = "passgroups"
-WIDTH = "width"
-HEIGHT = "height"
+WIDTH = "frame_width"
+HEIGHT = "frame_height"
 OUTPUTS = "outputs"
 CAMERA = "camera"
 RENDER_CHANNELS = "render_channels"
@@ -16,5 +24,27 @@ STATUS_COMPLETE = "(Complete)"
 STATUS_IN_PROGRESS = "(In progress...)"
 STATUS_FAILED = "(Failed)"
 STATUS_AVAILABLE = "(Available)"
-TASK = "Task"
 STATUS_FILE_SUFFIX = "status"
+
+SERVERNAME = 'RenderMonkeyBatch'
+EMPTY_PROMPT = 'no tasks'
+ADD_GENERIC = '(add...)'
+SELECT_BATCH_FILE_PROMPT = '(select batch file)'
+TREE_ROOT_TITLE = 'Tasks'
+TASK = 'Task'
+SCENE = 'Scene'
+ITEM = 'item'
+LIST = 'list'
+DICT = 'dict'
+EMPTY = ''
+ADD_TASK = '(add task...)'
+ADD_PARAM = '(add control...)'
+UPDATE_FROM_FILE = '(update)'
+REPLACE_BATCH_FILE = '(open batch file...)'
+IDENT = 'RMTV'
+sSRV_USERNAME = "rendermonkeybatch"
+NICE_NAME = "RenderMonkey_Batch"
+OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
+LXO_FILE = '$LXOB'
+VPTYPE = 'vpapplication'
+SP = " "
