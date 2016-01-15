@@ -1,23 +1,8 @@
 #python
 
-import lx, os, util, defaults, traceback, modo, symbols, random, sys
+import lx, os, util, defaults, traceback, modo, random, sys
 
-PATH = symbols.SCENE_PATH
-FORMAT = symbols.FORMAT
-FRAMES = symbols.FRAMES
-DESTINATION = symbols.DESTINATION
-PATTERN = symbols.PATTERN
-GROUPS = symbols.GROUPS
-WIDTH = symbols.WIDTH
-HEIGHT = symbols.HEIGHT
-OUTPUTS = symbols.OUTPUTS
-CAMERA = symbols.CAMERA
-RENDER_CHANNELS = symbols.RENDER_CHANNELS
-STATUS = symbols.STATUS
-STATUS_COMPLETE = symbols.STATUS_COMPLETE
-STATUS_IN_PROGRESS = symbols.STATUS_IN_PROGRESS
-STATUS_FAILED = symbols.STATUS_FAILED
-STATUS_AVAILABLE = symbols.STATUS_AVAILABLE
+from symbols import *
 
 def run(batch_file_path):
     
@@ -388,7 +373,7 @@ def run(batch_file_path):
                 continue
                 
                 
-            util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_IN_PROGRESS)
+            util.set_frame_status(batch_file_path,task_index,frame,STATUS_IN_PROGRESS)
             util.status("Rendering frame %04d." % frame)
 
             args = util.build_arg_string({
@@ -401,7 +386,7 @@ def run(batch_file_path):
             
             try:
                 lx.eval(command)
-                util.set_frame_status(batch_file_path,task_index,frame,symbols.STATUS_COMPLETE)
+                util.set_frame_status(batch_file_path,task_index,frame,STATUS_COMPLETE)
             except:
                 util.status('"%s" failed. Skip frame.' % command)
                 util.debug(traceback.format_exc())
