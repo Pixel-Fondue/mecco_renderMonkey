@@ -64,28 +64,40 @@ RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 # Icons added via markup in the string itself.
 # "\x03(i:uiicon_bm_overlay) Some text" < Adds icon resource "bm_overlay" to cell
 
-# Likewise, colors and fonts are added via markup flags.
+# All markup flags have the format '\03(c:something)', so we may as well:
+def markup(string):
+    return '\03(c:%s)' % string
 
 # "\03(c:color)Some Text" < Where "color" is a string representing a decimal
 # integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
-
 def bitwise_color(r,g,b):
-	return 0x01000000 | ((r << 16) | (g << 8 | b))
+	return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
-RED = '\03(c:%s)' % bitwise_color(255,0,0)
+RED = markup(bitwise_color(255,0,0))
+
+# I happen to hate 8-bit RGB values. Let's use hex instead.
+def hexToRGB(h):
+    h = h.strip()
+    if h[0] == '#': h = h[1:]
+    r, g, b = h[:2], h[2:4], h[4:]
+    r, g, b = [int(n, 16) for n in (r, g, b)]
+    return (r, g, b)
+
+BLUE = markup(hexToRGB('#0e76b7'))
 
 # The below "c:4113" is a special case pre-defined gray color for text,
 # which is why the format is different from that of arbitrary colors above.
-GRAY = '\03(c:4113)'
+GRAY = markup('4113')
 
 # Italics and bold are done with:
 # "\03(c:font)" where "font" is the string "FONT_DEFAULT", "FONT_NORMAL",
 # "FONT_BOLD" or "FONT_ITALIC"
+DEFAULT = markup('FONT_DEFAULT')
+NORMAL = markup('FONT_NORMAL')
+BOLD = markup('FONT_BOLD')
+ITALIC = markup('FONT_ITALIC')
 
-BOLD = '\03(c:FONT_BOLD)'
-ITALIC = '\03(c:FONT_ITALIC)'
-
-
+# These flags are pilfered from the modo source code itself:
 fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
 fTREE_VIEW_ATTR_EXPAND = 0x00000004
