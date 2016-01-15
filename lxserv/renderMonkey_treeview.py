@@ -245,7 +245,7 @@ class rm_Batch:
                     GROUPS: [],
                     WIDTH: None,
                     HEIGHT: None,
-                    OUTPUTS: '',
+                    OUTPUTS: [],
                     CAMERA: '',
                     RENDER_CHANNELS: {}
                 })
@@ -811,8 +811,11 @@ class echoSelected(lxu.command.BasicCommand):
         for i in sel:
             path = i.getPath()
             idxPath = i.getIndexPath()
-            lx.out(len(path))
             lx.out(idxPath)
+            lx.out('parent:%s' % i.parent.name)
+            lx.out('children:')
+            for j in i.children:
+                lx.out('\t- %s' % j.name)
             
 lx.bless(echoSelected, CMD_echoSelected)
 
