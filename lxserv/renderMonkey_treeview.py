@@ -5,7 +5,6 @@ import lxu
 import lxifc
 import modo
 import monkey
-from monkey.symbols import *
 import traceback
 import os
 import sys
@@ -15,6 +14,48 @@ try:
 except:
     pass
     
+SERVERNAME = 'RenderMonkeyBatch'
+EMPTY_PROMPT = 'no tasks'
+ADD_GENERIC = '(add...)'
+SELECT_BATCH_FILE_PROMPT = '(select batch file)'
+TREE_ROOT_TITLE = 'Tasks'
+TASK = 'Task'
+SCENE = 'Scene'
+ITEM = 'item'
+LIST = 'list'
+DICT = 'dict'
+EMPTY = ''
+ADD_TASK = '(add task...)'
+ADD_PARAM = '(add parameter...)'
+UPDATE_FROM_FILE = '(update)'
+REPLACE_BATCH_FILE = '(open batch file...)'
+ADD_PARAMETER = '(add parameter...)'
+IDENT = 'RMTV'
+sSRV_USERNAME = "rendermonkeybatch"
+NICE_NAME = "RenderMonkey_Batch"
+OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
+LXO_FILE = '$LXOB'
+VPTYPE = 'vpapplication'
+SP = " "
+
+CMD_requestBatchFile = "monkey.requestBatchFile"
+CMD_addBatchTask = "monkey.addBatchTask"
+CMD_runCurrentBatch = "monkey.runCurrentBatch"
+CMD_exampleBatch = "monkey.exampleBatch"
+CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
+CMD_echoSelected = "monkey.echoSelected"
+
+PATH = monkey.symbols.SCENE_PATH
+FORMAT = monkey.symbols.FORMAT
+FRAMES = monkey.symbols.FRAMES
+DESTINATION = monkey.symbols.DESTINATION
+PATTERN = monkey.symbols.PATTERN
+GROUPS = monkey.symbols.GROUPS
+WIDTH = monkey.symbols.WIDTH
+HEIGHT = monkey.symbols.HEIGHT
+OUTPUTS = monkey.symbols.OUTPUTS
+CAMERA = monkey.symbols.CAMERA
+RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
 # -------------------------------------------------------------------------
 # Node styles
@@ -165,7 +206,7 @@ class rm_TreeNode(object):
         path = self.getPath()
         indexPath = []
         for i in path:
-            indexPath.append(i.name)
+            indexPath.append(i.key)
         return indexPath
     
 
@@ -314,23 +355,28 @@ class rm_Batch:
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(o, BOLD + os.path.basename(i[PATH]), TASK + SP + str(o+1))
+                    j = self._tree.AddNode(
+                        o, 
+                        BOLD + os.path.basename(i[PATH]), 
+                        " ".join((BOLD,TASK,str(o+1)))
+                    )
                     for k, v in iter(sorted(i.iteritems())):
+                        kk = k.replace('_',' ')
                         if isinstance(v,(list,tuple)):
-                            l = j.AddNode(k,GRAY_ITALIC+LIST)
+                            l = j.AddNode(k,GRAY+LIST, kk)
                             for n, m in enumerate(v):
                                 l.AddNode(n,m,GRAY + ITEM + SP + str(n+1))
                             l.AddNode(GRAY + ADD_GENERIC, EMPTY)
                         elif isinstance(v,dict):
-                            l = j.AddNode(k,GRAY_ITALIC+DICT)
+                            l = j.AddNode(k,GRAY+DICT, kk)
                             for m, n in v.iteritems():
                                 l.AddNode(m,n,m.replace('_',' '))
                             l.AddNode(GRAY + ADD_GENERIC, EMPTY)
                         else:
-                            j.AddNode(k, v)
-                    j.AddNode(GRAY + ADD_PARAM, EMPTY)
+                            j.AddNode(k, v, kk)
+                    j.AddNode(GRAY + ADD_PARAM,EMPTY)
                             
-            self._tree.AddNode(GRAY + ADD_TASK, EMPTY)
+            self._tree.AddNode(GRAY + ADD_TASK,EMPTY)
             
             return self._tree
 
@@ -341,7 +387,7 @@ class rm_Batch:
     def build_empty_tree(self):
         try:
             self.kill_the_kids()
-            self._tree.AddNode(EMPTY,GRAY_ITALIC+EMPTY_PROMPT)
+            self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
             lx.out(traceback.print_exc())
@@ -755,7 +801,7 @@ lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
 
 
 # -------------------------------------------------------------------------
-# Echo selected task (for debugging purposes)
+# Remove selected task
 # -------------------------------------------------------------------------
 
 
@@ -769,29 +815,5 @@ class echoSelected(lxu.command.BasicCommand):
             lx.out(idxPath)
             
 lx.bless(echoSelected, CMD_echoSelected)
-
-
-
-# -------------------------------------------------------------------------
-# Remove selected task (for debugging purposes)
-# -------------------------------------------------------------------------
-
-def dive(obj,path):
-    if path:
-        return dive(obj[path[0]],path[1:])
-    return obj
-    
-
-class removeSelected(lxu.command.BasicCommand):
-    def basic_Execute(self, msg, flags):
-        sel = _BATCH._tree.getSelectedChildren()
-        for i in sel:
-            idxPath = i.getIndexPath()
-            a = dive(_BATCH._batch,idxPath)
-            del a
-            _BATCH.rebuild_tree()
-            rm_BatchView.notify_NewShape()
-            
-lx.bless(removeSelected, CMD_removeSelected)
 
 
