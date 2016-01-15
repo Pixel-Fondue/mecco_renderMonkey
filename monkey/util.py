@@ -1,10 +1,12 @@
 #python
 
-import lx, os, json, modo, defaults, traceback, re, sys, yaml, random
+import lx, os, json, modo, defaults, traceback, re, sys, yaml, symbols, random
 
-from symbols import *
 from time import sleep
 from math import copysign
+
+STATUS = symbols.STATUS
+STATUS_AVAILABLE = symbols.STATUS_AVAILABLE
 
 
 def debug(string):
@@ -46,7 +48,7 @@ def batch_status_file(batch_file_path):
     Returns the correct path for a batch file's status sidecar file.
     """
     split = os.path.splitext(batch_file_path)
-    return "%s_%s%s" % (split[0],STATUS_FILE_SUFFIX,split[1])
+    return "%s_%s%s" % (split[0],symbols.STATUS_FILE_SUFFIX,split[1])
     
 def batch_status_create(data,batch_file_path):
     """
@@ -673,8 +675,8 @@ def set_task_status(batch_file_path,task_index,status):
         if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
             batch[task_index][STATUS] = []
 
-        batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not i.startswith(TASK)]
-        batch[task_index][STATUS].append("%s %s" % (TASK,status))
+        batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not i.startswith(symbols.TASK)]
+        batch[task_index][STATUS].append("%s %s" % (symbols.TASK,status))
         
         write_yaml(batch,batch_file_path)
         return True
@@ -691,7 +693,7 @@ def get_task_status(batch_file_path,task_index):
     
     if STATUS in batch[task_index]:
         for i in batch[task_index][STATUS]:
-            if i.startswith(TASK) and not STATUS_AVAILABLE in i:
+            if i.startswith(symbols.TASK) and not STATUS_AVAILABLE in i:
                 return i
     
     return STATUS_AVAILABLE

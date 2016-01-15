@@ -5,7 +5,6 @@ import lxu
 import lxifc
 import modo
 import monkey
-from monkey.symbols import *
 import traceback
 import os
 import sys
@@ -15,6 +14,48 @@ try:
 except:
     pass
     
+SERVERNAME = 'RenderMonkeyBatch'
+EMPTY_PROMPT = '(no tasks)'
+ADD_GENERIC = '(add...)'
+SELECT_BATCH_FILE_PROMPT = '(select batch file)'
+TREE_ROOT_TITLE = 'Tasks'
+TASK = 'Task'
+SCENE = 'Scene'
+ITEM = 'item'
+LIST = 'list'
+DICT = 'dict'
+EMPTY = ''
+ADD_TASK = '(add task...)'
+ADD_PARAM = '(add parameter...)'
+UPDATE_FROM_FILE = '(update)'
+REPLACE_BATCH_FILE = '(open batch file...)'
+ADD_PARAMETER = '(add parameter...)'
+IDENT = 'RMTV'
+sSRV_USERNAME = "rendermonkeybatch"
+NICE_NAME = "RenderMonkey_Batch"
+OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
+LXO_FILE = '$LXOB'
+VPTYPE = 'vpapplication'
+SP = " "
+
+CMD_requestBatchFile = "monkey.requestBatchFile"
+CMD_addBatchTask = "monkey.addBatchTask"
+CMD_runCurrentBatch = "monkey.runCurrentBatch"
+CMD_exampleBatch = "monkey.exampleBatch"
+CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
+CMD_echoSelected = "monkey.echoSelected"
+
+PATH = monkey.symbols.SCENE_PATH
+FORMAT = monkey.symbols.FORMAT
+FRAMES = monkey.symbols.FRAMES
+DESTINATION = monkey.symbols.DESTINATION
+PATTERN = monkey.symbols.PATTERN
+GROUPS = monkey.symbols.GROUPS
+WIDTH = monkey.symbols.WIDTH
+HEIGHT = monkey.symbols.HEIGHT
+OUTPUTS = monkey.symbols.OUTPUTS
+CAMERA = monkey.symbols.CAMERA
+RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
 # -------------------------------------------------------------------------
 # Node styles
@@ -23,42 +64,38 @@ except:
 # Icons added via markup in the string itself.
 # "\x03(i:uiicon_bm_overlay) Some text" < Adds icon resource "bm_overlay" to cell
 
-# All markup flags have the format '\03(pre:string)', where 'pre' is the
-# letter f (font), c (color), or i (icon), so we may as well:
-def markup(pre,string):
-    return '\03(%s:%s)' % (pre,string)
+# All markup flags have the format '\03(c:something)', so we may as well:
+def markup(string):
+    return '\03(c:%s)' % string
 
 # "\03(c:color)Some Text" < Where "color" is a string representing a decimal
 # integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
-def bitwise_rgb(r,g,b):
+def bitwise_color(r,g,b):
 	return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
-RED = markup('c',bitwise_rgb(255,0,0))
+RED = markup(bitwise_color(255,0,0))
 
 # I happen to hate 8-bit RGB values. Let's use hex instead.
-def bitwise_hex(h):
+def hexToRGB(h):
     h = h.strip()
     if h[0] == '#': h = h[1:]
     r, g, b = h[:2], h[2:4], h[4:]
     r, g, b = [int(n, 16) for n in (r, g, b)]
-    return bitwise_rgb(r, g, b)
+    return (r, g, b)
 
-BLUE = markup('c',bitwise_hex('#0e76b7'))
+BLUE = markup(hexToRGB('#0e76b7'))
 
 # The below "c:4113" is a special case pre-defined gray color for text,
 # which is why the format is different from that of arbitrary colors above.
-GRAY = markup('c','4113')
+GRAY = markup('4113')
 
 # Italics and bold are done with:
 # "\03(c:font)" where "font" is the string "FONT_DEFAULT", "FONT_NORMAL",
 # "FONT_BOLD" or "FONT_ITALIC"
-DEFAULT = markup('f','FONT_DEFAULT')
-NORMAL = markup('f','FONT_NORMAL')
-BOLD = markup('f','FONT_BOLD')
-ITALIC = markup('f','FONT_ITALIC')
-
-# You can combine styles by stringing them together:
-GRAY_ITALIC = GRAY + ITALIC
+DEFAULT = markup('FONT_DEFAULT')
+NORMAL = markup('FONT_NORMAL')
+BOLD = markup('FONT_BOLD')
+ITALIC = markup('FONT_ITALIC')
 
 # These flags are pilfered from the modo source code itself:
 fTREE_VIEW_ITEM_ATTR = 0x00000001
@@ -314,23 +351,25 @@ class rm_Batch:
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
                 if i[PATH]:
-                    j = self._tree.AddNode(o, BOLD + os.path.basename(i[PATH]), TASK + SP + str(o+1))
+                    j = self._tree.AddNode(o, BOLD + os.path.basename(i[PATH]), " ".join((BOLD,SCENE,str(o+1))))
                     for k, v in iter(sorted(i.iteritems())):
                         if isinstance(v,(list,tuple)):
-                            l = j.AddNode(k,GRAY_ITALIC+LIST)
+                            l = j.AddNode(k,GRAY+LIST)
                             for n, m in enumerate(v):
                                 l.AddNode(n,m,GRAY + ITEM + SP + str(n+1))
-                            l.AddNode(GRAY + ADD_GENERIC, EMPTY)
+#                            l.AddNode(EMPTY,ADD_GENERIC)
                         elif isinstance(v,dict):
-                            l = j.AddNode(k,GRAY_ITALIC+DICT)
+                            l = j.AddNode(k,GRAY+DICT)
                             for m, n in v.iteritems():
-                                l.AddNode(m,n,m.replace('_',' '))
-                            l.AddNode(GRAY + ADD_GENERIC, EMPTY)
+                                l.AddNode(m,n)
+#                            l.AddNode(EMPTY,ADD_GENERIC)
                         else:
                             j.AddNode(k, v)
-                    j.AddNode(GRAY + ADD_PARAM, EMPTY)
+#                    j.AddNode(ADD_PARAM,EMPTY)
                             
-            self._tree.AddNode(GRAY + ADD_TASK, EMPTY)
+#            self._tree.AddNode(ADD_TASK,EMPTY)
+#            self._tree.AddNode(EMPTY, UPDATE_FROM_FILE)
+#            self._tree.AddNode(EMPTY, REPLACE_BATCH_FILE)
             
             return self._tree
 
@@ -341,7 +380,7 @@ class rm_Batch:
     def build_empty_tree(self):
         try:
             self.kill_the_kids()
-            self._tree.AddNode(EMPTY,GRAY_ITALIC+EMPTY_PROMPT)
+            self._tree.AddNode(EMPTY,EMPTY_PROMPT)
             return self._tree
         except:
             lx.out(traceback.print_exc())
@@ -755,7 +794,7 @@ lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
 
 
 # -------------------------------------------------------------------------
-# Echo selected task (for debugging purposes)
+# Remove selected task
 # -------------------------------------------------------------------------
 
 
@@ -769,29 +808,5 @@ class echoSelected(lxu.command.BasicCommand):
             lx.out(idxPath)
             
 lx.bless(echoSelected, CMD_echoSelected)
-
-
-
-# -------------------------------------------------------------------------
-# Remove selected task (for debugging purposes)
-# -------------------------------------------------------------------------
-
-def dive(obj,path):
-    if path:
-        return dive(obj[path[0]],path[1:])
-    return obj
-    
-
-class removeSelected(lxu.command.BasicCommand):
-    def basic_Execute(self, msg, flags):
-        sel = _BATCH._tree.getSelectedChildren()
-        for i in sel:
-            idxPath = i.getIndexPath()
-            a = dive(_BATCH._batch,idxPath)
-            del a
-            _BATCH.rebuild_tree()
-            rm_BatchView.notify_NewShape()
-            
-lx.bless(removeSelected, CMD_removeSelected)
 
 
