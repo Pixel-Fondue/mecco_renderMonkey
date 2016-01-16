@@ -8,6 +8,7 @@ CMD_exampleBatch = "monkey.exampleBatch"
 CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
 CMD_echoSelected = "monkey.echoSelected"
 
+BATCHFILE = "batch_file"
 SCENE_PATH = "scene"
 FORMAT = "format"
 FRAMES = "frames"

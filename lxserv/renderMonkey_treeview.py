@@ -174,7 +174,7 @@ class rm_TreeNode(object):
     def getIndexPath(self):
         path = self.getPath()
         indexPath = []
-        for i in path:
+        for i in path[1:]:
             indexPath.append(i.key)
         return indexPath
     
@@ -243,7 +243,7 @@ class rm_Batch:
 
             if len(keys_list)==2:
                 try:
-                    _BATCH._batch[k[0]].pop([k[1]])
+                    _BATCH._batch[k[0]].pop(k[1])
                 except:
                     try:
                         del _BATCH._batch[k[0]][k[1]]
@@ -256,7 +256,7 @@ class rm_Batch:
                     del _BATCH._batch[k[0]][k[1]][k[2]]
                 except:
                     try:
-                        _BATCH._batch[k[0]][k[1]].pop([k[2]])
+                        _BATCH._batch[k[0]][k[1]].pop(k[2])
                     except:
                         debug(traceback.print_exc())
                         return False
@@ -266,7 +266,17 @@ class rm_Batch:
                     del _BATCH._batch[k[0]][k[1]][k[2]][k[3]]
                 except:
                     try:
-                        _BATCH._batch[k[0]][k[1]][k[2]].pop([k[3]])
+                        _BATCH._batch[k[0]][k[1]][k[2]].pop(k[3])
+                    except:
+                        debug(traceback.print_exc())
+                        return False
+                    
+            if len(keys_list)==5:
+                try:
+                    del _BATCH._batch[k[0]][k[1]][k[2]][k[3]][k[4]]
+                except:
+                    try:
+                        _BATCH._batch[k[0]][k[1]][k[2]][k[3]].pop(k[4])
                     except:
                         debug(traceback.print_exc())
                         return False
@@ -374,12 +384,18 @@ class rm_Batch:
                 return self.build_empty_tree()
 
             self._tree.Prune()
+            file_root = self._tree.AddNode(
+                BATCHFILE,
+                BOLD + self._batchFilePath,
+                BOLD + BATCHFILE.replace('_',' ')
+            )
+            file_root.setState(fTREE_VIEW_ITEM_EXPAND)
             for o, i in enumerate(self._batch):
                 if i[SCENE_PATH]:
-                    j = self._tree.AddNode(
+                    j = file_root.AddNode(
                         o, 
-                        BOLD + os.path.basename(i[SCENE_PATH]), 
-                        " ".join((BOLD,TASK,str(o+1)))
+                        os.path.basename(i[SCENE_PATH]), 
+                        " ".join((TASK,str(o+1)))
                     )
                     for k, v in iter(sorted(i.iteritems())):
                         kk = k.replace('_',' ')
@@ -771,9 +787,7 @@ class removeBatchSel(lxu.command.BasicCommand):
         for i in sel:
             _BATCH.remove_sel(i.getIndexPath())
             
-        breakpoint('notify new shape')
         rm_BatchView.notify_NewShape()
-        breakpoint('success')
             
         
 lx.bless(removeBatchSel, CMD_removeBatchSel)
