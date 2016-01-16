@@ -4,7 +4,11 @@ import lx
 import lxu
 import lxifc
 import modo
+
 import monkey
+from monkey.symbols import *
+from monkey.util import debug, annoy
+
 import traceback
 import os
 import sys
@@ -14,48 +18,6 @@ try:
 except:
     pass
     
-SERVERNAME = 'RenderMonkeyBatch'
-EMPTY_PROMPT = 'no tasks'
-ADD_GENERIC = '(add...)'
-SELECT_BATCH_FILE_PROMPT = '(select batch file)'
-TREE_ROOT_TITLE = 'Tasks'
-TASK = 'Task'
-SCENE = 'Scene'
-ITEM = 'item'
-LIST = 'list'
-DICT = 'dict'
-EMPTY = ''
-ADD_TASK = '(add task...)'
-ADD_PARAM = '(add parameter...)'
-UPDATE_FROM_FILE = '(update)'
-REPLACE_BATCH_FILE = '(open batch file...)'
-ADD_PARAMETER = '(add parameter...)'
-IDENT = 'RMTV'
-sSRV_USERNAME = "rendermonkeybatch"
-NICE_NAME = "RenderMonkey_Batch"
-OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
-LXO_FILE = '$LXOB'
-VPTYPE = 'vpapplication'
-SP = " "
-
-CMD_requestBatchFile = "monkey.requestBatchFile"
-CMD_addBatchTask = "monkey.addBatchTask"
-CMD_runCurrentBatch = "monkey.runCurrentBatch"
-CMD_exampleBatch = "monkey.exampleBatch"
-CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
-CMD_echoSelected = "monkey.echoSelected"
-
-PATH = monkey.symbols.SCENE_PATH
-FORMAT = monkey.symbols.FORMAT
-FRAMES = monkey.symbols.FRAMES
-DESTINATION = monkey.symbols.DESTINATION
-PATTERN = monkey.symbols.PATTERN
-GROUPS = monkey.symbols.GROUPS
-WIDTH = monkey.symbols.WIDTH
-HEIGHT = monkey.symbols.HEIGHT
-OUTPUTS = monkey.symbols.OUTPUTS
-CAMERA = monkey.symbols.CAMERA
-RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
 # -------------------------------------------------------------------------
 # Node styles
@@ -237,7 +199,7 @@ class rm_Batch:
 
             for path in paths_list:
                 self._batch.append({
-                    PATH: path,
+                    SCENE_PATH: path,
                     FORMAT: monkey.defaults.get('filetype'),
                     FRAMES: monkey.defaults.get('frames'),
                     DESTINATION: monkey.defaults.get('destination'),
@@ -354,10 +316,10 @@ class rm_Batch:
 
             self.kill_the_kids()
             for o, i in enumerate(self._batch):
-                if i[PATH]:
+                if i[SCENE_PATH]:
                     j = self._tree.AddNode(
                         o, 
-                        BOLD + os.path.basename(i[PATH]), 
+                        BOLD + os.path.basename(i[SCENE_PATH]), 
                         " ".join((BOLD,TASK,str(o+1)))
                     )
                     for k, v in iter(sorted(i.iteritems())):
