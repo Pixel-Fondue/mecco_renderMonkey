@@ -19,20 +19,20 @@ def debug(string):
         t = traceback.extract_stack()[-2]
         lx.out("debug '%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string))
             
-def annoy(string):
+def breakpoint(string):
     """
     By Adam O'Hern for Mechanical Color
     
     Essentially a breakpoint function for debugging purposes.
-    Prints a string to lx.out() and, if defaults.get('annoy') returns True, throws a dialog as well. (See defaults.py)
+    Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well. (See defaults.py)
     """
     t = traceback.extract_stack()[-2]
     string = "'%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string)
     
-    if defaults.get('annoy'):
-        lx.out("annoy: %s" % string)
-        if defaults.get('annoy'):
-            if modo.dialogs.okCancel("annoy",string) == 'cancel': 
+    if defaults.get('breakpoints'):
+        lx.out("breakpoint: %s" % string)
+        if defaults.get('breakpoints'):
+            if modo.dialogs.okCancel("breakpoint",string) == 'cancel': 
                 sys.exit()
     
 def status(string):

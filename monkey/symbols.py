@@ -2,11 +2,11 @@
 
 CMD_requestBatchFile = "monkey.requestBatchFile"
 CMD_addBatchTask = "monkey.addBatchTask"
+CMD_removeBatchSel = "monkey.removeBatchSel"
 CMD_runCurrentBatch = "monkey.runCurrentBatch"
 CMD_exampleBatch = "monkey.exampleBatch"
 CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
 CMD_echoSelected = "monkey.echoSelected"
-CMD_removeSelected = "monkey.removeSelected"
 
 SCENE_PATH = "scene"
 FORMAT = "format"

@@ -6,7 +6,7 @@ DEFAULTS = {
     'filetype':'JPG',
     'frames':'1',
     'debug':True,
-    'annoy':True,
+    'breakpoints':True,
     'destination':'./frames/',
     'output_pattern':'[<pass>][<output>][<LR>]<FFFF>',
     'test_path': os.path.normpath(

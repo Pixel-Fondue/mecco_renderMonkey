@@ -7,10 +7,11 @@ import modo
 
 import monkey
 from monkey.symbols import *
-from monkey.util import debug, annoy
+from monkey.util import debug, breakpoint
 
 import traceback
 import os
+from os.path import basename
 import sys
 
 try:
@@ -101,6 +102,12 @@ class rm_TreeNode(object):
     def AddNode(self, key, value=None, name=None):
         self.children.append(rm_TreeNode(key, value, self, name))
         return self.children[-1]
+    
+    def Prune(self):
+        if self.children:
+            for i in self.children:
+                i.Prune()
+            self.children = []
 
     def ClearSelection(self):
 
@@ -218,8 +225,60 @@ class rm_Batch:
             return self._batch
 
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
+        
+    def remove_sel(self, keys_list):
+        try:
+            if not keys_list:
+                debug(traceback.print_exc())
+                return False
+
+            # The following is stupid. Please forgive.
+            
+            k = keys_list
+            
+            if len(keys_list)==1:
+                del _BATCH._batch[k[0]]
+
+            if len(keys_list)==2:
+                try:
+                    _BATCH._batch[k[0]].pop([k[1]])
+                except:
+                    try:
+                        del _BATCH._batch[k[0]][k[1]]
+                    except:
+                        debug(traceback.print_exc())
+                        return False
+
+            if len(keys_list)==3:
+                try:
+                    del _BATCH._batch[k[0]][k[1]][k[2]]
+                except:
+                    try:
+                        _BATCH._batch[k[0]][k[1]].pop([k[2]])
+                    except:
+                        debug(traceback.print_exc())
+                        return False
+                    
+            if len(keys_list)==4:
+                try:
+                    del _BATCH._batch[k[0]][k[1]][k[2]][k[3]]
+                except:
+                    try:
+                        _BATCH._batch[k[0]][k[1]][k[2]].pop([k[3]])
+                    except:
+                        debug(traceback.print_exc())
+                        return False
+
+            self.save_batch_to_file()
+            self.rebuild_tree()
+            
+            return self._batch
+            
+        except:
+            debug(traceback.print_exc())
+            return False  
 
     def clear_all_task_parameters(self, task_index):
         try:
@@ -231,7 +290,7 @@ class rm_Batch:
             return self._batch[task_index]
 
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
 
     def clear_task_parameters(self, task_index, parameters_list):
@@ -246,7 +305,7 @@ class rm_Batch:
             return self._batch[task_index]
 
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
         
     def edit_task(self, task_index, parameters_dict):
@@ -260,7 +319,7 @@ class rm_Batch:
             return self._batch[task_index]
 
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
         
     def update_batch_from_file(self, file_path=None):
@@ -275,7 +334,7 @@ class rm_Batch:
             
             return self._batch
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
 
     def save_batch_to_file(self, file_path=None):
@@ -290,7 +349,7 @@ class rm_Batch:
                 return self.save_batch_as()
             
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
 
     def save_batch_as(self, file_path=None):
@@ -303,7 +362,7 @@ class rm_Batch:
                     monkey.util.yaml_save_dialog()
                 )
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
 
     def rebuild_tree(self, batch=None):
@@ -314,7 +373,7 @@ class rm_Batch:
             if not self._batch:
                 return self.build_empty_tree()
 
-            self.kill_the_kids()
+            self._tree.Prune()
             for o, i in enumerate(self._batch):
                 if i[SCENE_PATH]:
                     j = self._tree.AddNode(
@@ -343,7 +402,7 @@ class rm_Batch:
             return self._tree
 
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
         
     def build_empty_tree(self):
@@ -352,14 +411,14 @@ class rm_Batch:
             self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
     
     def kill_the_kids(self):
         try:
             self._tree.children = []
         except:
-            lx.out(traceback.print_exc())
+            debug(traceback.print_exc())
             return False
     
     def batch_file_path(self):
@@ -702,6 +761,25 @@ lx.bless(addBatchTask, CMD_addBatchTask)
 
 
 # -------------------------------------------------------------------------
+# Remove selected batch task
+# -------------------------------------------------------------------------
+
+
+class removeBatchSel(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        sel = _BATCH._tree.getSelectedChildren()
+        for i in sel:
+            _BATCH.remove_sel(i.getIndexPath())
+            
+        breakpoint('notify new shape')
+        rm_BatchView.notify_NewShape()
+        breakpoint('success')
+            
+        
+lx.bless(removeBatchSel, CMD_removeBatchSel)
+
+
+# -------------------------------------------------------------------------
 # Run the currently open batch
 # -------------------------------------------------------------------------
 
@@ -763,7 +841,7 @@ lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
 
 
 # -------------------------------------------------------------------------
-# Remove selected task
+# Echo selected task info for debug purposes
 # -------------------------------------------------------------------------
 
 
