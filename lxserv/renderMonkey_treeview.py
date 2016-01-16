@@ -86,6 +86,7 @@ class rm_TreeNode(object):
         self.children = []
         self.state = 0
         self.selected = False
+        self.expanded = False
 
         # For column sizes you can use proportions via negative values.
         # So -1 and -2 would mean that one column is half the size of the other
@@ -137,7 +138,19 @@ class rm_TreeNode(object):
         return cls._Primary
 
     def setState(self, flag):
-        self.state = self.state | flag
+        if flag == fTREE_VIEW_ITEM_EXPAND:
+            self.setExpanded(True)
+        else:
+            self.state = self.state | flag
+            
+    def setExpanded(self, state=True):
+        # Do not know how to set flag to false,
+        # so for now we can only set it to True
+        self.state = self.state | fTREE_VIEW_ITEM_EXPAND
+        self.expanded = state
+        
+    def getExpanded(self):
+        return self.expanded
 
     def setToolTip(self, idx, tip):
         self.toolTips[idx] = tip
@@ -346,6 +359,18 @@ class rm_Batch:
         except:
             debug(traceback.print_exc())
             return False
+        
+    def closeBatchFile(self):
+        try:
+            self._batchFilePath = None
+
+            self._batch = None
+            self.build_empty_tree()
+            
+            return self._batch
+        except:
+            debug(traceback.print_exc())
+            return False
 
     def save_batch_to_file(self, file_path=None):
         try:
@@ -423,7 +448,7 @@ class rm_Batch:
         
     def build_empty_tree(self):
         try:
-            self.kill_the_kids()
+            self._tree.Prune()
             self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
@@ -734,18 +759,31 @@ lx.bless(rm_BatchView, SERVERNAME, tags)
 
 
 # -------------------------------------------------------------------------
-# Request a batch file
+# Open a batch file
 # -------------------------------------------------------------------------
 
 
-class requestBatchFile(lxu.command.BasicCommand):
+class openBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
         if path:
             _BATCH.update_batch_from_file(path)
             rm_BatchView.notify_NewShape()
         
-lx.bless(requestBatchFile, CMD_requestBatchFile)
+lx.bless(openBatchFile, CMD_openBatchFile)
+
+
+# -------------------------------------------------------------------------
+# Close a batch file
+# -------------------------------------------------------------------------
+
+
+class closeBatchFile(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        _BATCH.closeBatchFile()
+        rm_BatchView.notify_NewShape()
+        
+lx.bless(closeBatchFile, CMD_closeBatchFile)
 
 
 # -------------------------------------------------------------------------

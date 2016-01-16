@@ -1,6 +1,7 @@
 #python
 
-CMD_requestBatchFile = "monkey.requestBatchFile"
+CMD_openBatchFile = "monkey.openBatchFile"
+CMD_closeBatchFile = "monkey.closeBatchFile"
 CMD_addBatchTask = "monkey.addBatchTask"
 CMD_removeBatchSel = "monkey.removeBatchSel"
 CMD_runCurrentBatch = "monkey.runCurrentBatch"
@@ -28,7 +29,7 @@ STATUS_AVAILABLE = "(Available)"
 STATUS_FILE_SUFFIX = "status"
 
 SERVERNAME = 'RenderMonkeyBatch'
-EMPTY_PROMPT = 'no tasks'
+EMPTY_PROMPT = 'no batch file'
 ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
 TREE_ROOT_TITLE = 'Tasks'
