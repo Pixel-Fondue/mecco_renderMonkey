@@ -3,6 +3,7 @@
 import lx, os, json, modo, defaults, traceback, re, sys, yaml, random
 
 from symbols import *
+from os.path import basename
 from time import sleep
 from math import copysign
 
@@ -15,7 +16,8 @@ def debug(string):
     Intended for developer debugging only; user messages should use 'status'.
     """
     if defaults.get('debug'):
-        lx.out("debug: %s" % string)
+        t = traceback.extract_stack()[-2]
+        lx.out("debug '%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string))
             
 def annoy(string):
     """
@@ -24,6 +26,9 @@ def annoy(string):
     Essentially a breakpoint function for debugging purposes.
     Prints a string to lx.out() and, if defaults.get('annoy') returns True, throws a dialog as well. (See defaults.py)
     """
+    t = traceback.extract_stack()[-2]
+    string = "'%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string)
+    
     if defaults.get('annoy'):
         lx.out("annoy: %s" % string)
         if defaults.get('annoy'):
@@ -391,7 +396,6 @@ def expand_path(inputString):
         
     if not os.path.splitext(full_path)[1]:
         full_path = os.path.join(full_path,'')
-        debug('...%s' % full_path)
         
     full_path = os.path.normpath(full_path)
     return full_path
