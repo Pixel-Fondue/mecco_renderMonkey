@@ -168,6 +168,12 @@ class rm_TreeNode(object):
     def getKey(self):
         return str(self.key)
     
+    def getChildByKey(self,key):
+        for i in self.children:
+            if key == i.key:
+                return i
+        return False
+    
     def getSelectedChildren(self,recursive=True):
         sel = []
         for i in self.children:
@@ -207,7 +213,7 @@ class rm_Batch:
         if self._batchFilePath:
             self.update_batch_from_file()
         
-        self.rebuild_tree()
+        self.regrow_tree()
 
     def add_task(self, paths_list):
         try:
@@ -233,7 +239,7 @@ class rm_Batch:
                 })
 
             self.save_batch_to_file()
-            self.rebuild_tree()
+            self.regrow_tree()
                 
             return self._batch
 
@@ -295,7 +301,7 @@ class rm_Batch:
                         return False
 
             self.save_batch_to_file()
-            self.rebuild_tree()
+            self.regrow_tree()
             
             return self._batch
             
@@ -308,7 +314,7 @@ class rm_Batch:
             self._batch[task_index] = {}
                 
             self.save_batch_to_file()
-            self.rebuild_tree()
+            self.regrow_tree()
                 
             return self._batch[task_index]
 
@@ -323,7 +329,7 @@ class rm_Batch:
                     del self._batch[task_index][p]
                 
             self.save_batch_to_file()
-            self.rebuild_tree()
+            self.regrow_tree()
                 
             return self._batch[task_index]
 
@@ -337,7 +343,7 @@ class rm_Batch:
                 self._batch[task_index][k] = v
 
             self.save_batch_to_file()
-            self.rebuild_tree()
+            self.regrow_tree()
                 
             return self._batch[task_index]
 
@@ -353,7 +359,7 @@ class rm_Batch:
                 self._batchFilePath = file_path
 
             self._batch = monkey.util.read_yaml(file_path)
-            self.rebuild_tree()
+            self.regrow_tree()
             
             return self._batch
         except:
@@ -400,43 +406,82 @@ class rm_Batch:
             debug(traceback.print_exc())
             return False
 
-    def rebuild_tree(self, batch=None):
+#    def update_tree(self):
+#        try:
+#            batch_root = self._tree[2]
+#            for o, i in enumerate(self._batch):
+#                task_root = batch_root.getChildByKey(o)
+#                if not task_root:
+#                    batch_root.AddNode(
+#                        o, 
+#                        basename(i[SCENE_PATH]), 
+#                        " ".join((TASK,str(o+1)))
+#                    )
+#                    
+#                
+#        except:
+#            debug(traceback.print_exc())
+#            return False
+                
+    
+    def regrow_tree(self):
         try:
-            if batch:
-                self._batch = batch
-
             if not self._batch:
                 return self.build_empty_tree()
 
             self._tree.Prune()
-            file_root = self._tree.AddNode(
+            
+            file_root = self._tree.AddNode( 
                 BATCHFILE,
-                BOLD + self._batchFilePath,
+                BOLD + basename(self._batchFilePath),
                 BOLD + BATCHFILE.replace('_',' ')
             )
+            
             file_root.setState(fTREE_VIEW_ITEM_EXPAND)
-            for o, i in enumerate(self._batch):
-                if i[SCENE_PATH]:
-                    j = file_root.AddNode(
-                        o, 
-                        os.path.basename(i[SCENE_PATH]), 
-                        " ".join((TASK,str(o+1)))
-                    )
-                    for k, v in iter(sorted(i.iteritems())):
-                        kk = k.replace('_',' ')
-                        if isinstance(v,(list,tuple)):
-                            l = j.AddNode(k,GRAY+LIST, kk)
-                            for n, m in enumerate(v):
-                                l.AddNode(n,m,GRAY + ITEM + SP + str(n+1))
-                            l.AddNode(GRAY + ADD_GENERIC, EMPTY)
-                        elif isinstance(v,dict):
-                            l = j.AddNode(k,GRAY+DICT, kk)
-                            for m, n in v.iteritems():
-                                l.AddNode(m,n,m.replace('_',' '))
-                            l.AddNode(GRAY + ADD_GENERIC, EMPTY)
-                        else:
-                            j.AddNode(k, v, kk)
-                    j.AddNode(GRAY + ADD_PARAM,EMPTY)
+            
+            for task_index, task in enumerate(self._batch):
+                
+                if not task[SCENE_PATH]:
+                    break
+
+                task_node = file_root.AddNode(
+                    task_index, 
+                    basename(task[SCENE_PATH]), 
+                    " ".join((TASK,str(task_index+1)))
+                )
+                
+                for param_key, param_value in iter(sorted(task.iteritems())):
+                    
+                    param_nicename = param_key.replace('_',' ')
+                    
+                    if isinstance(param_value,(list,tuple)):
+                        param_node = task_node.AddNode(
+                            param_key,
+                            GRAY+LIST, 
+                            param_nicename
+                        )
+                        
+                        for k, v in enumerate(param_value):
+                            param_node.AddNode(k,v,GRAY + str(k+1))
+                        
+                        param_node.AddNode(GRAY + ADD_GENERIC, EMPTY)
+                        
+                    elif isinstance(param_value,dict):
+                        param_node = task_node.AddNode(
+                            param_key,
+                            GRAY+DICT, 
+                            param_nicename
+                        )
+                        
+                        for k, v in param_value.iteritems():
+                            param_node.AddNode(k,v,k.replace('_',' '))
+                        
+                        param_node.AddNode(GRAY + ADD_GENERIC, EMPTY)
+                        
+                    else:
+                        task_node.AddNode(param_key, param_value, param_nicename)
+                        
+                task_node.AddNode(GRAY + ADD_PARAM,EMPTY)
                             
             self._tree.AddNode(GRAY + ADD_TASK,EMPTY)
             
@@ -451,13 +496,6 @@ class rm_Batch:
             self._tree.Prune()
             self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
             return self._tree
-        except:
-            debug(traceback.print_exc())
-            return False
-    
-    def kill_the_kids(self):
-        try:
-            self._tree.children = []
         except:
             debug(traceback.print_exc())
             return False
