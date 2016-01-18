@@ -261,44 +261,16 @@ class rm_Batch:
                 del _BATCH._batch[k[0]]
 
             if len(keys_list)==2:
-                try:
-                    _BATCH._batch[k[0]].pop(k[1])
-                except:
-                    try:
-                        del _BATCH._batch[k[0]][k[1]]
-                    except:
-                        debug(traceback.print_exc())
-                        return False
+                del _BATCH._batch[k[0]][k[1]]
 
             if len(keys_list)==3:
-                try:
-                    del _BATCH._batch[k[0]][k[1]][k[2]]
-                except:
-                    try:
-                        _BATCH._batch[k[0]][k[1]].pop(k[2])
-                    except:
-                        debug(traceback.print_exc())
-                        return False
+                del _BATCH._batch[k[0]][k[1]][k[2]]
                     
             if len(keys_list)==4:
-                try:
-                    del _BATCH._batch[k[0]][k[1]][k[2]][k[3]]
-                except:
-                    try:
-                        _BATCH._batch[k[0]][k[1]][k[2]].pop(k[3])
-                    except:
-                        debug(traceback.print_exc())
-                        return False
+                del _BATCH._batch[k[0]][k[1]][k[2]][k[3]]
                     
             if len(keys_list)==5:
-                try:
-                    del _BATCH._batch[k[0]][k[1]][k[2]][k[3]][k[4]]
-                except:
-                    try:
-                        _BATCH._batch[k[0]][k[1]][k[2]][k[3]].pop(k[4])
-                    except:
-                        debug(traceback.print_exc())
-                        return False
+                del _BATCH._batch[k[0]][k[1]][k[2]][k[3]][k[4]]
 
             self.save_batch_to_file()
             self.regrow_tree()
@@ -405,24 +377,7 @@ class rm_Batch:
         except:
             debug(traceback.print_exc())
             return False
-
-#    def update_tree(self):
-#        try:
-#            batch_root = self._tree[2]
-#            for o, i in enumerate(self._batch):
-#                task_root = batch_root.getChildByKey(o)
-#                if not task_root:
-#                    batch_root.AddNode(
-#                        o, 
-#                        basename(i[SCENE_PATH]), 
-#                        " ".join((TASK,str(o+1)))
-#                    )
-#                    
-#                
-#        except:
-#            debug(traceback.print_exc())
-#            return False
-                
+        
     
     def regrow_tree(self):
         try:
