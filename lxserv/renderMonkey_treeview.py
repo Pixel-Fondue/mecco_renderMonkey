@@ -109,7 +109,24 @@ class rm_TreeNode(object):
             for i in self.children:
                 i.Prune()
             self.children = []
-
+            
+#    def updateKeys(self):
+#        if not self.children:
+#            return False
+#        
+#        # Assumes that if all children have unique integer keys, they're list keys
+#        if (
+#            all(isinstance(k,int) for k in [child.key for child in self.children]) and
+#            [child.key for child in self.children] == list(set([child.key for child in self.children]))
+#            ):
+#            for n, child in enumerate(self.children.sort(key=lambda x: x.key)):
+#                child.key = n
+#                
+#        for child in self.children:
+#            child.updateKeys()
+#            
+#        return True
+            
     def ClearSelection(self):
 
         if self._Primary:
@@ -202,6 +219,11 @@ class rm_TreeNode(object):
 # Batch data model
 # -------------------------------------------------------------------------
 
+def nested_del(obj, keys):
+    for key in keys[:-1]:
+        obj = obj[key]
+    del obj[keys[-1]]
+
 
 class rm_Batch:
     
@@ -253,27 +275,17 @@ class rm_Batch:
                 debug(traceback.print_exc())
                 return False
 
-            # The following is stupid. Please forgive.
-            
-            k = keys_list
-            
-            if len(keys_list)==1:
-                del _BATCH._batch[k[0]]
-
-            if len(keys_list)==2:
-                del _BATCH._batch[k[0]][k[1]]
-
-            if len(keys_list)==3:
-                del _BATCH._batch[k[0]][k[1]][k[2]]
-                    
-            if len(keys_list)==4:
-                del _BATCH._batch[k[0]][k[1]][k[2]][k[3]]
-                    
-            if len(keys_list)==5:
-                del _BATCH._batch[k[0]][k[1]][k[2]][k[3]][k[4]]
-
+            nested_del(_BATCH._batch,keys_list)
             self.save_batch_to_file()
-            self.regrow_tree()
+            
+#            sel = _BATCH._tree.getSelectedChildren()
+#            for i in sel:
+#                i.Prune()
+#                i.parent.children.remove(i)
+#                
+#            _BATCH._tree.updateKeys()
+
+            self.regrow_tree
             
             return self._batch
             
