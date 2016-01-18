@@ -111,7 +111,6 @@ class rm_TreeNode(object):
             del self.children[:]
             
     def ClearSelection(self):
-
         if self._Primary:
             self.setPrimary()
 
@@ -121,7 +120,6 @@ class rm_TreeNode(object):
             child.ClearSelection()
 
     def SetSelected(self, val=True):
-
         if val:
             self.setPrimary(self)
         self.selected = val
