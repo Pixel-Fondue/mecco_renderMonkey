@@ -108,7 +108,7 @@ class rm_TreeNode(object):
         if self.children:
             for i in self.children:
                 i.Prune()
-            self.children = []
+            del self.children[:]
             
     def ClearSelection(self):
 
@@ -166,7 +166,7 @@ class rm_TreeNode(object):
         m = str(self.markup) if self.markup else ''
         k = str(self.key)
         k = k.replace('_',' ')
-        k = k.capitalize()
+        k = k.title()
         return m + k
     
     def getKey(self):
