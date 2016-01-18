@@ -748,7 +748,7 @@ class rm_BatchView(lxifc.TreeView,
         # region1 will be column 0
         # region2 will be column 1 etc.
         elif columnIndex ==  regionID - 1:
-           return True
+            return True
 
         return False
 
