@@ -723,7 +723,16 @@ class rm_BatchView(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
-        lx.notimpl()
+        # return True for 'anywhere' region
+        if regionID == 0:
+            return True
+        # this maps the regions to the column index
+        # region1 will be column 0
+        # region2 will be column 1 etc.
+        elif columnIndex ==  regionID - 1:
+            return True
+
+        return False
 
     def treeview_SupportedDragDropSourceTypes(self, columnIndex):
         lx.notimpl()
@@ -733,6 +742,7 @@ class rm_BatchView(lxifc.TreeView,
 
     def treeview_GetDragDropDestinationObject(self, columnIndex):
         lx.notimpl()
+        
 
     # -------------------------------------------------------------------------
     # Attributes
