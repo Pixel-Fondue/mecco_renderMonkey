@@ -275,7 +275,7 @@ class rm_Batch:
             if len(keys_list) > 1:
                 parent_obj_type = type(get_nested(_BATCH._batch,keys_list[:-1]))
             else:
-                parent_obj_type = type(_BATCH._batch[keys_list[0]])
+                parent_obj_type = type(_BATCH._batch)
             
             nested_del(_BATCH._batch,keys_list)
             self.save_batch_to_file()
@@ -288,7 +288,7 @@ class rm_Batch:
             i.parent.children.remove(i)
             if parent_obj_type in (list,tuple):
                 for n, child in enumerate(sorted(p.children, key=lambda x: x.key)):
-                    child.key = n
+                    child.key = n if isinstance(child.key,int) else child.key
             
             return self._batch
             
