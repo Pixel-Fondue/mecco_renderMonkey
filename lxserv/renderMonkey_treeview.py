@@ -13,12 +13,13 @@ import traceback
 import os
 from os.path import basename
 import sys
+import traceback
 
 try:
     import wingdbstub
 except:
     pass
-    
+
 
 # -------------------------------------------------------------------------
 # Node styles
@@ -103,14 +104,15 @@ class rm_TreeNode(object):
     def AddNode(self, key, value=None, name=None):
         self.children.append(rm_TreeNode(key, value, self, name))
         return self.children[-1]
-    
+
     def Prune(self):
         if self.children:
             for i in self.children:
                 i.Prune()
-            del self.children[:]
-            
+            self.children = []
+
     def ClearSelection(self):
+
         if self._Primary:
             self.setPrimary()
 
@@ -120,6 +122,7 @@ class rm_TreeNode(object):
             child.ClearSelection()
 
     def SetSelected(self, val=True):
+
         if val:
             self.setPrimary(self)
         self.selected = val
@@ -140,13 +143,13 @@ class rm_TreeNode(object):
             self.setExpanded(True)
         else:
             self.state = self.state | flag
-            
+
     def setExpanded(self, state=True):
         # Do not know how to set flag to false,
         # so for now we can only set it to True
         self.state = self.state | fTREE_VIEW_ITEM_EXPAND
         self.expanded = state
-        
+
     def getExpanded(self):
         return self.expanded
 
@@ -159,23 +162,23 @@ class rm_TreeNode(object):
 
     def getValue(self):
         return str(self.value)
-    
+
     def getName(self):
         m = str(self.markup) if self.markup else ''
         k = str(self.key)
         k = k.replace('_',' ')
-        k = k.title()
+        k = k.capitalize()
         return m + k
-    
+
     def getKey(self):
         return str(self.key)
-    
+
     def getChildByKey(self,key):
         for i in self.children:
             if key == i.key:
                 return i
         return False
-    
+
     def getSelectedChildren(self,recursive=True):
         sel = []
         for i in self.children:
@@ -183,28 +186,28 @@ class rm_TreeNode(object):
                 sel.append(i)
             if recursive:
                 sel += i.getSelectedChildren()
-                
-        return sel    
-    
+
+        return sel
+
     def getDescendantByKey(self,keys_list):
         if len(keys_list) > 1:
             return self.getChildByKey(keys_list[0]).getDescendantByKey(keys_list[1:])
         else:
             return self.getChildByKey(keys_list[0])
-    
+
     def getPath(self,path=[]):
         if self.parent:
             return self.parent.getPath() + [self]
         else:
             return path
-        
+
     def getIndexPath(self):
         path = self.getPath()
         indexPath = []
         for i in path[1:]:
             indexPath.append(i.key)
         return indexPath
-    
+
 
 # -------------------------------------------------------------------------
 # Batch data model
@@ -221,15 +224,15 @@ def get_nested(obj, keys):
     return obj[keys[-1]]
 
 class rm_Batch:
-    
+
     def __init__(self, batchFilePath='', batch=[]):
         self._batchFilePath = batchFilePath
         self._batch = batch
         self._tree = rm_TreeNode(TREE_ROOT_TITLE,LIST)
-        
+
         if self._batchFilePath:
             self.update_batch_from_file()
-        
+
         self.regrow_tree()
 
     def add_task(self, paths_list):
@@ -257,50 +260,50 @@ class rm_Batch:
 
             self.save_batch_to_file()
             self.regrow_tree()
-                
+
             return self._batch
 
         except:
             debug(traceback.print_exc())
             return False
-        
+
     def remove_sel(self, keys_list):
         try:
             if not keys_list:
                 debug(traceback.print_exc())
                 return False
-            
+
             if len(keys_list) > 1:
                 parent_obj_type = type(get_nested(_BATCH._batch,keys_list[:-1]))
             else:
                 parent_obj_type = type(_BATCH._batch)
-            
+
             nested_del(_BATCH._batch,keys_list)
             self.save_batch_to_file()
-            
+
             batch_root = _BATCH._tree.getChildByKey(BATCHFILE)
             i = batch_root.getDescendantByKey(keys_list)
-            
+
             i.Prune()
             p = i.parent
             i.parent.children.remove(i)
             if parent_obj_type in (list,tuple):
                 for n, child in enumerate(sorted(p.children, key=lambda x: x.key)):
                     child.key = n if isinstance(child.key,int) else child.key
-            
+
             return self._batch
-            
+
         except:
             debug(traceback.print_exc())
-            return False  
+            return False
 
     def clear_all_task_parameters(self, task_index):
         try:
             self._batch[task_index] = {}
-                
+
             self.save_batch_to_file()
             self.regrow_tree()
-                
+
             return self._batch[task_index]
 
         except:
@@ -312,16 +315,16 @@ class rm_Batch:
             for p in parameters_list:
                 if p in self._batch[task_index]:
                     del self._batch[task_index][p]
-                
+
             self.save_batch_to_file()
             self.regrow_tree()
-                
+
             return self._batch[task_index]
 
         except:
             debug(traceback.print_exc())
             return False
-        
+
     def edit_task(self, task_index, parameters_dict):
         try:
             for k, v in parameters_dict.iteritems():
@@ -329,13 +332,13 @@ class rm_Batch:
 
             self.save_batch_to_file()
             self.regrow_tree()
-                
+
             return self._batch[task_index]
 
         except:
             debug(traceback.print_exc())
             return False
-        
+
     def update_batch_from_file(self, file_path=None):
         try:
             if file_path is None:
@@ -345,19 +348,19 @@ class rm_Batch:
 
             self._batch = monkey.util.read_yaml(file_path)
             self.regrow_tree()
-            
+
             return self._batch
         except:
             debug(traceback.print_exc())
             return False
-        
+
     def closeBatchFile(self):
         try:
             self._batchFilePath = None
 
             self._batch = None
             self.build_empty_tree()
-            
+
             return self._batch
         except:
             debug(traceback.print_exc())
@@ -367,13 +370,13 @@ class rm_Batch:
         try:
             if file_path:
                 return monkey.util.write_yaml(self._batch, file_path)
-            
+
             elif self._batchFilePath:
                 return monkey.util.write_yaml(self._batch, self._batchFilePath)
 
             else:
                 return self.save_batch_as()
-            
+
         except:
             debug(traceback.print_exc())
             return False
@@ -390,71 +393,71 @@ class rm_Batch:
         except:
             debug(traceback.print_exc())
             return False
-        
-    
+
+
     def regrow_tree(self):
         try:
             if not self._batch:
                 return self.build_empty_tree()
 
             self._tree.Prune()
-            
-            file_root = self._tree.AddNode( 
+
+            file_root = self._tree.AddNode(
                 BATCHFILE,
                 BOLD + basename(self._batchFilePath),
                 BOLD
             )
-            
+
             file_root.setState(fTREE_VIEW_ITEM_EXPAND)
-            
+
             for task_index, task in enumerate(self._batch):
-                
+
                 if not task[SCENE_PATH]:
                     break
 
                 task_node = file_root.AddNode(
-                    task_index, 
+                    task_index,
                     basename(task[SCENE_PATH]),
                     GRAY + TASK + SP
                 )
-                
+
                 for param_key, param_value in iter(sorted(task.iteritems())):
-                    
+
                     if isinstance(param_value,(list,tuple)):
                         param_node = task_node.AddNode(
                             param_key,
                             GRAY+LIST
                         )
-                        
+
                         for k, v in enumerate(param_value):
                             param_node.AddNode(k,v,GRAY)
-                        
+
                         param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
-                        
+
                     elif isinstance(param_value,dict):
                         param_node = task_node.AddNode(
                             param_key,
                             GRAY+DICT
                         )
-                        
+
                         for k, v in param_value.iteritems():
                             param_node.AddNode(k,v)
-                        
+
                         param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
-                        
+
                     else:
                         task_node.AddNode(param_key, param_value)
-                        
+
                 task_node.AddNode(ADD_PARAM,EMPTY,GRAY)
-                            
+
             self._tree.AddNode(ADD_TASK,EMPTY,GRAY)
-            
+
             return self._tree
 
         except:
             debug(traceback.print_exc())
             return False
-        
+
     def build_empty_tree(self):
         try:
             self._tree.Prune()
@@ -463,11 +466,11 @@ class rm_Batch:
         except:
             debug(traceback.print_exc())
             return False
-    
+
     def batch_file_path(self):
         return self._batchFilePath
-    
-    
+
+
 # -------------------------------------------------------------------------
 # Tree View
 # -------------------------------------------------------------------------
@@ -589,11 +592,14 @@ class rm_BatchView(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        parent = self._currentNode.parent
+        try:
+            parent = self._currentNode.parent
 
-        if parent:
-            self._currentIndex = parent.children.index(self._currentNode)
-            self._currentNode = parent
+            if parent:
+                self._currentIndex = parent.children.index(self._currentNode)
+                self._currentNode = parent
+        except:
+            print traceback.format_exc()
 
     def tree_ToChild(self):
         """
@@ -693,10 +699,10 @@ class rm_BatchView(lxifc.TreeView,
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY or \
            mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-                
+
             _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
-            
+
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
@@ -723,16 +729,7 @@ class rm_BatchView(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
-        # return True for 'anywhere' region
-        if regionID == 0:
-            return True
-        # this maps the regions to the column index
-        # region1 will be column 0
-        # region2 will be column 1 etc.
-        elif columnIndex ==  regionID - 1:
-            return True
-
-        return False
+        lx.notimpl()
 
     def treeview_SupportedDragDropSourceTypes(self, columnIndex):
         lx.notimpl()
@@ -742,7 +739,18 @@ class rm_BatchView(lxifc.TreeView,
 
     def treeview_GetDragDropDestinationObject(self, columnIndex):
         lx.notimpl()
-        
+
+    def treeview_IsInputRegion(self, columnIndex, regionID):
+        # return True for 'anywhere' region
+        if regionID == 0:
+            return True
+        # this maps the regions to the column index
+        # region1 will be column 0
+        # region2 will be column 1 etc.
+        elif columnIndex ==  regionID - 1:
+           return True
+
+        return False
 
     # -------------------------------------------------------------------------
     # Attributes
@@ -754,18 +762,21 @@ class rm_BatchView(lxifc.TreeView,
     def attr_GetString(self, index):
         if index == 0:
             return self.targetNode().getName()
-        
+
         elif self.targetNode().getValue():
             return self.targetNode().getValue()
-        
+
         else:
             return ""
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
+sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]"%sSRV_USERNAME
+
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
-        lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE}
+        lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
+        lx.symbol.sINMAP_DEFINE: sINMAP}
 
 lx.bless(rm_BatchView, SERVERNAME, tags)
 
@@ -781,7 +792,7 @@ class openBatchFile(lxu.command.BasicCommand):
         if path:
             _BATCH.update_batch_from_file(path)
             rm_BatchView.notify_NewShape()
-        
+
 lx.bless(openBatchFile, CMD_openBatchFile)
 
 
@@ -794,7 +805,7 @@ class closeBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         _BATCH.closeBatchFile()
         rm_BatchView.notify_NewShape()
-        
+
 lx.bless(closeBatchFile, CMD_closeBatchFile)
 
 
@@ -817,12 +828,12 @@ class addBatchTask(lxu.command.BasicCommand):
         )
         if not isinstance(paths_list,list):
             paths_list = [paths_list]
-            
+
         if paths_list:
             for path in paths_list:
                 _BATCH.add_task(path)
             rm_BatchView.notify_NewShape()
-        
+
 lx.bless(addBatchTask, CMD_addBatchTask)
 
 
@@ -836,9 +847,9 @@ class removeBatchSel(lxu.command.BasicCommand):
         sel = _BATCH._tree.getSelectedChildren()
         for i in sel:
             _BATCH.remove_sel(i.getIndexPath())
-            
+
         rm_BatchView.notify_NewShape()
-        
+
 lx.bless(removeBatchSel, CMD_removeBatchSel)
 
 
@@ -858,7 +869,7 @@ class runCurrentBatch(lxu.command.BasicCommand):
 #            return True
 #        else:
 #            return False
-        
+
 lx.bless(runCurrentBatch, CMD_runCurrentBatch)
 
 
@@ -875,8 +886,8 @@ class exampleBatch(lxu.command.BasicCommand):
             lx.eval('renderMonkey.batchTemplate {%s}' % path)
             _BATCH.update_batch_from_file(path)
             rm_BatchView.notify_NewShape()
-        
-        
+
+
 lx.bless(exampleBatch, CMD_exampleBatch)
 
 
@@ -890,15 +901,15 @@ class openBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH._batchFilePath:
             lx.eval('file.open {%s}' % _BATCH._batchFilePath)
-            
+
 # WIP - NEED  NOTIFIER TO UPDATE THIS WHEN TREE UPDATES
 #    def basic_Enable(self, msg):
 #        if _BATCH._batchFilePath:
 #            return True
 #        else:
 #            return False
-        
-        
+
+
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
 
 
@@ -919,7 +930,7 @@ class echoSelected(lxu.command.BasicCommand):
             lx.out('children:')
             for j in i.children:
                 lx.out('\t- %s' % j.getName())
-            
+
 lx.bless(echoSelected, CMD_echoSelected)
 
 
