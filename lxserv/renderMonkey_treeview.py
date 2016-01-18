@@ -78,11 +78,11 @@ class rm_TreeNode(object):
 
     _Primary = None
 
-    def __init__(self, key, value=None, parent=None, name=None):
+    def __init__(self, key, value=None, parent=None, markup=''):
         self.key = key
-        self.name = name if name else key
         self.value = value
         self.parent = parent
+        self.markup = markup
         self.children = []
         self.state = 0
         self.selected = False
@@ -109,23 +109,6 @@ class rm_TreeNode(object):
             for i in self.children:
                 i.Prune()
             self.children = []
-            
-#    def updateKeys(self):
-#        if not self.children:
-#            return False
-#        
-#        # Assumes that if all children have unique integer keys, they're list keys
-#        if (
-#            all(isinstance(k,int) for k in [child.key for child in self.children]) and
-#            [child.key for child in self.children] == list(set([child.key for child in self.children]))
-#            ):
-#            for n, child in enumerate(self.children.sort(key=lambda x: x.key)):
-#                child.key = n
-#                
-#        for child in self.children:
-#            child.updateKeys()
-#            
-#        return True
             
     def ClearSelection(self):
 
@@ -180,7 +163,11 @@ class rm_TreeNode(object):
         return str(self.value)
     
     def getName(self):
-        return str(self.name)
+        m = str(self.markup) if self.markup else ''
+        k = str(self.key)
+        k = k.replace('_',' ')
+        k = k.capitalize()
+        return m + k
     
     def getKey(self):
         return str(self.key)
@@ -199,7 +186,13 @@ class rm_TreeNode(object):
             if recursive:
                 sel += i.getSelectedChildren()
                 
-        return sel
+        return sel    
+    
+    def getDescendantByKey(self,keys_list):
+        if len(keys_list) > 1:
+            return self.getChildByKey(keys_list[0]).getDescendantByKey(keys_list[1:])
+        else:
+            return self.getChildByKey(keys_list[0])
     
     def getPath(self,path=[]):
         if self.parent:
@@ -224,6 +217,10 @@ def nested_del(obj, keys):
         obj = obj[key]
     del obj[keys[-1]]
 
+def get_nested(obj, keys):
+    for key in keys[:-1]:
+        obj = obj[key]
+    return obj[keys[-1]]
 
 class rm_Batch:
     
@@ -274,18 +271,24 @@ class rm_Batch:
             if not keys_list:
                 debug(traceback.print_exc())
                 return False
-
+            
+            if len(keys_list) > 1:
+                parent_obj_type = type(get_nested(_BATCH._batch,keys_list[:-1]))
+            else:
+                parent_obj_type = type(_BATCH._batch[keys_list[0]])
+            
             nested_del(_BATCH._batch,keys_list)
             self.save_batch_to_file()
             
-#            sel = _BATCH._tree.getSelectedChildren()
-#            for i in sel:
-#                i.Prune()
-#                i.parent.children.remove(i)
-#                
-#            _BATCH._tree.updateKeys()
-
-            self.regrow_tree
+            batch_root = _BATCH._tree.getChildByKey(BATCHFILE)
+            i = batch_root.getDescendantByKey(keys_list)
+            
+            i.Prune()
+            p = i.parent
+            i.parent.children.remove(i)
+            if parent_obj_type in (list,tuple):
+                for n, child in enumerate(sorted(p.children, key=lambda x: x.key)):
+                    child.key = n
             
             return self._batch
             
@@ -401,7 +404,7 @@ class rm_Batch:
             file_root = self._tree.AddNode( 
                 BATCHFILE,
                 BOLD + basename(self._batchFilePath),
-                BOLD + BATCHFILE.replace('_',' ')
+                BOLD
             )
             
             file_root.setState(fTREE_VIEW_ITEM_EXPAND)
@@ -413,44 +416,40 @@ class rm_Batch:
 
                 task_node = file_root.AddNode(
                     task_index, 
-                    basename(task[SCENE_PATH]), 
-                    " ".join((TASK,str(task_index+1)))
+                    basename(task[SCENE_PATH]),
+                    GRAY + TASK + SP
                 )
                 
                 for param_key, param_value in iter(sorted(task.iteritems())):
                     
-                    param_nicename = param_key.replace('_',' ')
-                    
                     if isinstance(param_value,(list,tuple)):
                         param_node = task_node.AddNode(
                             param_key,
-                            GRAY+LIST, 
-                            param_nicename
+                            GRAY+LIST
                         )
                         
                         for k, v in enumerate(param_value):
-                            param_node.AddNode(k,v,GRAY + str(k+1))
+                            param_node.AddNode(k,v,GRAY)
                         
-                        param_node.AddNode(GRAY + ADD_GENERIC, EMPTY)
+                        param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
                         
                     elif isinstance(param_value,dict):
                         param_node = task_node.AddNode(
                             param_key,
-                            GRAY+DICT, 
-                            param_nicename
+                            GRAY+DICT
                         )
                         
                         for k, v in param_value.iteritems():
-                            param_node.AddNode(k,v,k.replace('_',' '))
+                            param_node.AddNode(k,v)
                         
-                        param_node.AddNode(GRAY + ADD_GENERIC, EMPTY)
+                        param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
                         
                     else:
-                        task_node.AddNode(param_key, param_value, param_nicename)
+                        task_node.AddNode(param_key, param_value)
                         
-                task_node.AddNode(GRAY + ADD_PARAM,EMPTY)
+                task_node.AddNode(ADD_PARAM,EMPTY,GRAY)
                             
-            self._tree.AddNode(GRAY + ADD_TASK,EMPTY)
+            self._tree.AddNode(ADD_TASK,EMPTY,GRAY)
             
             return self._tree
 
@@ -831,7 +830,6 @@ class removeBatchSel(lxu.command.BasicCommand):
             _BATCH.remove_sel(i.getIndexPath())
             
         rm_BatchView.notify_NewShape()
-            
         
 lx.bless(removeBatchSel, CMD_removeBatchSel)
 
@@ -909,10 +907,10 @@ class echoSelected(lxu.command.BasicCommand):
             path = i.getPath()
             idxPath = i.getIndexPath()
             lx.out(idxPath)
-            lx.out('parent:%s' % i.parent.name)
+            lx.out('parent:%s' % i.parent.getName())
             lx.out('children:')
             for j in i.children:
-                lx.out('\t- %s' % j.name)
+                lx.out('\t- %s' % j.getName())
             
 lx.bless(echoSelected, CMD_echoSelected)
 
