@@ -108,8 +108,8 @@ class rm_TreeNode(object):
     def Prune(self):
         if self.children:
             for i in self.children:
-                i.Prune()
-            self.children = []
+                self.children.remove(i)
+                self.Prune()
 
     def ClearSelection(self):
 
@@ -771,7 +771,7 @@ class rm_BatchView(lxifc.TreeView,
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]"%sSRV_USERNAME
+sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]" %s SRV_USERNAME
 
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
