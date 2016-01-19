@@ -13,7 +13,6 @@ import traceback
 import os
 from os.path import basename
 import sys
-import traceback
 
 try:
     import wingdbstub
@@ -36,7 +35,7 @@ def markup(pre,string):
 # "\03(c:color)Some Text" < Where "color" is a string representing a decimal
 # integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
 def bitwise_rgb(r,g,b):
-	return str(0x01000000 | ((r << 16) | (g << 8 | b)))
+    return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
 RED = markup('c',bitwise_rgb(255,0,0))
 
@@ -108,8 +107,8 @@ class rm_TreeNode(object):
     def Prune(self):
         if self.children:
             for i in self.children:
-                self.children.remove(i)
-                self.Prune()
+                i.Prune()
+            del self.children[:]
 
     def ClearSelection(self):
 
@@ -167,7 +166,7 @@ class rm_TreeNode(object):
         m = str(self.markup) if self.markup else ''
         k = str(self.key)
         k = k.replace('_',' ')
-        k = k.capitalize()
+        k = k.title()
         return m + k
 
     def getKey(self):
@@ -592,14 +591,11 @@ class rm_BatchView(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        try:
-            parent = self._currentNode.parent
+        parent = self._currentNode.parent
 
-            if parent:
-                self._currentIndex = parent.children.index(self._currentNode)
-                self._currentNode = parent
-        except:
-            print traceback.format_exc()
+        if parent:
+            self._currentIndex = parent.children.index(self._currentNode)
+            self._currentNode = parent
 
     def tree_ToChild(self):
         """
@@ -771,7 +767,7 @@ class rm_BatchView(lxifc.TreeView,
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]" %s SRV_USERNAME
+sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]" % sSRV_USERNAME
 
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
@@ -847,7 +843,6 @@ class removeBatchSel(lxu.command.BasicCommand):
         sel = _BATCH._tree.getSelectedChildren()
         for i in sel:
             _BATCH.remove_sel(i.getIndexPath())
-
         rm_BatchView.notify_NewShape()
 
 lx.bless(removeBatchSel, CMD_removeBatchSel)
