@@ -774,6 +774,3 @@ lx.bless(removeBatchSel, CMD_removeBatchSel)
 lx.bless(runCurrentBatch, CMD_runCurrentBatch)
 lx.bless(exampleBatch, CMD_exampleBatch)
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
-lx.bless(echoSelected, CMD_echoSelected)
-
-
