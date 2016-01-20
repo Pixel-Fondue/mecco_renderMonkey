@@ -353,10 +353,9 @@ class rm_Batch:
 
     def closeBatchFile(self):
         try:
-            self._batchFilePath = None
-
-            self._batch = None
             self.build_empty_tree()
+            self._batchFilePath = None
+            self._batch = None
 
             return self._batch
         except:
@@ -691,12 +690,12 @@ class rm_BatchView(lxifc.TreeView,
 
     def treeview_Select(self, mode):
 
-        if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY or \
-           mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-
+        if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             _BATCH._tree.ClearSelection()
             self.targetNode().SetSelected()
 
+        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
+            self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().SetSelected(False)
