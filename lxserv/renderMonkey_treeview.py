@@ -100,18 +100,17 @@ class rm_TreeNode(object):
 
         self.toolTips = {}
 
-    def AddNode(self, key, value=None, name=None):
-        self.children.append(rm_TreeNode(key, value, self, name))
+    def AddNode(self, key, value=None, markup=None):
+        self.children.append(rm_TreeNode(key, value, self, markup))
         return self.children[-1]
 
     def Prune(self):
         if self.children:
             for i in self.children:
-                i.Prune()
-            del self.children[:]
+#                i.Prune()
+                self.children.remove(i)
 
     def ClearSelection(self):
-
         if self._Primary:
             self.setPrimary()
 
@@ -121,7 +120,6 @@ class rm_TreeNode(object):
             child.ClearSelection()
 
     def SetSelected(self, val=True):
-
         if val:
             self.setPrimary(self)
         self.selected = val
@@ -449,7 +447,7 @@ class rm_Batch:
 
                 task_node.AddNode(ADD_PARAM,EMPTY,GRAY)
 
-            self._tree.AddNode(ADD_TASK,EMPTY,GRAY)
+            file_root.AddNode(ADD_TASK,EMPTY,GRAY)
 
             return self._tree
 
