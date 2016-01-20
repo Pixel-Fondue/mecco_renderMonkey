@@ -20,26 +20,12 @@ except:
     pass
 
 
-# -------------------------------------------------------------------------
-# Node styles
-# -------------------------------------------------------------------------
-
-# Icons added via markup in the string itself.
-# "\x03(i:uiicon_bm_overlay) Some text" < Adds icon resource "bm_overlay" to cell
-
-# All markup flags have the format '\03(pre:string)', where 'pre' is the
-# letter f (font), c (color), or i (icon), so we may as well:
 def markup(pre,string):
     return '\03(%s:%s)' % (pre,string)
 
-# "\03(c:color)Some Text" < Where "color" is a string representing a decimal
-# integer computed with 0x01000000 | ((r << 16) | (g << 8) | b)
 def bitwise_rgb(r,g,b):
     return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
-RED = markup('c',bitwise_rgb(255,0,0))
-
-# I happen to hate 8-bit RGB values. Let's use hex instead.
 def bitwise_hex(h):
     h = h.strip()
     if h[0] == '#': h = h[1:]
@@ -47,31 +33,21 @@ def bitwise_hex(h):
     r, g, b = [int(n, 16) for n in (r, g, b)]
     return bitwise_rgb(r, g, b)
 
-BLUE = markup('c',bitwise_hex('#0e76b7'))
 
-# The below "c:4113" is a special case pre-defined gray color for text,
-# which is why the format is different from that of arbitrary colors above.
+RED = markup('c',bitwise_rgb(255,0,0))
+BLUE = markup('c',bitwise_hex('#0e76b7'))
 GRAY = markup('c','4113')
 
-# Italics and bold are done with:
-# "\03(c:font)" where "font" is the string "FONT_DEFAULT", "FONT_NORMAL",
-# "FONT_BOLD" or "FONT_ITALIC"
 DEFAULT = markup('f','FONT_DEFAULT')
 NORMAL = markup('f','FONT_NORMAL')
 BOLD = markup('f','FONT_BOLD')
 ITALIC = markup('f','FONT_ITALIC')
 
-# You can combine styles by stringing them together:
 GRAY_ITALIC = GRAY + ITALIC
 
-# These flags are pilfered from the modo source code itself:
 fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
 fTREE_VIEW_ATTR_EXPAND = 0x00000004
-
-# -------------------------------------------------------------------------
-# Generic layer node object that represents each entry in the tree
-# -------------------------------------------------------------------------
 
 
 class rm_TreeNode(object):
@@ -206,9 +182,6 @@ class rm_TreeNode(object):
         return indexPath
 
 
-# -------------------------------------------------------------------------
-# Batch data model
-# -------------------------------------------------------------------------
 
 def nested_del(obj, keys):
     for key in keys[:-1]:
@@ -467,14 +440,7 @@ class rm_Batch:
         return self._batchFilePath
 
 
-# -------------------------------------------------------------------------
-# Tree View
-# -------------------------------------------------------------------------
-
-# Not sure why this variable needs to be external to the view object,
-# but it does. (Crash.)
 _BATCH = rm_Batch()
-
 
 class rm_BatchView(lxifc.TreeView,
                         lxifc.Tree,
@@ -493,10 +459,6 @@ class rm_BatchView(lxifc.TreeView,
 
         self._currentNode = node
         self._currentIndex = curIndex
-
-    # -------------------------------------------------------------------------
-    # Listener port
-    # -------------------------------------------------------------------------
 
     @classmethod
     def addListenerClient(cls, listener):
@@ -530,8 +492,6 @@ class rm_BatchView(lxifc.TreeView,
             if client.test():
                 client.NewAttributes()
 
-    # -----------------------------------------------------------------------
-
     def lport_AddListener(self, obj):
         """
             Called from core code with the object that wants to
@@ -546,20 +506,11 @@ class rm_BatchView(lxifc.TreeView,
         """
         self.removeListenerClient(obj)
 
-    # -------------------------------------------------------------------------
-    # Target layer in the tree
-    # -------------------------------------------------------------------------
-
     def targetNode(self):
         """
             Returns the targeted layer node in the current tier
         """
         return self._currentNode.children[self._currentIndex]
-
-    # -------------------------------------------------------------------------
-    # Each time the tree is spawned, we create a copy of ourselves at current
-    # location in the tree and return it
-    # -------------------------------------------------------------------------
 
     def tree_Spawn(self, mode):
         """
@@ -659,10 +610,6 @@ class rm_BatchView(lxifc.TreeView,
         """
         self.targetNode().state = state
 
-    # -------------------------------------------------------------------------
-    # Tree view
-    # -------------------------------------------------------------------------
-
     def treeview_StoreState(self, uid):
         lx.notimpl()
 
@@ -734,20 +681,12 @@ class rm_BatchView(lxifc.TreeView,
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
-        # return True for 'anywhere' region
         if regionID == 0:
             return True
-        # this maps the regions to the column index
-        # region1 will be column 0
-        # region2 will be column 1 etc.
         elif columnIndex ==  regionID - 1:
             return True
 
         return False
-
-    # -------------------------------------------------------------------------
-    # Attributes
-    # -------------------------------------------------------------------------
 
     def attr_Count(self):
         return len(_BATCH._tree.columns)
@@ -763,22 +702,6 @@ class rm_BatchView(lxifc.TreeView,
             return ""
 
 
-sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[%s] regions[1@region1 2@region2 3@region3]" % sSRV_USERNAME
-
-
-tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
-        lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
-        lx.symbol.sINMAP_DEFINE: sINMAP}
-
-lx.bless(rm_BatchView, SERVERNAME, tags)
-
-
-# -------------------------------------------------------------------------
-# Open a batch file
-# -------------------------------------------------------------------------
-
-
 class openBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
@@ -786,39 +709,16 @@ class openBatchFile(lxu.command.BasicCommand):
             _BATCH.update_batch_from_file(path)
             rm_BatchView.notify_NewShape()
 
-lx.bless(openBatchFile, CMD_openBatchFile)
-
-
-# -------------------------------------------------------------------------
-# Close a batch file
-# -------------------------------------------------------------------------
-
 
 class closeBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         _BATCH.closeBatchFile()
         rm_BatchView.notify_NewShape()
 
-lx.bless(closeBatchFile, CMD_closeBatchFile)
-
-
-# -------------------------------------------------------------------------
-# Request an LXO file and add a task
-# -------------------------------------------------------------------------
-
 
 class addBatchTask(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        paths_list = os.path.normpath(
-            modo.dialogs.customFile(
-                dtype='fileOpen',
-                title='Select Scene File',
-                names=('lxo',),
-                unames=('MODO Scene file',),
-                patterns=('*.lxo',),
-                path=None
-            )
-        )
+        paths_list = monkey.util.lxo_open_dialog()
         if not isinstance(paths_list,list):
             paths_list = [paths_list]
 
@@ -826,13 +726,6 @@ class addBatchTask(lxu.command.BasicCommand):
             for path in paths_list:
                 _BATCH.add_task(path)
             rm_BatchView.notify_NewShape()
-
-lx.bless(addBatchTask, CMD_addBatchTask)
-
-
-# -------------------------------------------------------------------------
-# Remove selected batch task
-# -------------------------------------------------------------------------
 
 
 class removeBatchSel(lxu.command.BasicCommand):
@@ -842,33 +735,11 @@ class removeBatchSel(lxu.command.BasicCommand):
             _BATCH.remove_sel(i.getIndexPath())
         rm_BatchView.notify_NewShape()
 
-lx.bless(removeBatchSel, CMD_removeBatchSel)
-
-
-# -------------------------------------------------------------------------
-# Run the currently open batch
-# -------------------------------------------------------------------------
-
 
 class runCurrentBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH._batchFilePath:
             return monkey.batch.run(_BATCH._batchFilePath)
-
-# WIP - NEED  NOTIFIER TO UPDATE THIS WHEN TREE UPDATES
-#    def basic_Enable(self, msg):
-#        if _BATCH._batchFilePath:
-#            return True
-#        else:
-#            return False
-
-lx.bless(runCurrentBatch, CMD_runCurrentBatch)
-
-
-
-# -------------------------------------------------------------------------
-# Export batch template and open
-# -------------------------------------------------------------------------
 
 
 class exampleBatch(lxu.command.BasicCommand):
@@ -880,49 +751,29 @@ class exampleBatch(lxu.command.BasicCommand):
             rm_BatchView.notify_NewShape()
 
 
-lx.bless(exampleBatch, CMD_exampleBatch)
-
-
-
-# -------------------------------------------------------------------------
-# Open batch in text editor
-# -------------------------------------------------------------------------
-
-
 class openBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH._batchFilePath:
             lx.eval('file.open {%s}' % _BATCH._batchFilePath)
 
-# WIP - NEED  NOTIFIER TO UPDATE THIS WHEN TREE UPDATES
-#    def basic_Enable(self, msg):
-#        if _BATCH._batchFilePath:
-#            return True
-#        else:
-#            return False
 
 
+sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
+sINMAP = "name[%s] regions[1@%s 2@%s 3@%s]" % (sSRV_USERNAME,REGION1,REGION2,REGION3)
+
+tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
+        lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
+        lx.symbol.sINMAP_DEFINE: sINMAP}
+
+lx.bless(rm_BatchView, SERVERNAME, tags)
+
+lx.bless(openBatchFile, CMD_openBatchFile)
+lx.bless(closeBatchFile, CMD_closeBatchFile)
+lx.bless(addBatchTask, CMD_addBatchTask)
+lx.bless(removeBatchSel, CMD_removeBatchSel)
+lx.bless(runCurrentBatch, CMD_runCurrentBatch)
+lx.bless(exampleBatch, CMD_exampleBatch)
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
-
-
-
-# -------------------------------------------------------------------------
-# Echo selected task info for debug purposes
-# -------------------------------------------------------------------------
-
-
-class echoSelected(lxu.command.BasicCommand):
-    def basic_Execute(self, msg, flags):
-        sel = _BATCH._tree.getSelectedChildren()
-        for i in sel:
-            path = i.getPath()
-            idxPath = i.getIndexPath()
-            lx.out(idxPath)
-            lx.out('parent:%s' % i.parent.getName())
-            lx.out('children:')
-            for j in i.children:
-                lx.out('\t- %s' % j.getName())
-
 lx.bless(echoSelected, CMD_echoSelected)
 
 

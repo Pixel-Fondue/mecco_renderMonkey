@@ -11,74 +11,74 @@ from math import copysign
 def debug(string):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Prints a string to lx.out() if defaults.get('debug') returns True. (See defaults.py)
     Intended for developer debugging only; user messages should use 'status'.
     """
     if defaults.get('debug'):
         t = traceback.extract_stack()[-2]
         lx.out("debug '%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string))
-            
+
 def breakpoint(string):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Essentially a breakpoint function for debugging purposes.
     Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well. (See defaults.py)
     """
     t = traceback.extract_stack()[-2]
     string = "'%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string)
-    
+
     if defaults.get('breakpoints'):
         lx.out("breakpoint: %s" % string)
         if defaults.get('breakpoints'):
-            if modo.dialogs.okCancel("breakpoint",string) == 'cancel': 
+            if modo.dialogs.okCancel("breakpoint",string) == 'cancel':
                 sys.exit()
-    
+
 def status(string):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Prints a string to lx.out(). Differs from "debug" only in that it's always enabled. Useful for user-related messages.
     """
-    
+
     lx.out("status: %s" % string)
-    
+
 def batch_status_file(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns the correct path for a batch file's status sidecar file.
     """
     split = os.path.splitext(batch_file_path)
     return "%s_%s%s" % (split[0],STATUS_FILE_SUFFIX,split[1])
-    
+
 def batch_status_create(data,batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Creates a sidecar file to monitor batch progress if none exists.
     """
     if not os.path.isfile(batch_status_file(batch_file_path)):
         status_file = open(batch_status_file(batch_file_path),'w')
         status_file.write(yamlize(data))
         status_file.close()
-    
+
 def batch_has_status(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns True if the supplied batch list contains any status markers.
     """
     if os.path.isfile(batch_status_file(batch_file_path)):
         return True
-    
+
     return False
-    
+
 def batch_status_reset(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Resets all status markers on a partially finished batch.
     """
     try:
@@ -86,9 +86,9 @@ def batch_status_reset(batch_file_path):
     except:
         debug(traceback.format_exc())
         return False
-        
+
     data = read_yaml(batch_file_path)
-        
+
     try:
         status_file.write(yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
     except:
@@ -98,23 +98,23 @@ def batch_status_reset(batch_file_path):
 
     status_file.close()
     return True
-    
+
 def test_writeable(test_dir_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Easier to ask forgiveness than permission.
     If the test path doesn't exist, tries to create it. If it can't, returns False.
     Then writes to a file in the target directory. If it can't, returns False.
     If all is well, returns True.
     """
-    
+
     if not os.path.exists(test_dir_path):
         try:
             os.mkdir(test_dir_path)
         except OSError:
             return False
-        
+
     test_path = os.path.join(test_dir_path,"tmp_%s.txt" % random.randint(100000,999999))
     try:
         test = open(test_path,'w')
@@ -124,56 +124,56 @@ def test_writeable(test_dir_path):
         return True
     except:
         return False
-    
-    
+
+
 def setFrames(first,last):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Sets
     """
-    
+
     scene = modo.Scene()
     scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).set(first)
-    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(last)   
-    
-    
+    scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).set(last)
+
+
 def get_scene_render_range():
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Sets
     """
-    
+
     scene = modo.Scene()
     start = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_FIRST).get()
     end = scene.renderItem.channel(lx.symbol.sICHAN_POLYRENDER_LAST).get()
-    
+
     return "%s-%s" % (start,end)
-    
-    
+
+
 def toConsole(state):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Enables or disables console logging. Useful for render monitoring.
     """
-    
+
     debug('log.toConsole %s' % str(state))
     lx.eval('log.toConsole %s' % str(state))
     lx.eval('log.toConsoleRolling %s' % str(state))
-    
+
 def yaml_save_dialog():
     """
     By Adam O'Hern for Mechanical Color
-    
+
     File dialog requesting YAML file destination.
     """
-    
+
     try:
         return os.path.normpath(
             modo.dialogs.customFile(
-                dtype='fileSave', 
+                dtype='fileSave',
                 title='Save Batch File Template',
                 names=['yaml'],
                 unames=['Batch File (YAML)'],
@@ -183,14 +183,38 @@ def yaml_save_dialog():
         )
     except:
         return False
-    
+
+def lxo_open_dialog():
+    """
+    By Adam O'Hern for Mechanical Color
+
+    File dialog requesting LXO file source.
+    """
+
+    try:
+        path = os.path.normpath(
+            modo.dialogs.customFile(
+                dtype='fileOpen',
+                title='Select Scene File',
+                names=('lxo',),
+                unames=('MODO Scene file',),
+                patterns=('*.lxo',),
+                path=None
+            )
+        )
+
+        return path
+
+    except:
+        return False
+
 def yaml_open_dialog():
     """
     By Adam O'Hern for Mechanical Color
-    
+
     File dialog requesting YAML file source.
     """
-    
+
     try:
         path = os.path.normpath(
             modo.dialogs.customFile(
@@ -202,23 +226,23 @@ def yaml_open_dialog():
                 path=None
             )
         )
-        
+
         return path
 
     except:
         return False
-    
+
 def yaml_save_dialog():
     """
     By Adam O'Hern for Mechanical Color
-    
+
     File dialog requesting YAML file source.
     """
-    
+
     try:
         output_path = os.path.normpath(
                 modo.dialogs.customFile(
-                    dtype='fileSave', 
+                    dtype='fileSave',
                     title='Save Batch File Template',
                     names=['yaml'],
                     unames=['Batch File (YAML)'],
@@ -226,25 +250,25 @@ def yaml_save_dialog():
                     ext=['yaml']
                 )
             )
-        
+
         return output_path
 
     except:
         return False
-    
+
 def read_json(file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns a Python object (list or dict, as appropriate) from a given JSON file path.
     """
-    
+
     try:
         json_file = open(file_path,'r')
     except:
         debug(traceback.format_exc())
         return False
-        
+
     try:
         json_object = json.loads(json_file.read())
     except:
@@ -253,26 +277,26 @@ def read_json(file_path):
         return False
 
     json_file.close()
-    return json_object    
-    
-    
+    return json_object
+
+
 def read_yaml(file_path):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns a Python object (list or dict, as appropriate) from a given YAML file path.
     We use YAML because it's easier and more human readable than JSON. It's harder to mess up,
     easier to learn, and--imagine!--it supports commenting.
-    
+
     Note: YAML does not support hard tabs (\t), so this script replaces those with four spaces ('    ').
     """
-    
+
     try:
         yaml_file = open(file_path,'r')
     except:
         debug(traceback.format_exc())
         return False
-        
+
     try:
         yaml_object = yaml.safe_load(re.sub('\\t','    ',yaml_file.read()))
     except:
@@ -299,12 +323,12 @@ def write_yaml(data,output_path):
 def get_imagesaver(key):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns a tuple with three elements: name, username, and file extension.
     """
-    
+
     savers = get_imagesavers()
-        
+
     match = None
     for i in savers:
         if str(i[0]).lower() == key.lower():
@@ -315,10 +339,10 @@ def get_imagesaver(key):
 
 
 def get_imagesavers():
-    """ 
+    """
     By The Foundry
     http://sdk.luxology.com/wiki/Snippet:Image_Savers
-    
+
     Returns a list of available image savers. Each entry in the returned list
        is a tuple made up of the format's internal name, it's username and it's
        DOS type (extension).
@@ -342,9 +366,9 @@ def get_imagesavers():
 def expand_path(inputString):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Returns a normalized absolute path with trailing slash based on an input string.
-    
+
     Examples:
     "/path/with/file.xyz"               becomes     "/path/with/file.xyz"
     "/path/with/no_trailing_slash"      becomes     "/path/with/no_trailing_slash/"
@@ -353,50 +377,50 @@ def expand_path(inputString):
     "./frames/"                         becomes     "/path/to/scene/file/frames/"
     "~/fruit/loops/"                    becomes     "/path/to/user/home/fruit/loops/"
     "pathalias:path/to/righteousness"   becomes     "/expanded/path/alias/path/to/righteousness/"
-    
+
     NOTE: Parsing is rather primitive. If the string begins with "~", it assumes you're parsing a
     user folder. If it starts with ".", it assumes a relative path from the current scene. If it
     contains a ":" anywhere at all, it assumes a MODO path alias.
     """
-    
+
     inputString = os.path.normpath(inputString)
-    
-    
+
+
     if inputString.startswith(os.path.sep):
         full_path = inputString
-        
-    
+
+
     elif inputString.startswith('~'):
         try:
             full_path = os.path.expanduser(inputString)
         except:
             return False
-        
-        
+
+
     elif ":" in inputString:
         try:
             full_path = lx.eval("query platformservice alias ? {%s}" % inputString)
         except:
             debug('Could not expand path alias. Path cannot be parsed.')
             return False
-        
-        
+
+
     else:
         try:
             current_scene_path = os.path.dirname(lx.eval('query sceneservice scene.file ? current'))
         except:
             debug('Could not get current scene folder. Path cannot be parsed.')
             return False
-        
+
         if inputString.startswith('.'):
             full_path = os.path.join(current_scene_path,inputString[1:])
         else:
             full_path = os.path.join(current_scene_path,inputString)
-        
-        
+
+
     if not os.path.splitext(full_path)[1]:
         full_path = os.path.join(full_path,'')
-        
+
     full_path = os.path.normpath(full_path)
     return full_path
 
@@ -404,7 +428,7 @@ def expand_path(inputString):
 def range_from_string(inputString="*"):
     """
     By Simon Lundberg & Adam O'Hern for Mechanical Color
-    
+
     function:
         parses a string on the form "1, 5, 10-20:2" into a range like this:
         [1, 5, 10, 12, 14, 16, 18, 20]
@@ -433,18 +457,18 @@ def range_from_string(inputString="*"):
     try:
         if inputString == "*":
             inputString = get_scene_render_range()
-        
+
         #first we clean up the string, removing any illegal characters
         legalChars = "0123456789-:,"
         cleanString = ""
         frames = []
-        
+
         for char in inputString:
             if char in legalChars:
                 cleanString += char
-        
+
         rangeStrings = re.findall(r"[-0123456789:]+", cleanString) #splits up by commas
-        
+
         for rangeString in rangeStrings:
             if "-" in rangeString[1:]:
                 #is a sequence, so we need to parse it into a range
@@ -513,12 +537,12 @@ def range_from_string(inputString="*"):
             return
     except:
         debug(traceback.format_exc())
-        
-        
+
+
 def filter_uniques(seq):
     """
     By Simon Lundberg for Mechanical Color
-    
+
     removes duplicates from input iterable
     """
     seen = set()
@@ -527,9 +551,9 @@ def filter_uniques(seq):
 
 
 def filter_numerical(input):
-    """   
+    """
     By Simon Lundberg for Mechanical Color
-    
+
     removes any non-numerical characters
     keeps dashes and periods for negatives
     and floating point numbers
@@ -539,21 +563,21 @@ def filter_numerical(input):
         return "".join([c for c in input if c in numbers])
     else:
         return None
-    
-    
+
+
 def parse_error(rangeString):
     """
     By Simon Lundberg for Mechanical Color
-    
+
     outputs error message if parsing failed
     """
     debug('No recognizable sequence info in "%s".' % rangeString)
-    
-    
+
+
 def get_user_value(name):
     """
     By Simon Lundberg for Mechanical Color
-    
+
     returns a user value
     returns None if value does not exist
     """
@@ -572,9 +596,9 @@ def get_user_value(name):
 
 
 def check_output_paths():
-    """    
+    """
     By Simon Lundberg for Mechanical Color
-    
+
     utility function
     returns True if there is at least one render output that is:
        Enabled, has an output path, an output format, and all its parents
@@ -594,9 +618,9 @@ def check_output_paths():
 
 
 def check_enable(texture):
-    """    
+    """
     By Simon Lundberg for Mechanical Color
-    
+
     iterates through shader tree parents of item "texture"
     returns True if all shader tree parents are enabled; otherwise False
     uses recursion to work its way through hierarchy
@@ -617,9 +641,9 @@ def check_enable(texture):
 
 
 def set_or_create_user_value(name, value, valueType="string", life="config", username=None):
-    """    
+    """
     By Simon Lundberg for Mechanical Color
-    
+
     sets a user value
     if user value does not exist, it creates it first
     """
@@ -640,15 +664,15 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
 def create_master_pass_group(groups,delimeter="_x_"):
     """
     By Adam O'Hern for Mechanical Color
-    
+
     Creates a pass group by multiplying any number of existing pass groups by each other.
     For example, you may have one pass group containing color variations, and another containing
-    camera angles. This function could combine them such that the resulting pass group contains 
+    camera angles. This function could combine them such that the resulting pass group contains
     every camera angle for every color variation.
     """
-    
+
     scene = modo.Scene()
-    
+
     channels = set()
     for group in groups:
         for channel in group.groupChannels:
@@ -661,49 +685,49 @@ def create_master_pass_group(groups,delimeter="_x_"):
     for channel in channels:
         master_group.addChannel(channel)
 
-    combine(master_group,groups,channels,len(groups)) 
-    
+    combine(master_group,groups,channels,len(groups))
+
     return master_group
-    
-        
+
+
 def set_task_status(batch_file_path,task_index,status):
     batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
-    
+
     if not batch:
         return False
-    
+
     try:
         if STATUS not in batch[task_index] or not isinstance(batch[task_index][STATUS],list):
             batch[task_index][STATUS] = []
 
         batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not i.startswith(TASK)]
         batch[task_index][STATUS].append("%s %s" % (TASK,status))
-        
+
         write_yaml(batch,batch_file_path)
         return True
     except:
         status("Problem writing task status to batch file.")
         return False
-    
+
 def get_task_status(batch_file_path,task_index):
     batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
-    
+
     if not batch:
         return STATUS_AVAILABLE
-    
+
     if STATUS in batch[task_index]:
         for i in batch[task_index][STATUS]:
             if i.startswith(TASK) and not STATUS_AVAILABLE in i:
                 return i
-    
+
     return STATUS_AVAILABLE
-        
+
 def set_frame_status(batch_file_path,task_index,frame_number,status):
     batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
-    
+
     if not batch:
         return False
 
@@ -713,40 +737,40 @@ def set_frame_status(batch_file_path,task_index,frame_number,status):
 
         batch[task_index][STATUS] = [i for i in batch[task_index][STATUS] if not int(re.search('^[0-9]*',i).group(0)) == frame_number]
         batch[task_index][STATUS].append("%04d %s" % (frame_number,status))
-        
+
         write_yaml(batch,batch_file_path)
         return True
     except:
         status("Problem writing frame status to batch file.")
         return False
-    
+
 def get_frame_status(batch_file_path,task_index,frame_number):
     batch_file_path = batch_status_file(batch_file_path)
     batch = read_yaml(batch_file_path)
-    
+
     if not batch:
         return STATUS_AVAILABLE
-    
+
     if STATUS in batch[task_index]:
         for i in batch[task_index][STATUS]:
             if int(re.search('^[0-9]*',i).group(0)) == frame_number and not STATUS_AVAILABLE in i:
                 return i
-    
+
     return STATUS_AVAILABLE
-        
+
 def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],delimeter="_"):
     """
     By Adam O'Hern for Mechanical Color
-    
-    Recursively walks a list of render pass groups to create every possible combination, excluding disabled passes. 
+
+    Recursively walks a list of render pass groups to create every possible combination, excluding disabled passes.
     Intended for use with create_master_pass_group() function.
     """
     if not isinstance(groups,list) and not isinstance(groups,set):
         groups = [groups]
-    
+
     if depth < max_depth:
         passes = [i for i in groups[0].itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP]
-        
+
         for p in passes:
             if p.actionClip.Enabled():
                 p.actionClip.SetActive(1)
@@ -755,7 +779,7 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
                 del subgroups[0]
 
                 combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
-    
+
     elif depth == max_depth:
         layer_name = delimeter.join(passname_parts)
         lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,layer_name))
@@ -766,8 +790,8 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
             except:
                 debug('Something went wrong setting channel "" to "".' % (c.name,c.get()))
         lx.eval('edit.apply')
-    
-    
+
+
 
 def build_arg_string(arg_dict):
     arg_string = ''
@@ -778,19 +802,19 @@ def build_arg_string(arg_dict):
     return arg_string
 
 
-        
+
 def render_frame(frame, useOutput=True, outputPath=None, outputFormat=None, clear=False, group=None):
-    """    
+    """
     By Simon Lundberg for Mechanical Color
-    
+
     renders a specific frame
-    
+
     frame:          Integer to choose frame
     useOutput:      Boolean for using output controls from render outputs
     outputPath:     String for output if useOutput is False
     outputFormat:   String for output format if useOutput is False
     clear:          Boolean, if True it will clear render on finish
-    
+
     NOTE: returns False if user aborted frame or if there is some error
           in the render process.
           returns True if frame completes without error.
@@ -840,7 +864,7 @@ def render_frame(frame, useOutput=True, outputPath=None, outputFormat=None, clea
 def render_range(frames, group=None):
     """
     By Simon Lundberg for Mechanical Color
-    
+
     takes a list of ints as an argument
     renders all frames in list
     """

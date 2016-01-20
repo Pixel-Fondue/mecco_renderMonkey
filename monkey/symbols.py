@@ -50,3 +50,6 @@ OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
 LXO_FILE = '$LXOB'
 VPTYPE = 'vpapplication'
 SP = " "
+REGION1 = 'region1'
+REGION2 = 'region2'
+REGION3 = 'region3'
