@@ -235,6 +235,8 @@ class rm_Batch:
             batch_root = _BATCH._tree.getChildByKey(BATCHFILE)
             i = batch_root.getDescendantByKey(keys_list)
 
+            i.ClearSelection()
+
             i.ClearChildren()
             p = i.m_parent
             i.m_parent.m_children.remove(i)
@@ -307,6 +309,7 @@ class rm_Batch:
 
     def closeBatchFile(self):
         try:
+            self._tree.ClearSelection()
             self.build_empty_tree()
             self._batchFilePath = None
             self._batch = None
