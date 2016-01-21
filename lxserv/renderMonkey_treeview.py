@@ -55,36 +55,28 @@ class rm_TreeNode(object):
     _Primary = None
 
     def __init__(self, key, value=None, parent=None, markup=''):
-        self.key = key
-        self.value = value
-        self.parent = parent
-        self.markup = markup
-        self.children = []
+        self.m_key = key
+        self.m_value = value
+        self.m_parent = parent
+        self.m_markup = markup
+        self.m_children = []
         self.state = 0
         self.selected = False
-        self.expanded = False
 
-        # For column sizes you can use proportions via negative values.
-        # So -1 and -2 would mean that one column is half the size of the other
-        # (total size would be 3 units,
-        # so the -1 column is 1 unit and -2 column is 2 units).
-        # You can mix pixel sizes with proportional sizes,
-        # so -1 and 90 means that one is 90 pixels
-        # and the other takes up the remaining space.
         self.columns = (("Name", -1),
                         ("Value", -4))
 
         self.toolTips = {}
 
     def AddNode(self, key, value=None, markup=None):
-        self.children.append(rm_TreeNode(key, value, self, markup))
-        return self.children[-1]
+        self.m_children.append(rm_TreeNode(key, value, self, markup))
+        return self.m_children[-1]
 
-    def Prune(self):
-        if self.children:
-            for i in self.children:
-#                i.Prune()
-                self.children.remove(i)
+    def ClearChildren(self):
+        if len(self.m_children) > 0:
+            for child in self.m_children:
+                self.m_children.remove(child)
+                self.ClearChildren()
 
     def ClearSelection(self):
         if self._Primary:
@@ -92,10 +84,11 @@ class rm_TreeNode(object):
 
         self.SetSelected(False)
 
-        for child in self.children:
+        for child in self.m_children:
             child.ClearSelection()
 
-    def SetSelected(self, val=True):
+    def SetSelected(self,val=True):
+
         if val:
             self.setPrimary(self)
         self.selected = val
@@ -104,57 +97,45 @@ class rm_TreeNode(object):
         return self.selected
 
     @classmethod
-    def setPrimary(cls, primary=None):
+    def setPrimary(cls,primary=None):
         cls._Primary = primary
 
     @classmethod
     def getPrimary(cls):
         return cls._Primary
 
-    def setState(self, flag):
-        if flag == fTREE_VIEW_ITEM_EXPAND:
-            self.setExpanded(True)
-        else:
-            self.state = self.state | flag
+    def setState(self,flag):
+        self.state = self.state | flag
 
-    def setExpanded(self, state=True):
-        # Do not know how to set flag to false,
-        # so for now we can only set it to True
-        self.state = self.state | fTREE_VIEW_ITEM_EXPAND
-        self.expanded = state
-
-    def getExpanded(self):
-        return self.expanded
-
-    def setToolTip(self, idx, tip):
+    def setToolTip(self,idx,tip):
         self.toolTips[idx] = tip
 
-    def getToolTip(self, idx):
-        if idx in self.toolTips:
+    def getToolTip(self,idx):
+        if self.toolTips.has_key(idx):
             return self.toolTips[idx]
 
     def getValue(self):
-        return str(self.value)
+        return str(self.m_value)
 
     def getName(self):
-        m = str(self.markup) if self.markup else ''
-        k = str(self.key)
+        m = str(self.m_markup) if self.m_markup else ''
+        k = str(self.m_key)
         k = k.replace('_',' ')
         k = k.title()
         return m + k
 
     def getKey(self):
-        return str(self.key)
+        return str(self.m_key)
 
     def getChildByKey(self,key):
-        for i in self.children:
-            if key == i.key:
+        for i in self.m_children:
+            if key == i.m_key:
                 return i
         return False
 
     def getSelectedChildren(self,recursive=True):
         sel = []
-        for i in self.children:
+        for i in self.m_children:
             if i.isSelected():
                 sel.append(i)
             if recursive:
@@ -169,8 +150,8 @@ class rm_TreeNode(object):
             return self.getChildByKey(keys_list[0])
 
     def getPath(self,path=[]):
-        if self.parent:
-            return self.parent.getPath() + [self]
+        if self.m_parent:
+            return self.m_parent.getPath() + [self]
         else:
             return path
 
@@ -178,7 +159,7 @@ class rm_TreeNode(object):
         path = self.getPath()
         indexPath = []
         for i in path[1:]:
-            indexPath.append(i.key)
+            indexPath.append(i.m_key)
         return indexPath
 
 
@@ -254,12 +235,12 @@ class rm_Batch:
             batch_root = _BATCH._tree.getChildByKey(BATCHFILE)
             i = batch_root.getDescendantByKey(keys_list)
 
-            i.Prune()
-            p = i.parent
-            i.parent.children.remove(i)
+            i.ClearChildren()
+            p = i.m_parent
+            i.m_parent.m_children.remove(i)
             if parent_obj_type in (list,tuple):
-                for n, child in enumerate(sorted(p.children, key=lambda x: x.key)):
-                    child.key = n if isinstance(child.key,int) else child.key
+                for n, child in enumerate(sorted(p.m_children, key=lambda x: x.m_key)):
+                    child.m_key = n if isinstance(child.m_key,int) else child.m_key
 
             return self._batch
 
@@ -369,7 +350,7 @@ class rm_Batch:
             if not self._batch:
                 return self.build_empty_tree()
 
-            self._tree.Prune()
+            self._tree.ClearChildren()
 
             file_root = self._tree.AddNode(
                 BATCHFILE,
@@ -429,7 +410,7 @@ class rm_Batch:
 
     def build_empty_tree(self):
         try:
-            self._tree.Prune()
+            self._tree.ClearChildren()
             self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
@@ -448,20 +429,18 @@ class rm_BatchView(lxifc.TreeView,
                         lxifc.Attributes
                         ):
 
-    # Gloabal list of all created tree views.
-    # These are used for shape and attribute changes
     _listenerClients = {}
 
-    def __init__(self, node=None, curIndex=0):
+    def __init__(self, node = None, curIndex = 0):
 
         if node is None:
             node = _BATCH._tree
 
-        self._currentNode = node
-        self._currentIndex = curIndex
+        self.m_currentNode = node
+        self.m_currentIndex = curIndex
 
     @classmethod
-    def addListenerClient(cls, listener):
+    def addListenerClient(cls,listener):
         """
             Whenever a new tree view is created, we will add
             a copy of its listener so that it can be notified
@@ -471,14 +450,14 @@ class rm_BatchView(lxifc.TreeView,
         cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
 
     @classmethod
-    def removeListenerClient(cls, listener):
+    def removeListenerClient(cls,listener):
         """
             When a view is destroyed, it will be removed from
             the list of clients that need notification.
         """
         treeListenerObject = lx.object.TreeListener(listener)
-        if treeListenerObject.__peekobj__() in cls._listenerClients:
-            del cls._listenerClients[treeListenerObject.__peekobj__()]
+        if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
+            del  cls._listenerClients[treeListenerObject.__peekobj__()]
 
     @classmethod
     def notify_NewShape(cls):
@@ -492,14 +471,14 @@ class rm_BatchView(lxifc.TreeView,
             if client.test():
                 client.NewAttributes()
 
-    def lport_AddListener(self, obj):
+    def lport_AddListener(self,obj):
         """
             Called from core code with the object that wants to
             bind to the listener port
         """
         self.addListenerClient(obj)
 
-    def lport_RemoveListener(self, obj):
+    def lport_RemoveListener(self,obj):
         """
             Called from core when a listener needs to be removed from
             the port.
@@ -510,7 +489,7 @@ class rm_BatchView(lxifc.TreeView,
         """
             Returns the targeted layer node in the current tier
         """
-        return self._currentNode.children[self._currentIndex]
+        return self.m_currentNode.m_children[ self.m_currentIndex ]
 
     def tree_Spawn(self, mode):
         """
@@ -518,7 +497,7 @@ class rm_BatchView(lxifc.TreeView,
         """
 
         # create an instance of our current location in the tree
-        newTree = rm_BatchView(self._currentNode, self._currentIndex)
+        newTree = rm_BatchView(self.m_currentNode, self.m_currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
@@ -539,29 +518,29 @@ class rm_BatchView(lxifc.TreeView,
             Step up to the parent tier and set the selection in this
             tier to the current items index
         """
-        parent = self._currentNode.parent
+        m_parent = self.m_currentNode.m_parent
 
-        if parent:
-            self._currentIndex = parent.children.index(self._currentNode)
-            self._currentNode = parent
+        if m_parent:
+            self.m_currentIndex = m_parent.m_children.index(self.m_currentNode)
+            self.m_currentNode = m_parent
 
     def tree_ToChild(self):
         """
             Move to the child tier and set the selected node
         """
-        self._currentNode = self._currentNode.children[self._currentIndex]
+        self.m_currentNode = self.m_currentNode.m_children[self.m_currentIndex]
 
     def tree_ToRoot(self):
         """
             Move back to the root tier of the tree
         """
-        self._currentNode = _BATCH._tree
+        self.m_currentNode = _BATCH._tree
 
     def tree_IsRoot(self):
         """
             Check if the current tier in the tree is the root tier
         """
-        if self._currentNode is _BATCH._tree:
+        if self.m_currentNode == _BATCH._tree:
             return True
         else:
             return False
@@ -571,7 +550,7 @@ class rm_BatchView(lxifc.TreeView,
             If the current tier has no children then it is
             considered a leaf
         """
-        if len(self._currentNode.children) > 0:
+        if len( self.m_currentNode.m_children ) > 0:
             return False
         else:
             return True
@@ -581,20 +560,20 @@ class rm_BatchView(lxifc.TreeView,
             Returns the number of nodes in this tier of
             the tree
         """
-        return len(self._currentNode.children)
+        return len( self.m_currentNode.m_children )
 
     def tree_Current(self):
         """
             Returns the index of the currently targeted item in
             this tier
         """
-        return self._currentIndex
+        return self.m_currentIndex
 
     def tree_SetCurrent(self, index):
         """
             Sets the index of the item to target in this tier
         """
-        self._currentIndex = index
+        self.m_currentIndex = index
 
     def tree_ItemState(self, guid):
         """
@@ -626,8 +605,8 @@ class rm_BatchView(lxifc.TreeView,
         """
             Move the tree to the primary selection
         """
-        if self._currentNode._Primary:
-            self._currentNode = self._currentNode._Primary
+        if self.m_currentNode._Primary:
+            self.m_currentNode = self.m_currentNode._Primary
             self.tree_ToParent()
             return True
         return False
