@@ -165,8 +165,11 @@ class rm_TreeNode(object):
 
     def update_child_keys(self):
         for n, child in enumerate(sorted(self.children(), key=lambda x: x.m_key)):
-            breakpoint(str(n if isinstance(child.m_key,int) else child.m_key))
             child.m_key = n if isinstance(child.m_key,int) else child.m_key
+
+    def suicide(self):
+        self.ClearSelection()
+        self.parent().children().remove(self)
 
 
 class rm_Batch:
@@ -393,9 +396,7 @@ class rm_Batch:
                 obj = obj[key]
             del obj[keys[-1]]
 
-            sel = self.tree().get_by_keys(keys)
-            sel.ClearSelection()
-            sel.parent().children().remove(sel)
+            self.tree().get_by_keys(keys).suicide()
 
             if len(keys) > 1:
                 if type(self.get_by_keys(keys[:-1])) in (list,tuple):
@@ -404,6 +405,7 @@ class rm_Batch:
                 self.tree().update_child_keys()
 
             return True
+
         else:
             return False
 
@@ -720,11 +722,9 @@ class removeBatchSel(lxu.command.BasicCommand):
                 _BATCH.save_to_file()
 
                 rm_BatchView.notify_NewShape()
-
         except:
             debug(traceback.print_exc())
             return False
-
 
 
 class runCurrentBatch(lxu.command.BasicCommand):
