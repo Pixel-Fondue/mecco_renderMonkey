@@ -54,11 +54,11 @@ class rm_TreeNode(object):
 
     _Primary = None
 
-    def __init__(self, key, value=None, parent=None, markup=''):
+    def __init__(self, key, value=None, parent=None, prefix=''):
         self.m_key = key
         self.m_value = value
         self.m_parent = parent
-        self.m_markup = markup
+        self.m_prefix = prefix
         self.m_children = []
         self.state = 0
         self.selected = False
@@ -68,15 +68,14 @@ class rm_TreeNode(object):
 
         self.toolTips = {}
 
-    def AddNode(self, key, value=None, markup=None):
-        self.m_children.append(rm_TreeNode(key, value, self, markup))
+    def AddNode(self, key, value=None, prefix=None):
+        self.m_children.append(rm_TreeNode(key, value, self, prefix))
         return self.m_children[-1]
 
     def ClearChildren(self):
         if len(self.m_children) > 0:
             for child in self.m_children:
                 self.m_children.remove(child)
-                self.ClearChildren()
 
     def ClearSelection(self):
         if self._Primary:
@@ -118,7 +117,7 @@ class rm_TreeNode(object):
         return str(self.m_value)
 
     def getName(self):
-        m = str(self.m_markup) if self.m_markup else ''
+        m = str(self.m_prefix) if self.m_prefix else ''
         k = str(self.m_key)
         k = k.replace('_',' ')
         k = k.title()
@@ -133,46 +132,42 @@ class rm_TreeNode(object):
                 return i
         return False
 
-    def getSelectedChildren(self,recursive=True):
+    def get_selected_children(self,recursive=True):
         sel = []
         for i in self.m_children:
             if i.isSelected():
                 sel.append(i)
             if recursive:
-                sel += i.getSelectedChildren()
+                sel += i.get_selected_children()
 
         return sel
 
-    def getDescendantByKey(self,keys_list):
+    def get_by_keys(self,keys_list):
         if len(keys_list) > 1:
-            return self.getChildByKey(keys_list[0]).getDescendantByKey(keys_list[1:])
+            return self.getChildByKey(keys_list[0]).get_by_keys(keys_list[1:])
         else:
             return self.getChildByKey(keys_list[0])
 
-    def getPath(self,path=[]):
+    def get_ancestors(self,path=[]):
         if self.m_parent:
-            return self.m_parent.getPath() + [self]
+            return self.m_parent.get_ancestors() + [self]
         else:
             return path
 
-    def getIndexPath(self):
-        path = self.getPath()
-        indexPath = []
-        for i in path[1:]:
-            indexPath.append(i.m_key)
-        return indexPath
+    def get_keys(self):
+        return [i.m_key for i in self.get_ancestors()[1:]]
 
+    def parent(self):
+        return self.m_parent
 
+    def children(self):
+        return self.m_children
 
-def nested_del(obj, keys):
-    for key in keys[:-1]:
-        obj = obj[key]
-    del obj[keys[-1]]
+    def update_child_keys(self):
+        for n, child in enumerate(sorted(self.children(), key=lambda x: x.m_key)):
+            breakpoint(str(n if isinstance(child.m_key,int) else child.m_key))
+            child.m_key = n if isinstance(child.m_key,int) else child.m_key
 
-def get_nested(obj, keys):
-    for key in keys[:-1]:
-        obj = obj[key]
-    return obj[keys[-1]]
 
 class rm_Batch:
 
@@ -182,7 +177,7 @@ class rm_Batch:
         self._tree = rm_TreeNode(TREE_ROOT_TITLE,LIST)
 
         if self._batchFilePath:
-            self.update_batch_from_file()
+            self.load_from_file()
 
         self.regrow_tree()
 
@@ -209,40 +204,8 @@ class rm_Batch:
                     RENDER_CHANNELS: {}
                 })
 
-            self.save_batch_to_file()
+            self.save_to_file()
             self.regrow_tree()
-
-            return self._batch
-
-        except:
-            debug(traceback.print_exc())
-            return False
-
-    def remove_sel(self, keys_list):
-        try:
-            if not keys_list:
-                debug(traceback.print_exc())
-                return False
-
-            if len(keys_list) > 1:
-                parent_obj_type = type(get_nested(_BATCH._batch,keys_list[:-1]))
-            else:
-                parent_obj_type = type(_BATCH._batch)
-
-            nested_del(_BATCH._batch,keys_list)
-            self.save_batch_to_file()
-
-            batch_root = _BATCH._tree.getChildByKey(BATCHFILE)
-            i = batch_root.getDescendantByKey(keys_list)
-
-            i.ClearSelection()
-
-            i.ClearChildren()
-            p = i.m_parent
-            i.m_parent.m_children.remove(i)
-            if parent_obj_type in (list,tuple):
-                for n, child in enumerate(sorted(p.m_children, key=lambda x: x.m_key)):
-                    child.m_key = n if isinstance(child.m_key,int) else child.m_key
 
             return self._batch
 
@@ -254,7 +217,7 @@ class rm_Batch:
         try:
             self._batch[task_index] = {}
 
-            self.save_batch_to_file()
+            self.save_to_file()
             self.regrow_tree()
 
             return self._batch[task_index]
@@ -269,7 +232,7 @@ class rm_Batch:
                 if p in self._batch[task_index]:
                     del self._batch[task_index][p]
 
-            self.save_batch_to_file()
+            self.save_to_file()
             self.regrow_tree()
 
             return self._batch[task_index]
@@ -283,7 +246,7 @@ class rm_Batch:
             for k, v in parameters_dict.iteritems():
                 self._batch[task_index][k] = v
 
-            self.save_batch_to_file()
+            self.save_to_file()
             self.regrow_tree()
 
             return self._batch[task_index]
@@ -292,7 +255,7 @@ class rm_Batch:
             debug(traceback.print_exc())
             return False
 
-    def update_batch_from_file(self, file_path=None):
+    def load_from_file(self, file_path=None):
         try:
             if file_path is None:
                 file_path = self._batchFilePath
@@ -307,7 +270,7 @@ class rm_Batch:
             debug(traceback.print_exc())
             return False
 
-    def closeBatchFile(self):
+    def close_file(self):
         try:
             self._tree.ClearSelection()
             self.build_empty_tree()
@@ -319,7 +282,7 @@ class rm_Batch:
             debug(traceback.print_exc())
             return False
 
-    def save_batch_to_file(self, file_path=None):
+    def save_to_file(self, file_path=None):
         try:
             if file_path:
                 return monkey.util.write_yaml(self._batch, file_path)
@@ -338,9 +301,9 @@ class rm_Batch:
         try:
             if file_path:
                 self._batchFilePath = file_path
-                return self.save_batch_to_file()
+                return self.save_to_file()
             else:
-                return self.save_batch_to_file(
+                return self.save_to_file(
                     monkey.util.yaml_save_dialog()
                 )
         except:
@@ -422,6 +385,43 @@ class rm_Batch:
 
     def batch_file_path(self):
         return self._batchFilePath
+
+    def remove_by_key(self, keys):
+        obj = self._batch
+        if keys:
+            for key in keys[:-1]:
+                obj = obj[key]
+            del obj[keys[-1]]
+
+            sel = self.tree().get_by_keys(keys)
+            sel.ClearSelection()
+            sel.parent().children().remove(sel)
+
+            if len(keys) > 1:
+                if type(self.get_by_keys(keys[:-1])) in (list,tuple):
+                    self.tree().get_by_keys(keys[:-1]).update_child_keys()
+            else:
+                self.tree().update_child_keys()
+
+            return True
+        else:
+            return False
+
+    def get_by_keys(self, keys):
+        obj = self._batch
+        if keys:
+            for key in keys[:-1]:
+                obj = obj[key]
+            return obj[keys[-1]]
+        else:
+            return obj
+
+    def get_selection(self):
+        return self._tree.get_selected_children()
+
+    def tree(self):
+        return self._tree.getChildByKey(BATCHFILE)
+
 
 
 _BATCH = rm_Batch()
@@ -688,13 +688,13 @@ class openBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_open_dialog()
         if path:
-            _BATCH.update_batch_from_file(path)
+            _BATCH.load_from_file(path)
             rm_BatchView.notify_NewShape()
 
 
 class closeBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        _BATCH.closeBatchFile()
+        _BATCH.close_file()
         rm_BatchView.notify_NewShape()
 
 
@@ -712,10 +712,19 @@ class addBatchTask(lxu.command.BasicCommand):
 
 class removeBatchSel(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        sel = _BATCH._tree.getSelectedChildren()
-        for i in sel:
-            _BATCH.remove_sel(i.getIndexPath())
-        rm_BatchView.notify_NewShape()
+        try:
+            for i in _BATCH.get_selection():
+                keys = i.get_keys()
+
+                _BATCH.remove_by_key(keys)
+                _BATCH.save_to_file()
+
+                rm_BatchView.notify_NewShape()
+
+        except:
+            debug(traceback.print_exc())
+            return False
+
 
 
 class runCurrentBatch(lxu.command.BasicCommand):
@@ -729,7 +738,7 @@ class exampleBatch(lxu.command.BasicCommand):
         path = monkey.util.yaml_save_dialog()
         if path:
             lx.eval('renderMonkey.batchTemplate {%s}' % path)
-            _BATCH.update_batch_from_file(path)
+            _BATCH.load_from_file(path)
             rm_BatchView.notify_NewShape()
 
 
