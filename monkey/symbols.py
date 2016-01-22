@@ -8,6 +8,7 @@ CMD_runCurrentBatch = "monkey.runCurrentBatch"
 CMD_exampleBatch = "monkey.exampleBatch"
 CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
 CMD_echoSelected = "monkey.echoSelected"
+CMD_batchTemplate = 'renderMonkey.batchTemplate'
 
 BATCHFILE = "batch_file"
 SCENE_PATH = "scene"
@@ -28,6 +29,8 @@ STATUS_FAILED = "(Failed)"
 STATUS_AVAILABLE = "(Available)"
 STATUS_FILE_SUFFIX = "status"
 
+COL_NAME = "Name"
+COL_VALUE = "Value"
 SERVERNAME = 'RenderMonkeyBatch'
 EMPTY_PROMPT = 'no batch file'
 ADD_GENERIC = '(add...)'

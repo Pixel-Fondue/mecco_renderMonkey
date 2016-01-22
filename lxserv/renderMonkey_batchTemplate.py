@@ -4,42 +4,30 @@
 
 import monkey, modo, lx, lxu, traceback, os, yaml
 
-CMD_NAME = 'renderMonkey.batchTemplate'
+from monkey.symbols import *
 
-PATH = monkey.symbols.SCENE_PATH
-FORMAT = monkey.symbols.FORMAT
-FRAMES = monkey.symbols.FRAMES
-DESTINATION = monkey.symbols.DESTINATION
-PATTERN = monkey.symbols.PATTERN
-GROUPS = monkey.symbols.GROUPS
-WIDTH = monkey.symbols.WIDTH
-HEIGHT = monkey.symbols.HEIGHT
-OUTPUTS = monkey.symbols.OUTPUTS
-CAMERA = monkey.symbols.CAMERA
-RENDER_CHANNELS = monkey.symbols.RENDER_CHANNELS
 
-    
-class CMD(lxu.command.BasicCommand):
-    
+class batchTemplate(lxu.command.BasicCommand):
+
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
         self.startPath = None
-        
+
         self.dyna_Add('path', lx.symbol.sTYPE_STRING)
         self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
-    
+
     def basic_Execute(self, msg, flags):
         try:
             tree = [
                 {
-                    PATH:monkey.defaults.get('test_path')
+                    SCENE_PATH:monkey.defaults.get('test_path')
                 },{
-                    PATH:monkey.defaults.get('test_path'),
+                    SCENE_PATH:monkey.defaults.get('test_path'),
                     FORMAT:monkey.defaults.get('filetype'),
                     DESTINATION:monkey.defaults.get('test_output_path'),
                     GROUPS:monkey.defaults.get('test_passgroup')
                 },{
-                    PATH:monkey.defaults.get('test_path'),
+                    SCENE_PATH:monkey.defaults.get('test_path'),
                     FORMAT:monkey.defaults.get('filetype'),
                     FRAMES:monkey.defaults.get('test_single_frame'),
                     DESTINATION:monkey.defaults.get('test_output_path'),
@@ -52,47 +40,38 @@ class CMD(lxu.command.BasicCommand):
                     HEIGHT:monkey.defaults.get('test_height')
                 }
             ]
-            
+
             if self.dyna_IsSet(0):
                 output_path = self.dyna_String(0)
             else:
-                output_path = os.path.normpath(
-                    modo.dialogs.customFile(
-                        dtype='fileSave', 
-                        title='Save Batch File Template',
-                        names=['yaml'],
-                        unames=['Batch File (YAML)'],
-                        patterns=['*.yaml'],
-                        ext=['yaml']
-                    )
-                )
-            
+                output_path = monkey.util.yaml_save_dialog()
+
             target = open(output_path,'w')
             target.write(yaml.dump(tree, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
             target.close()
-            
 
-            
+
+
             readme = "\n\n# Syntax is YAML (yaml.org), interpreted with pyYAML.\n"
             readme += "# A proper code editor is highly recommended for editing.\n"
             readme += "# Brackets (http://brackets.io) is free, cross-platform, and has built-in YAML support.\n\n"
-            
+
             readme += "# Each list item is a render task.\n"
-            readme += "# Only \"%s\" is required for a task to function. All other parameters are optional, see default values below.\n\n" % PATH
+            readme += "# Only \"%s\" is required for a task to function. All other parameters are optional, see default values below.\n\n" % SCENE_PATH
 
             readme += "###\n\n"
-            
-            readme += "# \"%s\" - (required) Should contain a valid OS path to a MODO scene file.\n\n" % PATH
+
+            readme += "# \"%s\" - (required) Should contain a valid OS path to a MODO scene file.\n\n" % SCENE_PATH
 
             readme += "# \"%s\" - (default: *) Defaults to render output setting or, if none available, %s.\n" % (FORMAT,monkey.defaults.get('filetype'))
             readme += "#    Allows any of the following:\n\n"
-            
+
             readme += "#" + "\n#".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in monkey.util.get_imagesavers()]) + "\n\n"
-            
+
             readme += "# \"%s\" - (default: *) A comma-delimited list of frame ranges in the format 'start-end:step'.\n" % FRAMES
             readme += "#     Spaces and special characters are ignored, and redundant frames are only rendered once.\n"
             readme += "#     Examples:\n\n"
-            
+
             readme += "#    '*'                       Start/end frames defined in scene file.\n"
             rr = ['1','1-5','5-1','0-10:2','1-21:5','1-3,10-16:2,20-23','1,1-5','(1 - 5),, 10-!@#15']
             readme += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(monkey.util.range_from_string(i))) for i in rr]) + "\n\n"
@@ -115,9 +94,9 @@ class CMD(lxu.command.BasicCommand):
             readme += "#    If it contains a \":\" anywhere at all, it assumes a MODO path alias. (Search for 'path alias' in MODO docs.)\n"
             readme += "#    Using a file extension (e.g. 'filename.xyz') designates a file name, but the extension itself will be replaced as appropriate.\n"
             readme += "#    Examples:\n\n"
-            
+
             indent = 32
-            
+
             rr = [
                 ['frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
                 ['.frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
@@ -132,11 +111,11 @@ class CMD(lxu.command.BasicCommand):
                 "kit_mecco_renderMonkey:path" + os.sep
             ]
             readme += "#" + "\n#".join(["    %s%s%s" % (i," "*(indent-len(i)),str(monkey.util.expand_path(i))) for i in rr]) + "\n\n"
-    
+
             readme += "# \"%s\" - (default: *) Sets the output pattern for file naming. Defaults to the scene file setting.\n" % PATTERN
             readme += "#     Note that unlike other fields, output patterns must be wrapped in single quotes (').\n"
-            readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"    
-            
+            readme += "#     For syntax, search for 'Output Pattern' in MODO docs and click the 'Render Item: Frame' link.\n\n"
+
             readme += "# \"%s\" - (default: None) A series of channel:value pairs for the scene render item.\n" % RENDER_CHANNELS
             readme += "#     Used to define arbitrary render settings on a per-task basis.\n"
             readme += "#     Channel name must be a valid MODO render channel name. (Discoverable via command history.)\n"
@@ -147,13 +126,13 @@ class CMD(lxu.command.BasicCommand):
             readme += "#     For example, ['group1','group2'] renders each pass of group2 for each pass of group1.\n"
             readme += "#     This is useful for pass groups containing orthogonal information,\n"
             readme += "#     e.g. ['variations','views'] renders each 'view' pass for each 'variation' pass.\n"
-            
+
             target = open(output_path,'a')
             target.write(readme)
             target.close()
-                
+
         except Exception:
             monkey.util.debug(traceback.format_exc())
-    
-    
-lx.bless(CMD, CMD_NAME)
+
+
+lx.bless(batchTemplate, CMD_batchTemplate)

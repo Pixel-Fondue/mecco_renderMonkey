@@ -1,49 +1,22 @@
 # python
 
-import lx
-import lxu
-import lxifc
-import modo
+import lx, lxu, lxifc, modo
 
 import monkey
 from monkey.symbols import *
-from monkey.util import debug, breakpoint
+from monkey.util import debug, breakpoint, markup, bitwise_rgb, bitwise_hex
 
 import traceback
-import os
 from os.path import basename
-import sys
-
-try:
-    import wingdbstub
-except:
-    pass
-
-
-def markup(pre,string):
-    return '\03(%s:%s)' % (pre,string)
-
-def bitwise_rgb(r,g,b):
-    return str(0x01000000 | ((r << 16) | (g << 8 | b)))
-
-def bitwise_hex(h):
-    h = h.strip()
-    if h[0] == '#': h = h[1:]
-    r, g, b = h[:2], h[2:4], h[4:]
-    r, g, b = [int(n, 16) for n in (r, g, b)]
-    return bitwise_rgb(r, g, b)
-
 
 RED = markup('c',bitwise_rgb(255,0,0))
 BLUE = markup('c',bitwise_hex('#0e76b7'))
 GRAY = markup('c','4113')
 
-DEFAULT = markup('f','FONT_DEFAULT')
-NORMAL = markup('f','FONT_NORMAL')
-BOLD = markup('f','FONT_BOLD')
-ITALIC = markup('f','FONT_ITALIC')
-
-GRAY_ITALIC = GRAY + ITALIC
+FONT_DEFAULT = markup('f','FONT_DEFAULT')
+FONT_NORMAL = markup('f','FONT_NORMAL')
+FONT_BOLD = markup('f','FONT_BOLD')
+FONT_ITALIC = markup('f','FONT_ITALIC')
 
 fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
@@ -63,8 +36,8 @@ class rm_TreeNode(object):
         self.state = 0
         self.selected = False
 
-        self.columns = (("Name", -1),
-                        ("Value", -4))
+        self.columns = ((COL_NAME, -1),
+                        (COL_VALUE, -4))
 
         self.toolTips = {}
 
@@ -79,7 +52,7 @@ class rm_TreeNode(object):
 
     def ClearSelection(self):
         if self._Primary:
-            self.setPrimary()
+            self.setPrimary(None)
 
         self.SetSelected(False)
 
@@ -87,7 +60,6 @@ class rm_TreeNode(object):
             child.ClearSelection()
 
     def SetSelected(self,val=True):
-
         if val:
             self.setPrimary(self)
         self.selected = val
@@ -323,8 +295,8 @@ class rm_Batch:
 
             file_root = self._tree.AddNode(
                 BATCHFILE,
-                BOLD + basename(self._batchFilePath),
-                BOLD
+                FONT_BOLD + basename(self._batchFilePath),
+                FONT_BOLD
             )
 
             file_root.setState(fTREE_VIEW_ITEM_EXPAND)
@@ -380,7 +352,7 @@ class rm_Batch:
     def build_empty_tree(self):
         try:
             self._tree.ClearChildren()
-            self._tree.AddNode(EMPTY,GRAY_ITALIC + EMPTY_PROMPT)
+            self._tree.AddNode(EMPTY,GRAY + FONT_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
             debug(traceback.print_exc())
@@ -421,12 +393,16 @@ class rm_Batch:
     def get_selection(self):
         return self._tree.get_selected_children()
 
+    def clear_selection(self):
+        self._tree.ClearSelection()
+
     def tree(self):
         return self._tree.getChildByKey(BATCHFILE)
 
 
 
 _BATCH = rm_Batch()
+
 
 class rm_BatchView(lxifc.TreeView,
                         lxifc.Tree,
@@ -531,12 +507,6 @@ class rm_BatchView(lxifc.TreeView,
     def tree_SetItemState(self, guid, state):
         self.targetNode().state = state
 
-    def treeview_StoreState(self, uid):
-        lx.notimpl()
-
-    def treeview_RestoreState(self, uid):
-        lx.notimpl()
-
     def treeview_ColumnCount(self):
         return len(_BATCH._tree.columns)
 
@@ -556,7 +526,7 @@ class rm_BatchView(lxifc.TreeView,
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH._tree.ClearSelection()
+            _BATCH.clear_selection()
             self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
@@ -566,36 +536,12 @@ class rm_BatchView(lxifc.TreeView,
             self.targetNode().SetSelected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            _BATCH._tree.ClearSelection()
-
-    def treeview_CellCommand(self, columnIndex):
-        lx.notimpl()
-
-    def treeview_BatchCommand(self, columnIndex):
-        lx.notimpl()
+            _BATCH.clear_selection()
 
     def treeview_ToolTip(self, columnIndex):
         toolTip = self.targetNode().getToolTip(columnIndex)
         if toolTip:
             return toolTip
-        lx.notimpl()
-
-    def treeview_BadgeType(self, columnIndex, badgeIndex):
-        lx.notimpl()
-
-    def treeview_BadgeDetail(self, columnIndex, badgeIndex, badgeDetail):
-        lx.notimpl()
-
-    def treeview_IsInputRegion(self, columnIndex, regionID):
-        lx.notimpl()
-
-    def treeview_SupportedDragDropSourceTypes(self, columnIndex):
-        lx.notimpl()
-
-    def treeview_GetDragDropSourceObject(self, columnIndex, type):
-        lx.notimpl()
-
-    def treeview_GetDragDropDestinationObject(self, columnIndex):
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
@@ -617,7 +563,7 @@ class rm_BatchView(lxifc.TreeView,
             return self.targetNode().getValue()
 
         else:
-            return ""
+            return EMPTY
 
 
 class openBatchFile(lxu.command.BasicCommand):
@@ -649,7 +595,9 @@ class addBatchTask(lxu.command.BasicCommand):
 class removeBatchSel(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         try:
-            for i in _BATCH.get_selection():
+            sel = _BATCH.get_selection()
+            _BATCH.clear_selection()
+            for i in sel:
                 keys = i.get_keys()
 
                 _BATCH.remove_by_key(keys)
@@ -671,7 +619,7 @@ class exampleBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.util.yaml_save_dialog()
         if path:
-            lx.eval('renderMonkey.batchTemplate {%s}' % path)
+            lx.eval('%s {%s}' % (CMD_batchTemplate,path))
             _BATCH.load_from_file(path)
             rm_BatchView.notify_NewShape()
 

@@ -44,6 +44,45 @@ def status(string):
 
     lx.out("status: %s" % string)
 
+def markup(pre,string):
+    """
+    By Adam O'Hern for Mechanical Color
+
+    Returns a formatting string for modo treeview objects.
+    Requires a prefix (usually "c" or "f" for colors and fonts respectively),
+    followed by a string.
+
+    Colors are done with "\03(c:color)", where "color" is a string representing a
+    decimal integer computed with 0x01000000 | ((r << 16) | (g << 8) | b).
+    Italics and bold are done with "\03(c:font)", where "font" is the string
+    FONT_DEFAULT, FONT_NORMAL, FONT_BOLD or FONT_ITALIC.
+
+    \03(c:4113) is a special case gray color specifically for treeview text.
+    """
+    return '\03(%s:%s)' % (pre,string)
+
+def bitwise_rgb(r,g,b):
+    """
+    By Adam O'Hern for Mechanical Color
+
+    Input R, G, and B values (0-255), and get a bitwise RGB in return.
+    (Used for colored text in treeviews.)
+    """
+    return str(0x01000000 | ((r << 16) | (g << 8 | b)))
+
+def bitwise_hex(h):
+    """
+    By Adam O'Hern for Mechanical Color
+
+    Input an HTML color hex (#ffffff), and get a bitwise RGB in return.
+    (Used for colored text in treeviews.)
+    """
+    h = h.strip()
+    if h[0] == '#': h = h[1:]
+    r, g, b = h[:2], h[2:4], h[4:]
+    r, g, b = [int(n, 16) for n in (r, g, b)]
+    return bitwise_rgb(r, g, b)
+
 def batch_status_file(batch_file_path):
     """
     By Adam O'Hern for Mechanical Color
@@ -192,7 +231,7 @@ def lxo_open_dialog():
     """
 
     try:
-        path = os.path.normpath(
+        return os.path.normpath(
             modo.dialogs.customFile(
                 dtype='fileOpen',
                 title='Select Scene File',
@@ -202,9 +241,6 @@ def lxo_open_dialog():
                 path=None
             )
         )
-
-        return path
-
     except:
         return False
 
@@ -216,7 +252,7 @@ def yaml_open_dialog():
     """
 
     try:
-        path = os.path.normpath(
+        return os.path.normpath(
             modo.dialogs.customFile(
                 dtype='fileOpen',
                 title='Select Batch File',
@@ -226,35 +262,9 @@ def yaml_open_dialog():
                 path=None
             )
         )
-
-        return path
-
     except:
         return False
 
-def yaml_save_dialog():
-    """
-    By Adam O'Hern for Mechanical Color
-
-    File dialog requesting YAML file source.
-    """
-
-    try:
-        output_path = os.path.normpath(
-                modo.dialogs.customFile(
-                    dtype='fileSave',
-                    title='Save Batch File Template',
-                    names=['yaml'],
-                    unames=['Batch File (YAML)'],
-                    patterns=['*.yaml'],
-                    ext=['yaml']
-                )
-            )
-
-        return output_path
-
-    except:
-        return False
 
 def read_json(file_path):
     """
