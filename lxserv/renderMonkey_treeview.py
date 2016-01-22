@@ -446,20 +446,11 @@ class rm_BatchView(lxifc.TreeView,
 
     @classmethod
     def addListenerClient(cls,listener):
-        """
-            Whenever a new tree view is created, we will add
-            a copy of its listener so that it can be notified
-            of attribute or shape changes
-        """
         treeListenerObj = lx.object.TreeListener(listener)
         cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
 
     @classmethod
     def removeListenerClient(cls,listener):
-        """
-            When a view is destroyed, it will be removed from
-            the list of clients that need notification.
-        """
         treeListenerObject = lx.object.TreeListener(listener)
         if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
             del  cls._listenerClients[treeListenerObject.__peekobj__()]
@@ -477,34 +468,16 @@ class rm_BatchView(lxifc.TreeView,
                 client.NewAttributes()
 
     def lport_AddListener(self,obj):
-        """
-            Called from core code with the object that wants to
-            bind to the listener port
-        """
         self.addListenerClient(obj)
 
     def lport_RemoveListener(self,obj):
-        """
-            Called from core when a listener needs to be removed from
-            the port.
-        """
         self.removeListenerClient(obj)
 
     def targetNode(self):
-        """
-            Returns the targeted layer node in the current tier
-        """
         return self.m_currentNode.m_children[ self.m_currentIndex ]
 
     def tree_Spawn(self, mode):
-        """
-            Spawn a new instance of this tier in the tree.
-        """
-
-        # create an instance of our current location in the tree
         newTree = rm_BatchView(self.m_currentNode, self.m_currentIndex)
-
-        # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)
 
         if mode == lx.symbol.iTREE_PARENT:
@@ -519,10 +492,6 @@ class rm_BatchView(lxifc.TreeView,
         return newTreeObj
 
     def tree_ToParent(self):
-        """
-            Step up to the parent tier and set the selection in this
-            tier to the current items index
-        """
         m_parent = self.m_currentNode.m_parent
 
         if m_parent:
@@ -530,68 +499,36 @@ class rm_BatchView(lxifc.TreeView,
             self.m_currentNode = m_parent
 
     def tree_ToChild(self):
-        """
-            Move to the child tier and set the selected node
-        """
         self.m_currentNode = self.m_currentNode.m_children[self.m_currentIndex]
 
     def tree_ToRoot(self):
-        """
-            Move back to the root tier of the tree
-        """
         self.m_currentNode = _BATCH._tree
 
     def tree_IsRoot(self):
-        """
-            Check if the current tier in the tree is the root tier
-        """
         if self.m_currentNode == _BATCH._tree:
             return True
         else:
             return False
 
     def tree_ChildIsLeaf(self):
-        """
-            If the current tier has no children then it is
-            considered a leaf
-        """
         if len( self.m_currentNode.m_children ) > 0:
             return False
         else:
             return True
 
     def tree_Count(self):
-        """
-            Returns the number of nodes in this tier of
-            the tree
-        """
         return len( self.m_currentNode.m_children )
 
     def tree_Current(self):
-        """
-            Returns the index of the currently targeted item in
-            this tier
-        """
         return self.m_currentIndex
 
     def tree_SetCurrent(self, index):
-        """
-            Sets the index of the item to target in this tier
-        """
         self.m_currentIndex = index
 
     def tree_ItemState(self, guid):
-        """
-            Returns the item flags that define the state.
-
-        """
         return self.targetNode().state
 
     def tree_SetItemState(self, guid, state):
-        """
-            Set the item flags that define the state.
-
-        """
         self.targetNode().state = state
 
     def treeview_StoreState(self, uid):
@@ -607,9 +544,6 @@ class rm_BatchView(lxifc.TreeView,
         return _BATCH._tree.columns[columnIndex]
 
     def treeview_ToPrimary(self):
-        """
-            Move the tree to the primary selection
-        """
         if self.m_currentNode._Primary:
             self.m_currentNode = self.m_currentNode._Primary
             self.tree_ToParent()
