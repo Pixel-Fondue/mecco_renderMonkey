@@ -23,133 +23,142 @@ fTREE_VIEW_ITEM_EXPAND = 0x00000002
 fTREE_VIEW_ATTR_EXPAND = 0x00000004
 
 
-class rm_TreeNode(object):
+class TreeNode(object):
 
-    _Primary = None
+    _primary = None
 
     def __init__(self, key, value=None, parent=None, prefix=''):
-        self.m_key = key
-        self.m_value = value
-        self.m_parent = parent
-        self.m_prefix = prefix
-        self.m_children = []
-        self.state = 0
-        self.selected = False
+        self._key = key
+        self._value = value
+        self._parent = parent
+        self._prefix = prefix
+        self._children = []
+        self._state = 0
+        self._selected = False
+        self._tooltips = {}
 
-        self.columns = ((COL_NAME, -1),
+        self._columns = ((COL_NAME, -1),
                         (COL_VALUE, -4))
 
-        self.toolTips = {}
+    @classmethod
+    def set_primary(cls,primary=None):
+        cls._primary = primary
 
-    def AddNode(self, key, value=None, prefix=None):
-        self.m_children.append(rm_TreeNode(key, value, self, prefix))
-        return self.m_children[-1]
+    @classmethod
+    def primary(cls):
+        return cls._primary
 
-    def ClearChildren(self):
-        if len(self.m_children) > 0:
-            for child in self.m_children:
-                self.m_children.remove(child)
+    def add_child(self, key, value=None, prefix=None):
+        self._children.append(TreeNode(key, value, self, prefix))
+        return self._children[-1]
 
-    def ClearSelection(self):
-        if self._Primary:
-            self.setPrimary(None)
+    def clear_children(self):
+        if len(self._children) > 0:
+            for child in self._children:
+                self._children.remove(child)
 
-        self.SetSelected(False)
+    def clear_selection(self):
+        if self._primary:
+            self.set_primary(None)
 
-        for child in self.m_children:
-            child.ClearSelection()
+        self.set_selected(False)
 
-    def SetSelected(self,val=True):
+        for child in self._children:
+            child.clear_selection()
+
+    def set_selected(self,val=True):
         if val:
-            self.setPrimary(self)
-        self.selected = val
+            self.set_primary(self)
+        self._selected = val
 
-    def isSelected(self):
-        return self.selected
+    def is_selected(self):
+        return self._selected
 
-    @classmethod
-    def setPrimary(cls,primary=None):
-        cls._Primary = primary
+    def set_state(self,flag):
+        self._state = self._state | flag
 
-    @classmethod
-    def getPrimary(cls):
-        return cls._Primary
+    def set_tooltip(self,idx,tip):
+        self._tooltips[idx] = tip
 
-    def setState(self,flag):
-        self.state = self.state | flag
+    def tooltip(self,idx):
+        if self._tooltips.has_key(idx):
+            return self._tooltips[idx]
 
-    def setToolTip(self,idx,tip):
-        self.toolTips[idx] = tip
+    def value(self):
+        return str(self._value)
 
-    def getToolTip(self,idx):
-        if self.toolTips.has_key(idx):
-            return self.toolTips[idx]
-
-    def getValue(self):
-        return str(self.m_value)
-
-    def getName(self):
-        m = str(self.m_prefix) if self.m_prefix else ''
-        k = str(self.m_key)
+    def name(self):
+        m = str(self._prefix) if self._prefix else ''
+        k = str(self._key)
         k = k.replace('_',' ')
         k = k.title()
         return m + k
 
-    def getKey(self):
-        return str(self.m_key)
+    def key(self):
+        return str(self._key)
 
-    def getChildByKey(self,key):
-        for i in self.m_children:
-            if key == i.m_key:
+    def prefix(self):
+        return str(self._prefix)
+
+    def set_prefix(self, prefix):
+        self._prefix = prefix
+        return self._prefix
+
+    def columns(self):
+        return self._columns
+
+    def child_by_key(self,key):
+        for i in self._children:
+            if key == i._key:
                 return i
         return False
 
-    def get_selected_children(self,recursive=True):
+    def selected_children(self,recursive=True):
         sel = []
-        for i in self.m_children:
-            if i.isSelected():
+        for i in self._children:
+            if i.is_selected():
                 sel.append(i)
             if recursive:
-                sel += i.get_selected_children()
+                sel += i.selected_children()
 
         return sel
 
     def get_by_keys(self,keys_list):
         if len(keys_list) > 1:
-            return self.getChildByKey(keys_list[0]).get_by_keys(keys_list[1:])
+            return self.child_by_key(keys_list[0]).get_by_keys(keys_list[1:])
         else:
-            return self.getChildByKey(keys_list[0])
+            return self.child_by_key(keys_list[0])
 
-    def get_ancestors(self,path=[]):
-        if self.m_parent:
-            return self.m_parent.get_ancestors() + [self]
+    def ancestors(self,path=[]):
+        if self._parent:
+            return self._parent.ancestors() + [self]
         else:
             return path
 
-    def get_keys(self):
-        return [i.m_key for i in self.get_ancestors()[1:]]
+    def ancestor_keys(self):
+        return [i._key for i in self.ancestors()[1:]]
 
     def parent(self):
-        return self.m_parent
+        return self._parent
 
     def children(self):
-        return self.m_children
+        return self._children
 
     def update_child_keys(self):
-        for n, child in enumerate(sorted(self.children(), key=lambda x: x.m_key)):
-            child.m_key = n if isinstance(child.m_key,int) else child.m_key
+        for n, child in enumerate(sorted(self.children(), key=lambda x: x._key)):
+            child._key = n if isinstance(child._key,int) else child._key
 
-    def suicide(self):
-        self.ClearSelection()
+    def destroy(self):
+        self.clear_selection()
         self.parent().children().remove(self)
 
 
-class rm_Batch:
+class BatchManager:
 
     def __init__(self, batchFilePath='', batch=[]):
         self._batchFilePath = batchFilePath
         self._batch = batch
-        self._tree = rm_TreeNode(TREE_ROOT_TITLE,LIST)
+        self._tree = TreeNode(TREE_ROOT_TITLE,LIST)
 
         if self._batchFilePath:
             self.load_from_file()
@@ -247,7 +256,7 @@ class rm_Batch:
 
     def close_file(self):
         try:
-            self._tree.ClearSelection()
+            self._tree.clear_selection()
             self.build_empty_tree()
             self._batchFilePath = None
             self._batch = None
@@ -291,22 +300,22 @@ class rm_Batch:
             if not self._batch:
                 return self.build_empty_tree()
 
-            self._tree.ClearChildren()
+            self._tree.clear_children()
 
-            file_root = self._tree.AddNode(
+            file_root = self._tree.add_child(
                 BATCHFILE,
                 FONT_BOLD + basename(self._batchFilePath),
                 FONT_BOLD
             )
 
-            file_root.setState(fTREE_VIEW_ITEM_EXPAND)
+            file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
 
             for task_index, task in enumerate(self._batch):
 
                 if not task[SCENE_PATH]:
                     break
 
-                task_node = file_root.AddNode(
+                task_node = file_root.add_child(
                     task_index,
                     basename(task[SCENE_PATH]),
                     GRAY + TASK + SP
@@ -315,33 +324,33 @@ class rm_Batch:
                 for param_key, param_value in iter(sorted(task.iteritems())):
 
                     if isinstance(param_value,(list,tuple)):
-                        param_node = task_node.AddNode(
+                        param_node = task_node.add_child(
                             param_key,
                             GRAY+LIST
                         )
 
                         for k, v in enumerate(param_value):
-                            param_node.AddNode(k,v,GRAY)
+                            param_node.add_child(k,v,GRAY)
 
-                        param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
+                        param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
 
                     elif isinstance(param_value,dict):
-                        param_node = task_node.AddNode(
+                        param_node = task_node.add_child(
                             param_key,
                             GRAY+DICT
                         )
 
                         for k, v in param_value.iteritems():
-                            param_node.AddNode(k,v)
+                            param_node.add_child(k,v)
 
-                        param_node.AddNode(ADD_GENERIC, EMPTY, GRAY)
+                        param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
 
                     else:
-                        task_node.AddNode(param_key, param_value)
+                        task_node.add_child(param_key, param_value)
 
-                task_node.AddNode(ADD_PARAM,EMPTY,GRAY)
+                task_node.add_child(ADD_PARAM,EMPTY,GRAY)
 
-            file_root.AddNode(ADD_TASK,EMPTY,GRAY)
+            file_root.add_child(ADD_TASK,EMPTY,GRAY)
 
             return self._tree
 
@@ -351,8 +360,8 @@ class rm_Batch:
 
     def build_empty_tree(self):
         try:
-            self._tree.ClearChildren()
-            self._tree.AddNode(EMPTY,GRAY + FONT_ITALIC + EMPTY_PROMPT)
+            self._tree.clear_children()
+            self._tree.add_child(EMPTY,GRAY + FONT_ITALIC + EMPTY_PROMPT)
             return self._tree
         except:
             debug(traceback.print_exc())
@@ -368,7 +377,7 @@ class rm_Batch:
                 obj = obj[key]
             del obj[keys[-1]]
 
-            self.tree().get_by_keys(keys).suicide()
+            self.tree().get_by_keys(keys).destroy()
 
             if len(keys) > 1:
                 if type(self.get_by_keys(keys[:-1])) in (list,tuple):
@@ -391,20 +400,20 @@ class rm_Batch:
             return obj
 
     def get_selection(self):
-        return self._tree.get_selected_children()
+        return self._tree.selected_children()
 
     def clear_selection(self):
-        self._tree.ClearSelection()
+        self._tree.clear_selection()
 
     def tree(self):
-        return self._tree.getChildByKey(BATCHFILE)
+        return self._tree.child_by_key(BATCHFILE)
 
 
 
-_BATCH = rm_Batch()
+_BATCH = BatchManager()
 
 
-class rm_BatchView(lxifc.TreeView,
+class BatchTreeView(lxifc.TreeView,
                         lxifc.Tree,
                         lxifc.ListenerPort,
                         lxifc.Attributes
@@ -450,10 +459,10 @@ class rm_BatchView(lxifc.TreeView,
         self.removeListenerClient(obj)
 
     def targetNode(self):
-        return self.m_currentNode.m_children[ self.m_currentIndex ]
+        return self.m_currentNode._children[ self.m_currentIndex ]
 
     def tree_Spawn(self, mode):
-        newTree = rm_BatchView(self.m_currentNode, self.m_currentIndex)
+        newTree = BatchTreeView(self.m_currentNode, self.m_currentIndex)
         newTreeObj = lx.object.Tree(newTree)
 
         if mode == lx.symbol.iTREE_PARENT:
@@ -468,14 +477,14 @@ class rm_BatchView(lxifc.TreeView,
         return newTreeObj
 
     def tree_ToParent(self):
-        m_parent = self.m_currentNode.m_parent
+        m_parent = self.m_currentNode._parent
 
         if m_parent:
-            self.m_currentIndex = m_parent.m_children.index(self.m_currentNode)
+            self.m_currentIndex = m_parent._children.index(self.m_currentNode)
             self.m_currentNode = m_parent
 
     def tree_ToChild(self):
-        self.m_currentNode = self.m_currentNode.m_children[self.m_currentIndex]
+        self.m_currentNode = self.m_currentNode._children[self.m_currentIndex]
 
     def tree_ToRoot(self):
         self.m_currentNode = _BATCH._tree
@@ -487,13 +496,13 @@ class rm_BatchView(lxifc.TreeView,
             return False
 
     def tree_ChildIsLeaf(self):
-        if len( self.m_currentNode.m_children ) > 0:
+        if len( self.m_currentNode._children ) > 0:
             return False
         else:
             return True
 
     def tree_Count(self):
-        return len( self.m_currentNode.m_children )
+        return len( self.m_currentNode._children )
 
     def tree_Current(self):
         return self.m_currentIndex
@@ -502,44 +511,44 @@ class rm_BatchView(lxifc.TreeView,
         self.m_currentIndex = index
 
     def tree_ItemState(self, guid):
-        return self.targetNode().state
+        return self.targetNode()._state
 
     def tree_SetItemState(self, guid, state):
-        self.targetNode().state = state
+        self.targetNode()._state = state
 
     def treeview_ColumnCount(self):
-        return len(_BATCH._tree.columns)
+        return len(_BATCH._tree.columns())
 
     def treeview_ColumnByIndex(self, columnIndex):
-        return _BATCH._tree.columns[columnIndex]
+        return _BATCH._tree.columns()[columnIndex]
 
     def treeview_ToPrimary(self):
-        if self.m_currentNode._Primary:
-            self.m_currentNode = self.m_currentNode._Primary
+        if self.m_currentNode.primary():
+            self.m_currentNode = self.m_currentNode.primary()
             self.tree_ToParent()
             return True
         return False
 
     def treeview_IsSelected(self):
-        return self.targetNode().isSelected()
+        return self.targetNode().is_selected()
 
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             _BATCH.clear_selection()
-            self.targetNode().SetSelected()
+            self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-            self.targetNode().SetSelected()
+            self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
-            self.targetNode().SetSelected(False)
+            self.targetNode().set_selected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
             _BATCH.clear_selection()
 
     def treeview_ToolTip(self, columnIndex):
-        toolTip = self.targetNode().getToolTip(columnIndex)
+        toolTip = self.targetNode().tooltip(columnIndex)
         if toolTip:
             return toolTip
         lx.notimpl()
@@ -553,14 +562,14 @@ class rm_BatchView(lxifc.TreeView,
         return False
 
     def attr_Count(self):
-        return len(_BATCH._tree.columns)
+        return len(_BATCH._tree.columns())
 
     def attr_GetString(self, index):
         if index == 0:
-            return self.targetNode().getName()
+            return self.targetNode().name()
 
-        elif self.targetNode().getValue():
-            return self.targetNode().getValue()
+        elif self.targetNode().value():
+            return self.targetNode().value()
 
         else:
             return EMPTY
@@ -571,13 +580,13 @@ class openBatchFile(lxu.command.BasicCommand):
         path = monkey.util.yaml_open_dialog()
         if path:
             _BATCH.load_from_file(path)
-            rm_BatchView.notify_NewShape()
+            BatchTreeView.notify_NewShape()
 
 
 class closeBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         _BATCH.close_file()
-        rm_BatchView.notify_NewShape()
+        BatchTreeView.notify_NewShape()
 
 
 class addBatchTask(lxu.command.BasicCommand):
@@ -589,24 +598,20 @@ class addBatchTask(lxu.command.BasicCommand):
         if paths_list:
             for path in paths_list:
                 _BATCH.add_task(path)
-            rm_BatchView.notify_NewShape()
+            BatchTreeView.notify_NewShape()
 
 
 class removeBatchSel(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        try:
-            sel = _BATCH.get_selection()
-            _BATCH.clear_selection()
-            for i in sel:
-                keys = i.get_keys()
+        sel = _BATCH.get_selection()
+        _BATCH.clear_selection()
+        for i in sel:
+            keys = i.ancestor_keys()
 
-                _BATCH.remove_by_key(keys)
-                _BATCH.save_to_file()
+            _BATCH.remove_by_key(keys)
+            _BATCH.save_to_file()
 
-                rm_BatchView.notify_NewShape()
-        except:
-            debug(traceback.print_exc())
-            return False
+            BatchTreeView.notify_NewShape()
 
 
 class runCurrentBatch(lxu.command.BasicCommand):
@@ -621,7 +626,7 @@ class exampleBatch(lxu.command.BasicCommand):
         if path:
             lx.eval('%s {%s}' % (CMD_batchTemplate,path))
             _BATCH.load_from_file(path)
-            rm_BatchView.notify_NewShape()
+            BatchTreeView.notify_NewShape()
 
 
 class openBatchInFilesystem(lxu.command.BasicCommand):
@@ -638,7 +643,7 @@ tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
         lx.symbol.sINMAP_DEFINE: sINMAP}
 
-lx.bless(rm_BatchView, SERVERNAME, tags)
+lx.bless(BatchTreeView, SERVERNAME, tags)
 
 lx.bless(openBatchFile, CMD_openBatchFile)
 lx.bless(closeBatchFile, CMD_closeBatchFile)
