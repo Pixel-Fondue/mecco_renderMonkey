@@ -10,7 +10,8 @@ CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
 CMD_echoSelected = "monkey.echoSelected"
 CMD_batchTemplate = 'monkey.batchTemplate'
 CMD_revealBatchInFilesystem = 'monkey.revealBatchInFilesystem'
-CMD_newBatch = 'monkey.newBatch'
+CMD_newBatchFile = 'monkey.newBatchFile'
+CMD_saveBatchAs = 'monkey.saveBatchAs'
 
 BATCHFILE = "batch_file"
 SCENE_PATH = "scene"

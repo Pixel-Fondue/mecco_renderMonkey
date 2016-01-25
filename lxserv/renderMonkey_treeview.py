@@ -297,7 +297,7 @@ class BatchManager:
 
     def regrow_tree(self):
         try:
-            if not self._batch:
+            if not self._batchFilePath:
                 return self.build_empty_tree()
 
             self._tree.clear_children()
@@ -310,45 +310,46 @@ class BatchManager:
 
             file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
 
-            for task_index, task in enumerate(self._batch):
+            if self._batch:
+                for task_index, task in enumerate(self._batch):
 
-                if not task[SCENE_PATH]:
-                    break
+                    if not task[SCENE_PATH]:
+                        break
 
-                task_node = file_root.add_child(
-                    task_index,
-                    basename(task[SCENE_PATH]),
-                    GRAY + TASK + SP
-                )
+                    task_node = file_root.add_child(
+                        task_index,
+                        basename(task[SCENE_PATH]),
+                        GRAY + TASK + SP
+                    )
 
-                for param_key, param_value in iter(sorted(task.iteritems())):
+                    for param_key, param_value in iter(sorted(task.iteritems())):
 
-                    if isinstance(param_value,(list,tuple)):
-                        param_node = task_node.add_child(
-                            param_key,
-                            GRAY+LIST
-                        )
+                        if isinstance(param_value,(list,tuple)):
+                            param_node = task_node.add_child(
+                                param_key,
+                                GRAY+LIST
+                            )
 
-                        for k, v in enumerate(param_value):
-                            param_node.add_child(k,v,GRAY)
+                            for k, v in enumerate(param_value):
+                                param_node.add_child(k,v,GRAY)
 
-                        param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
+                            param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
 
-                    elif isinstance(param_value,dict):
-                        param_node = task_node.add_child(
-                            param_key,
-                            GRAY+DICT
-                        )
+                        elif isinstance(param_value,dict):
+                            param_node = task_node.add_child(
+                                param_key,
+                                GRAY+DICT
+                            )
 
-                        for k, v in param_value.iteritems():
-                            param_node.add_child(k,v)
+                            for k, v in param_value.iteritems():
+                                param_node.add_child(k,v)
 
-                        param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
+                            param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
 
-                    else:
-                        task_node.add_child(param_key, param_value)
+                        else:
+                            task_node.add_child(param_key, param_value)
 
-                task_node.add_child(ADD_PARAM,EMPTY,GRAY)
+                    task_node.add_child(ADD_PARAM,EMPTY,GRAY)
 
             file_root.add_child(ADD_TASK,EMPTY,GRAY)
 
@@ -407,6 +408,9 @@ class BatchManager:
 
     def tree(self):
         return self._tree.child_by_key(BATCHFILE)
+
+    def batch(self):
+        return self._batch
 
 
 
@@ -641,6 +645,26 @@ class revealBatchInFilesystem(lxu.command.BasicCommand):
             lx.eval('file.revealInFileViewer {%s}' % _BATCH._batchFilePath)
 
 
+class newBatchFile(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        path = monkey.util.yaml_save_dialog()
+        if path:
+            monkey.util.write_yaml([],path)
+
+            _BATCH.load_from_file(path)
+            BatchTreeView.notify_NewShape()
+
+
+class saveBatchAs(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        path = monkey.util.yaml_save_dialog()
+        if path:
+            monkey.util.write_yaml(_BATCH.batch(),path)
+
+            _BATCH.load_from_file(path)
+            BatchTreeView.notify_NewShape()
+
+
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
 sINMAP = "name[%s] regions[1@%s 2@%s 3@%s]" % (sSRV_USERNAME,REGION1,REGION2,REGION3)
@@ -659,3 +683,5 @@ lx.bless(runCurrentBatch, CMD_runCurrentBatch)
 lx.bless(exampleBatch, CMD_exampleBatch)
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
 lx.bless(revealBatchInFilesystem, CMD_revealBatchInFilesystem)
+lx.bless(newBatchFile, CMD_newBatchFile)
+lx.bless(saveBatchAs, CMD_saveBatchAs)
