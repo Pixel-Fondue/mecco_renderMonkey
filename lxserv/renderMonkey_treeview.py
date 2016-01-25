@@ -362,7 +362,8 @@ class BatchManager:
     def build_empty_tree(self):
         try:
             self._tree.clear_children()
-            self._tree.add_child(EMPTY,GRAY + FONT_ITALIC + EMPTY_PROMPT)
+            self._tree.add_child(EMPTY_PROMPT, EMPTY, GRAY + FONT_ITALIC)
+            self._tree.clear_selection()
             return self._tree
         except:
             debug(traceback.print_exc())
@@ -538,12 +539,21 @@ class BatchTreeView(lxifc.TreeView,
 
     def treeview_Select(self, mode):
 
+        special = [
+            ADD_TASK,
+            ADD_PARAM,
+            ADD_GENERIC,
+            REPLACE_BATCH_FILE
+        ]
+
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH.clear_selection()
-            self.targetNode().set_selected()
+            if self.targetNode().key() not in special:
+                _BATCH.clear_selection()
+                self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-            self.targetNode().set_selected()
+            if self.targetNode().key() not in special:
+                self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().set_selected(False)
