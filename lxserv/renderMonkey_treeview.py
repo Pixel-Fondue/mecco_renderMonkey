@@ -635,6 +635,12 @@ class openBatchInFilesystem(lxu.command.BasicCommand):
             lx.eval('file.open {%s}' % _BATCH._batchFilePath)
 
 
+class revealBatchInFilesystem(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        if _BATCH._batchFilePath:
+            lx.eval('file.revealInFileViewer {%s}' % _BATCH._batchFilePath)
+
+
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
 sINMAP = "name[%s] regions[1@%s 2@%s 3@%s]" % (sSRV_USERNAME,REGION1,REGION2,REGION3)
@@ -652,3 +658,4 @@ lx.bless(removeBatchSel, CMD_removeBatchSel)
 lx.bless(runCurrentBatch, CMD_runCurrentBatch)
 lx.bless(exampleBatch, CMD_exampleBatch)
 lx.bless(openBatchInFilesystem, CMD_openBatchInFilesystem)
+lx.bless(revealBatchInFilesystem, CMD_revealBatchInFilesystem)
