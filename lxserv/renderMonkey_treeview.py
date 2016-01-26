@@ -27,11 +27,11 @@ class TreeNode(object):
 
     _primary = None
 
-    def __init__(self, key, value=None, parent=None, prefix=''):
+    def __init__(self, key, value=None, parent=None, nodeType=None):
         self._key = key
         self._value = value
         self._parent = parent
-        self._prefix = prefix
+        self._nodeType = nodeType
         self._children = []
         self._state = 0
         self._selected = False
@@ -48,8 +48,8 @@ class TreeNode(object):
     def primary(cls):
         return cls._primary
 
-    def add_child(self, key, value=None, prefix=None):
-        self._children.append(TreeNode(key, value, self, prefix))
+    def add_child(self, key, value=None, nodeType=None):
+        self._children.append(TreeNode(key, value, self, nodeType))
         return self._children[-1]
 
     def clear_children(self):
@@ -85,24 +85,38 @@ class TreeNode(object):
             return self._tooltips[idx]
 
     def value(self):
-        return str(self._value)
+        m = ''
+        if self._nodeType == NODETYPE_TASKPARAM_MULTI:
+            m = GRAY + FONT-ITALIC
+
+        return m + str(self._value)
 
     def name(self):
-        m = str(self._prefix) if self._prefix else ''
+        m = ''
+        if self._nodeType in (NODETYPE_ADDNODE,NODETYPE_NULL):
+            m = GRAY
+        elif self._nodeType == NODETYPE_BATCHFILE:
+            m = FONT_BOLD
+        elif self._nodeType == NODETYPE_BATCHTASK:
+            m = GRAY + TASK + SP
+        elif self._nodeType == NODETYPE_TASKPARAM_SUB:
+            m = GRAY
+
         k = str(self._key)
         k = k.replace('_',' ')
         k = k.title()
+
         return m + k
 
     def key(self):
         return str(self._key)
 
-    def prefix(self):
-        return str(self._prefix)
+    def nodeType(self):
+        return str(self._nodeType)
 
-    def set_prefix(self, prefix):
-        self._prefix = prefix
-        return self._prefix
+    def set_nodeType(self, prefix):
+        self._nodeType = prefix
+        return self._nodeType
 
     def columns(self):
         return self._columns
@@ -326,7 +340,7 @@ class BatchManager:
             file_root = self._tree.add_child(
                 BATCHFILE,
                 FONT_BOLD + basename(self._batchFilePath),
-                FONT_BOLD
+                NODETYPE_BATCHFILE
             )
 
             file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
@@ -340,7 +354,7 @@ class BatchManager:
                     task_node = file_root.add_child(
                         task_index,
                         basename(task[SCENE_PATH]),
-                        GRAY + TASK + SP
+                        NODETYPE_BATCHTASK
                     )
 
                     for param_key, param_value in iter(sorted(task.iteritems())):
@@ -348,31 +362,33 @@ class BatchManager:
                         if isinstance(param_value,(list,tuple)):
                             param_node = task_node.add_child(
                                 param_key,
-                                GRAY+LIST
+                                LIST,
+                                NODETYPE_TASKPARAM_MULTI
                             )
 
                             for k, v in enumerate(param_value):
-                                param_node.add_child(k,v,GRAY)
+                                param_node.add_child(k,v,NODETYPE_TASKPARAM_SUB)
 
-                            param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
+                            param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
                         elif isinstance(param_value,dict):
                             param_node = task_node.add_child(
                                 param_key,
-                                GRAY+DICT
+                                DICT,
+                                NODETYPE_TASKPARAM_MULTI
                             )
 
                             for k, v in param_value.iteritems():
                                 param_node.add_child(k,v)
 
-                            param_node.add_child(ADD_GENERIC, EMPTY, GRAY)
+                            param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
                         else:
-                            task_node.add_child(param_key, param_value)
+                            task_node.add_child(param_key, param_value, NODETYPE_TASKPARAM)
 
-                    task_node.add_child(ADD_PARAM,EMPTY,GRAY)
+                    task_node.add_child(ADD_PARAM,EMPTY,NODETYPE_ADDNODE)
 
-            file_root.add_child(ADD_TASK,EMPTY,GRAY)
+            file_root.add_child(ADD_TASK,EMPTY,NODETYPE_ADDNODE)
 
             return self._tree
 
@@ -383,7 +399,7 @@ class BatchManager:
     def build_empty_tree(self):
         try:
             self._tree.clear_children()
-            self._tree.add_child(EMPTY_PROMPT, EMPTY, GRAY + FONT_ITALIC)
+            self._tree.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
             self._tree.clear_selection()
             return self._tree
         except:
@@ -701,7 +717,15 @@ class saveBatchAs(lxu.command.BasicCommand):
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[%s] regions[1@%s 2@%s 3@%s]" % (sSRV_USERNAME,REGION1,REGION2,REGION3)
+sINMAP = "name[%s] regions[1@%s 2@%s 3@%s 4@%s 5@%s 6@%s 7@%s]" % (sSRV_USERNAME,
+                                                    NODETYPE_BATCHFILE,
+                                                    NODETYPE_BATCHTASK,
+                                                    NODETYPE_TASKPARAM,
+                                                    NODETYPE_TASKPARAM_MULTI,
+                                                    NODETYPE_TASKPARAM_SUB,
+                                                    NODETYPE_ADDNODE,
+                                                    NODETYPE_NULL
+                                                   )
 
 tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
