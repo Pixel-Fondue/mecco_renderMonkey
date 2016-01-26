@@ -547,9 +547,12 @@ class BatchTreeView(lxifc.TreeView,
         ]
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
+            _BATCH.clear_selection()
+            
             if self.targetNode().key() not in special:
-                _BATCH.clear_selection()
                 self.targetNode().set_selected()
+            else:
+                self.targetNode().parent.set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             if self.targetNode().key() not in special:
