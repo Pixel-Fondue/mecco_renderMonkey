@@ -152,6 +152,9 @@ class TreeNode(object):
         self.clear_selection()
         self.parent().children().remove(self)
 
+    def tier(self):
+        return len(self.ancestors())
+
 
 class BatchManager:
 
@@ -167,6 +170,9 @@ class BatchManager:
 
     def add_task(self, paths_list):
         try:
+            if not self.batchFilePath:
+                self.save_temp_file()
+
             if not paths_list:
                 return False
 
@@ -276,6 +282,18 @@ class BatchManager:
 
             else:
                 return self.save_batch_as()
+
+        except:
+            debug(traceback.print_exc())
+            return False
+
+    def save_temp_file(self, file_path=None):
+        try:
+            if file_path:
+                return monkey.util.write_yaml(self._batch, file_path)
+            else:
+                file_path = monkey.util.path_alias('%s:%s' % (KIT_ALIAS, QUICK_BATCH_PATH))
+                return
 
         except:
             debug(traceback.print_exc())

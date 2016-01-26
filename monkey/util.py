@@ -434,6 +434,17 @@ def expand_path(inputString):
     full_path = os.path.normpath(full_path)
     return full_path
 
+def path_alias(path):
+    """
+    By Adam O'Hern for Mechanical Color
+
+    Expand modo path alias, e.g. "kit_mecco_renderMonkey:test/passGroups.lxo"
+    """
+    try:
+        full_path = lx.eval("query platformservice alias ? {%s}" % inputString)
+    except:
+        debug('Could not expand path alias. Path cannot be parsed.')
+        return False
 
 def range_from_string(inputString="*"):
     """
