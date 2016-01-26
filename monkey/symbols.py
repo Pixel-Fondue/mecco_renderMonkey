@@ -1,7 +1,9 @@
 #python
 
+from os.path import join
+
 KIT_ALIAS = 'kit_mecco_renderMonkey'
-QUICK_BATCH_PATH = 'tmp/quick_batch.yaml'
+QUICK_BATCH_PATH = join('tmp','quick_batch.yaml')
 
 CMD_openBatchFile = "monkey.openBatchFile"
 CMD_closeBatchFile = "monkey.closeBatchFile"

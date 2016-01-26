@@ -170,7 +170,7 @@ class BatchManager:
 
     def add_task(self, paths_list):
         try:
-            if not self.batchFilePath:
+            if not self._batchFilePath:
                 self.save_temp_file()
 
             if not paths_list:
@@ -275,6 +275,7 @@ class BatchManager:
     def save_to_file(self, file_path=None):
         try:
             if file_path:
+                self._batchFilePath = file_path
                 return monkey.util.write_yaml(self._batch, file_path)
 
             elif self._batchFilePath:
@@ -293,7 +294,7 @@ class BatchManager:
                 return monkey.util.write_yaml(self._batch, file_path)
             else:
                 file_path = monkey.util.path_alias('%s:%s' % (KIT_ALIAS, QUICK_BATCH_PATH))
-                return
+                return self.save_to_file(file_path)
 
         except:
             debug(traceback.print_exc())
@@ -305,9 +306,11 @@ class BatchManager:
                 self._batchFilePath = file_path
                 return self.save_to_file()
             else:
-                return self.save_to_file(
-                    monkey.util.yaml_save_dialog()
-                )
+                path = monkey.util.yaml_save_dialog()
+                if path:
+                    return self.save_to_file(path)
+                else:
+                    return False
         except:
             debug(traceback.print_exc())
             return False
@@ -566,11 +569,11 @@ class BatchTreeView(lxifc.TreeView,
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             _BATCH.clear_selection()
-            
-            if self.targetNode().key() not in special:
-                self.targetNode().set_selected()
+
+            if self.targetNode().key() in special:
+                self.targetNode().parent().set_selected()
             else:
-                self.targetNode().parent.set_selected()
+                self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
             if self.targetNode().key() not in special:

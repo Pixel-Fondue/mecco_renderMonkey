@@ -213,7 +213,7 @@ def yaml_save_dialog():
         return os.path.normpath(
             modo.dialogs.customFile(
                 dtype='fileSave',
-                title='Save Batch File Template',
+                title='Save Batch File',
                 names=['yaml'],
                 unames=['Batch File (YAML)'],
                 patterns=['*.yaml'],
@@ -441,9 +441,8 @@ def path_alias(path):
     Expand modo path alias, e.g. "kit_mecco_renderMonkey:test/passGroups.lxo"
     """
     try:
-        full_path = lx.eval("query platformservice alias ? {%s}" % inputString)
+        return lx.eval("query platformservice alias ? {%s}" % path)
     except:
-        debug('Could not expand path alias. Path cannot be parsed.')
         return False
 
 def range_from_string(inputString="*"):
