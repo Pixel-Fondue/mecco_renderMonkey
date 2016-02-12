@@ -846,10 +846,10 @@ def render_frame(frame, outputPath="*", outputFormat="*", clear=False, group=Non
     modo.Scene().renderItem.channel('first').set(frame)
     modo.Scene().renderItem.channel('last').set(frame)
 
-    group = "group:{%s}" % group if group else ""
+    group = " group:{%s}" % group if group else ""
 
     try:
-        lx.eval(' '.join(('render.animation',outputPath,outputFormat,group)))
+        lx.eval('render.animation {%s} {%s}%s' % (outputPath,outputFormat,group))
 
     except:
         modo.Scene().renderItem.channel('first').set(first)
@@ -870,7 +870,7 @@ def render_frame(frame, outputPath="*", outputFormat="*", clear=False, group=Non
 
 
 
-def render_range(frames_list, dest_path="*", dest_format="*"):
+def render_range(frames_list, dest_path=None, dest_format=None):
     """
     By Simon Lundberg and Adam O'Hern for Mechanical Color
 
@@ -930,7 +930,7 @@ def render_range(frames_list, dest_path="*", dest_format="*"):
                 previous_format = "openexr"
 
             savers = get_imagesavers()
-            dest_path = modo.dialogs.customFile('fileSave', 'Destination', savers[0], savers[1], ext=savers[2], path=previous_path)
+            dest_path = modo.dialogs.customFile('fileSave', 'Destination', [i[0] for i in savers], [i[1] for i in savers], ext=[i[2] for i in savers], path=previous_path)
 
             dest_format = lx.eval("dialog.fileSaveFormat ? format")
             dest_ext = lx.eval("dialog.fileSaveFormat ? extension")
