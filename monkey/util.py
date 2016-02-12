@@ -933,7 +933,16 @@ def render_range(frames_list, dest_path=None, dest_format=None):
                 previous_format = "openexr"
 
             savers = get_imagesavers()
-            dest_path = modo.dialogs.customFile('fileSave', 'Destination', [i[0] for i in savers], [i[1] for i in savers], ext=[i[2] for i in savers], path=previous_path)
+            savers.insert(0, savers.pop(savers.index([i for i in savers if previous_format in i][0])))
+
+            dest_path = modo.dialogs.customFile(
+                'fileSave',
+                'Destination',
+                [i[0] for i in savers],
+                [i[1] for i in savers],
+                ext=[i[2] for i in savers],
+                path=previous_path
+            )
 
             dest_format = lx.eval("dialog.fileSaveFormat ? format")
             dest_ext = lx.eval("dialog.fileSaveFormat ? extension")
