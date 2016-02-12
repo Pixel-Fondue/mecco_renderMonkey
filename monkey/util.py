@@ -893,10 +893,13 @@ def render_range(frames_list, dest_path=None, dest_format=None):
         output_dests = "Use filenames specified in render outputs?\n\n"
         for i in [i for i in modo.Scene().iterItems('renderOutput')]:
             dest = i.channel('filename').get()
-            dest = '.'.join(dest,get_imagesaver(i.channel('format').get())[2]) if dest else "none"
-            output_dests += "%s: %s.%s\n" % (i.name,dest)
+            dest = '.'.join((dest,get_imagesaver(i.channel('format').get())[2])) if dest else "none"
+            output_dests += "%s: %s\n" % (i.name,dest)
 
-        if modo.dialogs.yesNo("Destination", outputDests)=='no':
+        if modo.dialogs.yesNo("Destination", output_dests)=='yes':
+            dest_path = "*"
+            dest_format = "*"
+        else:
             dest_path = None
             dest_format = None
 
