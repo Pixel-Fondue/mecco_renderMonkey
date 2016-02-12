@@ -823,151 +823,139 @@ def build_arg_string(arg_dict):
 
 
 
-def render_frame(frame, useOutput=True, outputPath=None, outputFormat=None, clear=False, group=None):
+def render_frame(frame, outputPath="*", outputFormat="*", clear=False, group=None):
     """
-    By Simon Lundberg for Mechanical Color
+    By Simon Lundberg and Adam O'Hern for Mechanical Color
 
     renders a specific frame
 
     frame:          Integer to choose frame
-    useOutput:      Boolean for using output controls from render outputs
     outputPath:     String for output if useOutput is False
     outputFormat:   String for output format if useOutput is False
     clear:          Boolean, if True it will clear render on finish
+    group:          Pass group to render
 
     NOTE: returns False if user aborted frame or if there is some error
           in the render process.
           returns True if frame completes without error.
     """
 
-    renderItem = modo.Scene().renderItem.id
-    #start by reading previous values
-    first = lx.eval("item.channel first ? item:{%s}" % renderItem)
-    last = lx.eval("item.channel last ? item:{%s}" % renderItem)
+    first = modo.Scene().renderItem.channel('first').get()
+    last = modo.Scene().renderItem.channel('last').get()
 
-    #then we set a single frame as the new range
-    lx.eval("item.channel first %s item:{%s}" % (frame, renderItem))
-    lx.eval("item.channel last %s item:{%s}" % (frame, renderItem))
+    modo.Scene().renderItem.channel('first').set(frame)
+    modo.Scene().renderItem.channel('last').set(frame)
 
-    #then we figure out whether to use a render pass group or not
-    if group:
-        group = "group:{%s}" % group
-    else:
-        group = ""
+    group = "group:{%s}" % group if group else ""
 
-    #then we render the current frame
     try:
-        if useOutput:
-            lx.eval("render.animation * * %s" % group)
-        else:
-            lx.eval("render.animation {%s} %s %s" % (outputPath, outputFormat, group))
+        lx.eval(' '.join(('render.animation',outputPath,outputFormat,group)))
+
     except:
-        #error most likely because user aborted
-        #restore frame range, and exit script
-        lx.eval("item.channel first %s item:{%s}" % (first, renderItem))
-        lx.eval("item.channel last %s item:{%s}" % (last, renderItem))
+        modo.Scene().renderItem.channel('first').set(first)
+        modo.Scene().renderItem.channel('last').set(last)
         lx.out("User aborted")
-        return False #rendering failed, so we return False
+        return False
 
+    modo.Scene().renderItem.channel('first').set(first)
+    modo.Scene().renderItem.channel('last').set(last)
 
-    #if we complete the render, we restore the original frame range
-    lx.eval("item.channel first %s item:{%s}" % (first, renderItem))
-    lx.eval("item.channel last %s item:{%s}" % (last, renderItem))
     sleep(0.1)
+
     if clear:
         lx.eval("!render.clear")
-    return True #rendering succeeded, so we return True
+
+    return True
 
 
 
 
-def render_range(frames, group=None):
+def render_range(frames_list, dest_path="*", dest_format="*"):
     """
-    By Simon Lundberg for Mechanical Color
+    By Simon Lundberg and Adam O'Hern for Mechanical Color
 
     takes a list of ints as an argument
     renders all frames in list
     """
-    #progress bars are disabled for now
-    progressbarEnable = False
 
-    #first we need to see if we have an output path in the render outputs:
-    usePaths = False
+    progressbarEnable = True
+
+    try:
+        group = lx.eval("!group.current ? pass")
+        group_name = lx.eval("query sceneservice item.name ? {%s}" % group)
+        if not modo.dialogs.yesNo("Use Pass Group",'Use render pass group "%s"?' % group_name):
+            group = None
+    except:
+        group = None
+
+
     if check_output_paths():
-        if modo.dialogs.yesNo("Save Image Sequence",'Use the filenames specified in the render outputs?' % group_name):
-            usePaths = True
+        output_dests = "Use filenames specified in render outputs?\n\n"
+        for i in [i for i in modo.Scene().iterItems('renderOutput')]:
+            dest = i.channel('filename').get()
+            dest = '.'.join(dest,get_imagesaver(i.channel('format').get())[2]) if dest else "none"
+            output_dests += "%s: %s.%s\n" % (i.name,dest)
 
-    if not usePaths:
-        #because usePaths is False, we must ask user for a file location
+        if modo.dialogs.yesNo("Destination", outputDests)=='no':
+            dest_path = None
+            dest_format = None
+
+    if not dest_path:
         try:
-            #first we try to get previous values, and use defaults if that fails...
             try:
-                #try user value
-                previousPath = lx.eval("!user.value mecco_renderPath ?")
+                prev = lx.eval("!user.value mecco_renderPath ?")
             except:
-                #No user value for previous path existed
-                previousPath = lx.eval("query platformservice path.path ? project")
-                if not previousPath:
-                    #no project path, so we use scene path instead
-                    scenePath = lx.eval("query sceneservice scene.file ? scene001")
-                    if scenePath:
-                        previousPath = scenePath.rsplit(os.path.sep, 1)[0]
-                if not previousPath:
-                    #no content path either, so we use user home directory
-                    previousPath = os.path.expanduser("~")
-                previousPath += os.path.sep
+                prev = None
+
             try:
-                #try user value
-                previousFormat = lx.eval("!user.value mecco_renderFormat ?")
+                proj = os.path.join(lx.eval("query platformservice path.path ? project"),"")
             except:
-                #No user value for previous format existed, default to 16-bit OpenEXR
-                previousFormat = "openexr"
+                proj = None
 
+            try:
+                scene = os.path.join(os.path.dirname(lx.eval("query sceneservice scene.file ? current")),"")
+            except:
+                scene = None
 
-            #setting up dialog...
-            lx.eval("dialog.setup fileSave")
-            lx.eval("dialog.result {%s}" % previousPath)
-            lx.eval("dialog.fileType image")
-            lx.eval("dialog.fileSaveFormat {%s} format" % previousFormat)
-            lx.eval("dialog.open")
+            try:
+                home = os.path.join(os.path.expanduser("~"),"")
+            except:
+                home = None
 
-            #getting results...
-            filePath = lx.eval("dialog.result ?")
-            fileFormat = lx.eval("dialog.fileSaveFormat ? format")
-            fileExtension = lx.eval("dialog.fileSaveFormat ? extension")
-            filePath = filePath.rsplit(".", 1)[0]
+            previous_path = prev if prev else proj if proj else scene if scene else home if home else None
 
-            #store output options in a user value...
-            dirPath = filePath.rsplit(os.path.sep, 1)[0] + os.path.sep
-            set_or_create_user_value("mecco_renderPath", dirPath)
-            set_or_create_user_value("mecco_renderFormat", fileFormat)
+            try:
+                previous_format = lx.eval("!user.value mecco_renderFormat ?")
+            except:
+                previous_format = "openexr"
+
+            savers = get_imagesavers()
+            dest_path = modo.dialogs.customFile('fileSave', 'Destination', savers[0], savers[1], ext=savers[2], path=previous_path)
+
+            dest_format = lx.eval("dialog.fileSaveFormat ? format")
+            dest_ext = lx.eval("dialog.fileSaveFormat ? extension")
+            dest_path = dest_path.rsplit(".", 1)[0]
+
+            set_or_create_user_value("mecco_renderPath", os.path.dirname(dest_path))
+            set_or_create_user_value("mecco_renderFormat", dest_format)
 
         except:
-            #error probably because user pressed "cancel"
             lx.out("User aborted")
             return
-    else:
-        #usePaths is True, so we don't need to get any file paths or anything
-        pass
 
     lx.out("Rendering frames:")
-    lx.out(frames)
+    lx.out(frames_list)
 
     if progressbarEnable:
-        progressbar = lx.Monitor(len(frames))
-        progressbar.init(len(frames))
-    for frame in frames:
-        if frame == frames[-1]:
-            clearFrame = False
-        else:
-            clearFrame = True
-        if usePaths:
-            if not render_frame(frame, clear=clearFrame, group=group):
+        progressbar = lx.Monitor(len(frames_list))
+        progressbar.init(len(frames_list))
+
+    for frame in frames_list:
+        clearFrame = False if frame == frames_list[-1] else True
+
+        if not render_frame(frame, dest_path, dest_format, clearFrame, group=group):
                 break
-                #slight strange syntax to safely catch aborted frames
-        else:
-            if not render_frame(frame, False, filePath, fileFormat, clearFrame, group=group):
-                break
+
         sleep(0.5)
         if progressbarEnable:
             progressbar.step(1)
