@@ -1,8 +1,8 @@
-#python
+# python
 
 # By Adam O'Hern for Mechanical Color LLC
 
-import monkey, modo, lx, lxu, traceback, os
+import monkey, modo, lx, lxu, traceback
 
 CMD_NAME = 'renderMonkey.passGroupsCombineSelected'
 
@@ -20,10 +20,10 @@ class CMD(lxu.command.BasicCommand):
                 if selected_pass_groups:
                     monkey.passes.create_master_pass_group(selected_pass_groups)
                 else:
-                    modo.dialogs.alert('Try again.','Select at least one pass group.')
+                    modo.dialogs.alert('Try again.', 'Select at least one pass group.')
 
             else:
-                modo.dialogs.alert('Try again.','Select at least one pass group.')
+                modo.dialogs.alert('Try again.', 'Select at least one pass group.')
 
         except Exception:
             monkey.util.debug(traceback.format_exc())

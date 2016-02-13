@@ -1,10 +1,10 @@
 # python
 
-import lx, lxu, lxifc, modo
+import lx, lxu, lxifc
 
 import monkey
 from monkey.symbols import *
-from monkey.util import debug, breakpoint, markup, bitwise_rgb, bitwise_hex
+from monkey.util import debug, markup, bitwise_rgb, bitwise_hex
 
 import traceback
 from os.path import basename
@@ -87,7 +87,7 @@ class TreeNode(object):
     def value(self):
         m = ''
         if self._nodeType == NODETYPE_TASKPARAM_MULTI:
-            m = GRAY + FONT-ITALIC
+            m = GRAY + FONT_ITALIC
 
         return m + str(self._value)
 
@@ -143,11 +143,11 @@ class TreeNode(object):
         else:
             return self.child_by_key(keys_list[0])
 
-    def ancestors(self,path=[]):
+    def ancestors(self,path=None):
         if self._parent:
             return self._parent.ancestors() + [self]
         else:
-            return path
+            return path if path else []
 
     def ancestor_keys(self):
         return [i._key for i in self.ancestors()[1:]]
@@ -172,19 +172,19 @@ class TreeNode(object):
 
 class BatchManager:
 
-    def __init__(self, batchFilePath='', batch=[]):
-        self._batchFilePath = batchFilePath
-        self._batch = batch
+    def __init__(self, batch_file_path='', batch=None):
+        self._batch_file_path = batch_file_path
+        self._batch = batch if batch else []
         self._tree = TreeNode(TREE_ROOT_TITLE,LIST)
 
-        if self._batchFilePath:
+        if self._batch_file_path:
             self.load_from_file()
 
         self.regrow_tree()
 
     def add_task(self, paths_list):
         try:
-            if not self._batchFilePath:
+            if not self._batch_file_path:
                 self.save_temp_file()
 
             if not paths_list:
@@ -262,11 +262,11 @@ class BatchManager:
     def load_from_file(self, file_path=None):
         try:
             if file_path is None:
-                file_path = self._batchFilePath
+                file_path = self._batch_file_path
             else:
-                self._batchFilePath = file_path
+                self._batch_file_path = file_path
 
-            self._batch = monkey.util.read_yaml(file_path)
+            self._batch = monkey.io.read_yaml(file_path)
             self.regrow_tree()
 
             return self._batch
@@ -278,7 +278,7 @@ class BatchManager:
         try:
             self._tree.clear_selection()
             self.build_empty_tree()
-            self._batchFilePath = None
+            self._batch_file_path = None
             self._batch = None
 
             return self._batch
@@ -289,11 +289,11 @@ class BatchManager:
     def save_to_file(self, file_path=None):
         try:
             if file_path:
-                self._batchFilePath = file_path
+                self._batch_file_path = file_path
                 return monkey.io.write_yaml(self._batch, file_path)
 
-            elif self._batchFilePath:
-                return monkey.io.write_yaml(self._batch, self._batchFilePath)
+            elif self._batch_file_path:
+                return monkey.io.write_yaml(self._batch, self._batch_file_path)
 
             else:
                 return self.save_batch_as()
@@ -317,7 +317,7 @@ class BatchManager:
     def save_batch_as(self, file_path=None):
         try:
             if file_path:
-                self._batchFilePath = file_path
+                self._batch_file_path = file_path
                 return self.save_to_file()
             else:
                 path = monkey.io.yaml_save_dialog()
@@ -329,17 +329,16 @@ class BatchManager:
             debug(traceback.print_exc())
             return False
 
-
     def regrow_tree(self):
         try:
-            if not self._batchFilePath:
+            if not self._batch_file_path:
                 return self.build_empty_tree()
 
             self._tree.clear_children()
 
             file_root = self._tree.add_child(
                 BATCHFILE,
-                FONT_BOLD + basename(self._batchFilePath),
+                FONT_BOLD + basename(self._batch_file_path),
                 NODETYPE_BATCHFILE
             )
 
@@ -359,7 +358,7 @@ class BatchManager:
 
                     for param_key, param_value in iter(sorted(task.iteritems())):
 
-                        if isinstance(param_value,(list,tuple)):
+                        if isinstance(param_value, (list, tuple)):
                             param_node = task_node.add_child(
                                 param_key,
                                 LIST,
@@ -367,11 +366,11 @@ class BatchManager:
                             )
 
                             for k, v in enumerate(param_value):
-                                param_node.add_child(k,v,NODETYPE_TASKPARAM_SUB)
+                                param_node.add_child(k, v, NODETYPE_TASKPARAM_SUB)
 
                             param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
-                        elif isinstance(param_value,dict):
+                        elif isinstance(param_value, dict):
                             param_node = task_node.add_child(
                                 param_key,
                                 DICT,
@@ -379,16 +378,16 @@ class BatchManager:
                             )
 
                             for k, v in param_value.iteritems():
-                                param_node.add_child(k,v)
+                                param_node.add_child(k, v)
 
                             param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
                         else:
                             task_node.add_child(param_key, param_value, NODETYPE_TASKPARAM)
 
-                    task_node.add_child(ADD_PARAM,EMPTY,NODETYPE_ADDNODE)
+                    task_node.add_child(ADD_PARAM, EMPTY, NODETYPE_ADDNODE)
 
-            file_root.add_child(ADD_TASK,EMPTY,NODETYPE_ADDNODE)
+            file_root.add_child(ADD_TASK, EMPTY, NODETYPE_ADDNODE)
 
             return self._tree
 
@@ -407,7 +406,7 @@ class BatchManager:
             return False
 
     def batch_file_path(self):
-        return self._batchFilePath
+        return self._batch_file_path
 
     def remove_by_key(self, keys):
         obj = self._batch
@@ -419,7 +418,7 @@ class BatchManager:
             self.tree().get_by_keys(keys).destroy()
 
             if len(keys) > 1:
-                if type(self.get_by_keys(keys[:-1])) in (list,tuple):
+                if type(self.get_by_keys(keys[:-1])) in (list, tuple):
                     self.tree().get_by_keys(keys[:-1]).update_child_keys()
             else:
                 self.tree().update_child_keys()
@@ -451,7 +450,6 @@ class BatchManager:
         return self._batch
 
 
-
 _BATCH = BatchManager()
 
 
@@ -463,7 +461,7 @@ class BatchTreeView(lxifc.TreeView,
 
     _listenerClients = {}
 
-    def __init__(self, node = None, curIndex = 0):
+    def __init__(self, node=None, curIndex=0):
 
         if node is None:
             node = _BATCH._tree
@@ -472,15 +470,15 @@ class BatchTreeView(lxifc.TreeView,
         self.m_currentIndex = curIndex
 
     @classmethod
-    def addListenerClient(cls,listener):
-        treeListenerObj = lx.object.TreeListener(listener)
-        cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
+    def addListenerClient(cls, listener):
+        tree_listener_obj = lx.object.TreeListener(listener)
+        cls._listenerClients[tree_listener_obj.__peekobj__()] = tree_listener_obj
 
     @classmethod
-    def removeListenerClient(cls,listener):
-        treeListenerObject = lx.object.TreeListener(listener)
-        if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
-            del  cls._listenerClients[treeListenerObject.__peekobj__()]
+    def removeListenerClient(cls, listener):
+        tree_listener_object = lx.object.TreeListener(listener)
+        if cls._listenerClients.has_key(tree_listener_object.__peekobj__()):
+            del cls._listenerClients[tree_listener_object.__peekobj__()]
 
     @classmethod
     def notify_NewShape(cls):
@@ -494,29 +492,29 @@ class BatchTreeView(lxifc.TreeView,
             if client.test():
                 client.NewAttributes()
 
-    def lport_AddListener(self,obj):
+    def lport_AddListener(self, obj):
         self.addListenerClient(obj)
 
-    def lport_RemoveListener(self,obj):
+    def lport_RemoveListener(self, obj):
         self.removeListenerClient(obj)
 
     def targetNode(self):
-        return self.m_currentNode._children[ self.m_currentIndex ]
+        return self.m_currentNode._children[self.m_currentIndex]
 
     def tree_Spawn(self, mode):
-        newTree = BatchTreeView(self.m_currentNode, self.m_currentIndex)
-        newTreeObj = lx.object.Tree(newTree)
+        new_tree = BatchTreeView(self.m_currentNode, self.m_currentIndex)
+        new_tree_obj = lx.object.Tree(new_tree)
 
         if mode == lx.symbol.iTREE_PARENT:
-            newTreeObj.ToParent()
+            new_tree_obj.ToParent()
 
         elif mode == lx.symbol.iTREE_CHILD:
-            newTreeObj.ToChild()
+            new_tree_obj.ToChild()
 
         elif mode == lx.symbol.iTREE_ROOT:
-            newTreeObj.ToRoot()
+            new_tree_obj.ToRoot()
 
-        return newTreeObj
+        return new_tree_obj
 
     def tree_ToParent(self):
         m_parent = self.m_currentNode._parent
@@ -538,13 +536,13 @@ class BatchTreeView(lxifc.TreeView,
             return False
 
     def tree_ChildIsLeaf(self):
-        if len( self.m_currentNode._children ) > 0:
+        if len(self.m_currentNode._children) > 0:
             return False
         else:
             return True
 
     def tree_Count(self):
-        return len( self.m_currentNode._children )
+        return len(self.m_currentNode._children)
 
     def tree_Current(self):
         return self.m_currentIndex
@@ -601,16 +599,16 @@ class BatchTreeView(lxifc.TreeView,
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
             _BATCH.clear_selection()
 
-    def treeview_ToolTip(self, columnIndex):
-        toolTip = self.targetNode().tooltip(columnIndex)
+    def treeview_ToolTip(self, column_index):
+        toolTip = self.targetNode().tooltip(column_index)
         if toolTip:
             return toolTip
         lx.notimpl()
 
-    def treeview_IsInputRegion(self, columnIndex, regionID):
+    def treeview_IsInputRegion(self, column_index, regionID):
         if regionID == 0:
             return True
-        elif columnIndex ==  regionID - 1:
+        elif column_index == regionID - 1:
             return True
 
         return False
@@ -670,8 +668,8 @@ class removeBatchSel(lxu.command.BasicCommand):
 
 class runCurrentBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batchFilePath:
-            return monkey.batch.run(_BATCH._batchFilePath)
+        if _BATCH._batch_file_path:
+            return monkey.batch.run(_BATCH._batch_file_path)
 
 
 class exampleBatch(lxu.command.BasicCommand):
@@ -685,14 +683,14 @@ class exampleBatch(lxu.command.BasicCommand):
 
 class openBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batchFilePath:
-            lx.eval('file.open {%s}' % _BATCH._batchFilePath)
+        if _BATCH._batch_file_path:
+            lx.eval('file.open {%s}' % _BATCH._batch_file_path)
 
 
 class revealBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batchFilePath:
-            lx.eval('file.revealInFileViewer {%s}' % _BATCH._batchFilePath)
+        if _BATCH._batch_file_path:
+            lx.eval('file.revealInFileViewer {{{}}}'.format(_BATCH._batch_file_path))
 
 
 class newBatchFile(lxu.command.BasicCommand):
@@ -717,17 +715,17 @@ class saveBatchAs(lxu.command.BasicCommand):
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[%s] regions[1@%s 2@%s 3@%s 4@%s 5@%s 6@%s 7@%s]" % (sSRV_USERNAME,
-                                                    NODETYPE_BATCHFILE,
-                                                    NODETYPE_BATCHTASK,
-                                                    NODETYPE_TASKPARAM,
-                                                    NODETYPE_TASKPARAM_MULTI,
-                                                    NODETYPE_TASKPARAM_SUB,
-                                                    NODETYPE_ADDNODE,
-                                                    NODETYPE_NULL
-                                                   )
+sINMAP = "name[{}] regions[1@{} 2@{} 3@{} 4@{} 5@{} 6@{} 7@{}]".format(sSRV_USERNAME,
+                                                                       NODETYPE_BATCHFILE,
+                                                                       NODETYPE_BATCHTASK,
+                                                                       NODETYPE_TASKPARAM,
+                                                                       NODETYPE_TASKPARAM_MULTI,
+                                                                       NODETYPE_TASKPARAM_SUB,
+                                                                       NODETYPE_ADDNODE,
+                                                                       NODETYPE_NULL
+                                                                       )
 
-tags = {lx.symbol.sSRV_USERNAME:  sSRV_USERNAME,
+tags = {lx.symbol.sSRV_USERNAME: sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
         lx.symbol.sINMAP_DEFINE: sINMAP}
 

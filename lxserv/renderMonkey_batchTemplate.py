@@ -2,7 +2,9 @@
 
 # By Adam O'Hern for Mechanical Color LLC
 
-import monkey, modo, lx, lxu, traceback, os, yaml
+import lx, lxu
+import monkey, yaml
+import traceback, os
 
 from monkey.symbols import *
 
@@ -20,24 +22,24 @@ class batchTemplate(lxu.command.BasicCommand):
         try:
             tree = [
                 {
-                    SCENE_PATH:monkey.defaults.get('test_path')
-                },{
-                    SCENE_PATH:monkey.defaults.get('test_path'),
-                    FORMAT:monkey.defaults.get('filetype'),
-                    DESTINATION:monkey.defaults.get('test_output_path'),
-                    GROUPS:monkey.defaults.get('test_passgroup')
-                },{
-                    SCENE_PATH:monkey.defaults.get('test_path'),
-                    FORMAT:monkey.defaults.get('filetype'),
-                    FRAMES:monkey.defaults.get('test_single_frame'),
-                    DESTINATION:monkey.defaults.get('test_output_path'),
-                    PATTERN:monkey.defaults.get('output_pattern'),
-                    GROUPS:monkey.defaults.get('test_passgroups'),
-                    CAMERA:monkey.defaults.get('test_camera'),
-                    RENDER_CHANNELS:monkey.defaults.get('test_render_channels'),
-                    OUTPUTS:monkey.defaults.get('test_outputs'),
-                    WIDTH:monkey.defaults.get('test_width'),
-                    HEIGHT:monkey.defaults.get('test_height')
+                    SCENE_PATH: monkey.defaults.get('test_path')
+                }, {
+                    SCENE_PATH: monkey.defaults.get('test_path'),
+                    FORMAT: monkey.defaults.get('filetype'),
+                    DESTINATION: monkey.defaults.get('test_output_path'),
+                    GROUPS: monkey.defaults.get('test_passgroup')
+                }, {
+                    SCENE_PATH: monkey.defaults.get('test_path'),
+                    FORMAT: monkey.defaults.get('filetype'),
+                    FRAMES: monkey.defaults.get('test_single_frame'),
+                    DESTINATION: monkey.defaults.get('test_output_path'),
+                    PATTERN: monkey.defaults.get('output_pattern'),
+                    GROUPS: monkey.defaults.get('test_passgroups'),
+                    CAMERA: monkey.defaults.get('test_camera'),
+                    RENDER_CHANNELS: monkey.defaults.get('test_render_channels'),
+                    OUTPUTS: monkey.defaults.get('test_outputs'),
+                    WIDTH: monkey.defaults.get('test_width'),
+                    HEIGHT: monkey.defaults.get('test_height')
                 }
             ]
 
@@ -46,11 +48,9 @@ class batchTemplate(lxu.command.BasicCommand):
             else:
                 output_path = monkey.io.yaml_save_dialog()
 
-            target = open(output_path,'w')
-            target.write(yaml.dump(tree, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
+            target = open(output_path, 'w')
+            target.write(yaml.dump(tree, indent=4, width=999, default_flow_style=False).replace("\n-", "\n\n-"))
             target.close()
-
-
 
             readme = "\n\n# Syntax is YAML (yaml.org), interpreted with pyYAML.\n"
             readme += "# A proper code editor is highly recommended for editing.\n"

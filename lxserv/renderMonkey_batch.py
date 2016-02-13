@@ -2,7 +2,9 @@
 
 # By Adam O'Hern for Mechanical Color LLC
 
-import monkey, modo, lx, lxu, traceback, os
+import lx, lxu
+import monkey
+import traceback, os
 
 CMD_NAME = 'renderMonkey.batch'
 
@@ -17,11 +19,11 @@ class CMD(lxu.command.BasicCommand):
         self.dyna_Add('mode', lx.symbol.sTYPE_STRING)
         self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
 
-    def die(self,e = lx.symbol.e_FAILED):
+    def die(self, e=lx.symbol.e_FAILED):
         monkey.render.to_console(False)
         return e
 
-    def last_path(self,new_path=None):
+    def last_path(self, new_path=None):
         if new_path:
             self.startPath = new_path
             return self.startPath

@@ -17,7 +17,7 @@ def debug(string):
     """
     if defaults.get('debug'):
         t = traceback.extract_stack()[-2]
-        lx.out("debug '%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string))
+        lx.out("debug '{}' line {}, {}".format(basename(t[0]), t[1], t[2], string))
 
 
 def breakpoint(string):
@@ -29,10 +29,10 @@ def breakpoint(string):
     (See defaults.py)
     """
     t = traceback.extract_stack()[-2]
-    string = "'%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string)
+    string = "'{}' line {}, {}(): {}".format(basename(t[0]), t[1], t[2], string)
 
     if defaults.get('breakpoints'):
-        lx.out("breakpoint: %s" % string)
+        lx.out("breakpoint: ", string)
         if defaults.get('breakpoints'):
             if modo.dialogs.okCancel("breakpoint", string) == 'cancel':
                 sys.exit()
@@ -42,10 +42,11 @@ def status(string):
     """
     By Adam O'Hern for Mechanical Color
 
-    Prints a string to lx.out(). Differs from "debug" only in that it's always enabled. Useful for user-related messages.
+    Prints a string to lx.out(). Differs from "debug" only in that it's always enabled.
+    Useful for user-related messages.
     """
 
-    lx.out("status: %s" % string)
+    lx.out("status: {{{}}}".format(string))
 
 
 def markup(pre, string):
@@ -63,7 +64,7 @@ def markup(pre, string):
 
     \03(c:4113) is a special case gray color specifically for treeview text.
     """
-    return '\03(%s:%s)' % (pre, string)
+    return '\03({}:{})'.format(pre, string)
 
 
 def bitwise_rgb(r, g, b):
@@ -123,7 +124,7 @@ def get_imagesavers():
     for x in range(host_svc.NumServers('saver')):
         saver = host_svc.ServerByIndex('saver', x)
         out_class = saver.InfoTag(lx.symbol.sSAV_OUTCLASS)
-        if (out_class == 'image' or out_class == 'layeredimage'):
+        if out_class == 'image' or out_class == 'layeredimage':
             name = saver.Name()
             uname = saver.UserName()
             try:
@@ -167,7 +168,7 @@ def expand_path(input_string):
 
     elif ":" in input_string:
         try:
-            full_path = lx.eval("query platformservice alias ? {%s}" % input_string)
+            full_path = lx.eval("query platformservice alias ? {{{}}}".format(input_string))
         except:
             debug('Could not expand path alias. Path cannot be parsed.')
             return False
@@ -198,7 +199,7 @@ def path_alias(path):
     Expand modo path alias, e.g. "kit_mecco_renderMonkey:test/passGroups.lxo"
     """
     try:
-        return lx.eval("query platformservice alias ? {%s}" % path)
+        return lx.eval("query platformservice alias ? {{{}}}".format(path))
     except:
         return False
 
@@ -226,7 +227,7 @@ def frames_from_string(input_string="*"):
         If there is also a colon (":") in the chunk, that number indicates the frame step.
 
         In the case of two colons present, like this: "2:0-100:3", the last one
-        will take prescedence (the range becomes 0-100 step 3, not step 2).
+        will take precedence (the range becomes 0-100 step 3, not step 2).
 
         In the case of a colon but no dash, like this: "3:5", the colon is ignored and
         only the first number is parsed.
@@ -252,7 +253,7 @@ def frames_from_string(input_string="*"):
                 try:
                     frames.append(int(re.split(r"\D", rangeString)[0]))
                 except:
-                    debug('Error in %s' % rangeString)
+                    debug('Error in {}'.format(rangeString))
                 continue
 
             bookends = rangeString.split('-')
@@ -273,7 +274,7 @@ def frames_from_string(input_string="*"):
                 end = int(end)
                 step = int(step)
             except ValueError:
-                debug('Error in %s' % rangeString)
+                debug('Error in {}'.format(rangeString))
                 break
 
             step = max(step, 1)
@@ -290,7 +291,7 @@ def frames_from_string(input_string="*"):
             try:
                 frames.extend(range(first, last, step))
             except:
-                debug('Error in %s' % rangeString)
+                debug('Error in {}'.format(rangeString))
 
         frames = list(set(frames))
         return frames if frames else False
@@ -343,9 +344,9 @@ def check_enable(texture):
 
 
 def get_user_value(name):
-    if not lx.eval("!query scriptsysservice userValue.isDefined ? {%s}" % name):
+    if not lx.eval("!query scriptsysservice userValue.isDefined ? {{{}}}".format(name)):
         return None
-    return lx.eval("!user.value {%s} ?" % name)
+    return lx.eval("!user.value {{{}}} ?".format(name))
 
 
 def set_or_create_user_value(name, value, valueType="string", life="config", username=None):
@@ -356,15 +357,15 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
     if user value does not exist, it creates it first
     """
     try:
-        lx.eval("!user.value {%s} {%s}" % (name, value))
+        lx.eval("!user.value {{{}}} {{{}}}".format(name, value))
         if username:
-            lx.eval("!user.def name:{%s} attr:username value:{%s}" % (name, username))
+            lx.eval("!user.def name:{{{}}} attr:username value:{{{}}}".format(name, username))
     except:
         try:
-            lx.eval("!user.defNew {%s} {%s} {%s}" % (name, valueType, life))
-            lx.eval("!user.value {%s} {%s}" % (name, value))
+            lx.eval("!user.defNew {{{}}} {{{}}} {{{}}}".format(name, valueType, life))
+            lx.eval("!user.value {{{}}} {{{}}}".format(name, value))
         except:
-            lx.out("Error creating user value:", name, valueType, life)
+            lx.out("Error creating user value: ", "; ".join((name, valueType, life)))
             return
 
 
@@ -372,7 +373,6 @@ def build_arg_string(arg_dict):
     arg_string = ''
     for k, v in arg_dict.iteritems():
         if v is not None:
-            v = str(v) if str(v).isalnum() else '{%s}' % str(v)
-            arg_string += " %s:%s" % (str(k), v)
+            v = str(v) if str(v).isalnum() else '{{{}}}'.format(str(v))
+            arg_string += " {{{}}}:{{{}}}".format(str(k), v)
     return arg_string
-
