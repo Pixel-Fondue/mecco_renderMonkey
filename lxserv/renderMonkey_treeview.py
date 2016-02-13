@@ -290,10 +290,10 @@ class BatchManager:
         try:
             if file_path:
                 self._batchFilePath = file_path
-                return monkey.util.write_yaml(self._batch, file_path)
+                return monkey.io.write_yaml(self._batch, file_path)
 
             elif self._batchFilePath:
-                return monkey.util.write_yaml(self._batch, self._batchFilePath)
+                return monkey.io.write_yaml(self._batch, self._batchFilePath)
 
             else:
                 return self.save_batch_as()
@@ -305,7 +305,7 @@ class BatchManager:
     def save_temp_file(self, file_path=None):
         try:
             if file_path:
-                return monkey.util.write_yaml(self._batch, file_path)
+                return monkey.io.write_yaml(self._batch, file_path)
             else:
                 file_path = monkey.util.path_alias('%s:%s' % (KIT_ALIAS, QUICK_BATCH_PATH))
                 return self.save_to_file(file_path)
@@ -320,7 +320,7 @@ class BatchManager:
                 self._batchFilePath = file_path
                 return self.save_to_file()
             else:
-                path = monkey.util.yaml_save_dialog()
+                path = monkey.io.yaml_save_dialog()
                 if path:
                     return self.save_to_file(path)
                 else:
@@ -631,7 +631,7 @@ class BatchTreeView(lxifc.TreeView,
 
 class openBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        path = monkey.util.yaml_open_dialog()
+        path = monkey.io.yaml_open_dialog()
         if path:
             _BATCH.load_from_file(path)
             BatchTreeView.notify_NewShape()
@@ -645,7 +645,7 @@ class closeBatchFile(lxu.command.BasicCommand):
 
 class addBatchTask(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        paths_list = monkey.util.lxo_open_dialog()
+        paths_list = monkey.io.lxo_open_dialog()
         if not isinstance(paths_list,list):
             paths_list = [paths_list]
 
@@ -676,7 +676,7 @@ class runCurrentBatch(lxu.command.BasicCommand):
 
 class exampleBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        path = monkey.util.yaml_save_dialog()
+        path = monkey.io.yaml_save_dialog()
         if path:
             lx.eval('%s {%s}' % (CMD_batchTemplate,path))
             _BATCH.load_from_file(path)
@@ -697,9 +697,9 @@ class revealBatchInFilesystem(lxu.command.BasicCommand):
 
 class newBatchFile(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        path = monkey.util.yaml_save_dialog()
+        path = monkey.io.yaml_save_dialog()
         if path:
-            monkey.util.write_yaml([],path)
+            monkey.io.write_yaml([],path)
 
             _BATCH.load_from_file(path)
             BatchTreeView.notify_NewShape()
@@ -707,9 +707,9 @@ class newBatchFile(lxu.command.BasicCommand):
 
 class saveBatchAs(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        path = monkey.util.yaml_save_dialog()
+        path = monkey.io.yaml_save_dialog()
         if path:
-            monkey.util.write_yaml(_BATCH.batch(),path)
+            monkey.io.write_yaml(_BATCH.batch(),path)
 
             _BATCH.load_from_file(path)
             BatchTreeView.notify_NewShape()

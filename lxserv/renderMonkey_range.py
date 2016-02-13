@@ -18,10 +18,10 @@ class CMD(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         try:
             frames_string = self.dyna_String(0)
-            frames_list = monkey.util.range_from_string(frames_string)
+            frames_list = monkey.util.frames_from_string(frames_string)
 
             if frames_list:
-                monkey.util.render_range(frames_list)
+                monkey.render.frames(frames_list)
             else:
                 modo.dialogs.alert("Invalid Frame Range","error",'No frame range recognized in "%s".' % range_string)
                 return lx.symbol.e_FAILED

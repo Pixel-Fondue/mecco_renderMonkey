@@ -44,7 +44,7 @@ class batchTemplate(lxu.command.BasicCommand):
             if self.dyna_IsSet(0):
                 output_path = self.dyna_String(0)
             else:
-                output_path = monkey.util.yaml_save_dialog()
+                output_path = monkey.io.yaml_save_dialog()
 
             target = open(output_path,'w')
             target.write(yaml.dump(tree, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-"))
@@ -74,7 +74,7 @@ class batchTemplate(lxu.command.BasicCommand):
 
             readme += "#    '*'                       Start/end frames defined in scene file.\n"
             rr = ['1','1-5','5-1','0-10:2','1-21:5','1-3,10-16:2,20-23','1,1-5','(1 - 5),, 10-!@#15']
-            readme += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(monkey.util.range_from_string(i))) for i in rr]) + "\n\n"
+            readme += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(monkey.util.frames_from_string(i))) for i in rr]) + "\n\n"
 
             readme += "# \"%s\" - (default: scene) Frame width in pixels.\n" % WIDTH
             readme += "#     If a width is supplied but no height--or vise verse--the scene aspect ratio will be maintained.\n\n"
