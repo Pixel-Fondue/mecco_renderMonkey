@@ -1,7 +1,9 @@
-#python
+# python
 
-import os
-import lx, modo
+import os, traceback, json, re, random
+import modo
+import util, yaml
+
 
 def yaml_save_dialog():
     """
@@ -24,6 +26,7 @@ def yaml_save_dialog():
     except:
         return False
 
+
 def lxo_open_dialog():
     """
     By Adam O'Hern for Mechanical Color
@@ -44,6 +47,7 @@ def lxo_open_dialog():
         )
     except:
         return False
+
 
 def yaml_open_dialog():
     """
@@ -75,20 +79,21 @@ def read_json(file_path):
     """
 
     try:
-        json_file = open(file_path,'r')
+        json_file = open(file_path, 'r')
     except:
-        debug(traceback.format_exc())
+        util.debug(traceback.format_exc())
         return False
 
     try:
         json_object = json.loads(json_file.read())
     except:
-        debug(traceback.format_exc())
+        util.debug(traceback.format_exc())
         json_file.close()
         return False
 
     json_file.close()
     return json_object
+
 
 def read_yaml(file_path):
     """
@@ -102,20 +107,21 @@ def read_yaml(file_path):
     """
 
     try:
-        yaml_file = open(file_path,'r')
+        yaml_file = open(file_path, 'r')
     except:
-        debug(traceback.format_exc())
+        util.debug(traceback.format_exc())
         return False
 
     try:
-        yaml_object = yaml.safe_load(re.sub('\\t','    ',yaml_file.read()))
+        yaml_object = yaml.safe_load(re.sub('\\t', '    ', yaml_file.read()))
     except:
-        debug(traceback.format_exc())
+        util.debug(traceback.format_exc())
         yaml_file.close()
         return False
 
     yaml_file.close()
     return yaml_object
+
 
 def test_writeable(test_dir_path):
     """
@@ -133,9 +139,9 @@ def test_writeable(test_dir_path):
         except OSError:
             return False
 
-    test_path = os.path.join(test_dir_path,"tmp_%s.txt" % random.randint(100000,999999))
+    test_path = os.path.join(test_dir_path, "tmp_%s.txt" % random.randint(100000, 999999))
     try:
-        test = open(test_path,'w')
+        test = open(test_path, 'w')
         test.write("Testing write permissions.")
         test.close()
         os.remove(test_path)
@@ -145,11 +151,12 @@ def test_writeable(test_dir_path):
 
 
 def yamlize(data):
-    return yaml.dump(data, indent=4,width=999,default_flow_style = False).replace("\n-","\n\n-")
+    return yaml.dump(data, indent=4, width=999, default_flow_style=False).replace("\n-", "\n\n-")
 
-def write_yaml(data,output_path):
+
+def write_yaml(data, output_path):
     try:
-        target = open(output_path,'w')
+        target = open(output_path, 'w')
         target.write(yamlize(data))
         target.close()
         return True

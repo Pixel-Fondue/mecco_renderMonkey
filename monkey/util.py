@@ -1,10 +1,10 @@
-#python
+# python
 
-import lx, os, json, modo, defaults, traceback, re, sys, yaml, random, io
+import lx, modo
+import os, traceback, re, sys
+import defaults
 
-from symbols import *
 from os.path import basename
-from time import sleep
 from math import copysign
 
 
@@ -19,12 +19,14 @@ def debug(string):
         t = traceback.extract_stack()[-2]
         lx.out("debug '%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string))
 
+
 def breakpoint(string):
     """
     By Adam O'Hern for Mechanical Color
 
     Essentially a breakpoint function for debugging purposes.
-    Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well. (See defaults.py)
+    Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well. 
+    (See defaults.py)
     """
     t = traceback.extract_stack()[-2]
     string = "'%s' line %s, %s(): %s" % (basename(t[0]), t[1], t[2], string)
@@ -32,8 +34,9 @@ def breakpoint(string):
     if defaults.get('breakpoints'):
         lx.out("breakpoint: %s" % string)
         if defaults.get('breakpoints'):
-            if modo.dialogs.okCancel("breakpoint",string) == 'cancel':
+            if modo.dialogs.okCancel("breakpoint", string) == 'cancel':
                 sys.exit()
+
 
 def status(string):
     """
@@ -44,7 +47,8 @@ def status(string):
 
     lx.out("status: %s" % string)
 
-def markup(pre,string):
+
+def markup(pre, string):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -59,9 +63,10 @@ def markup(pre,string):
 
     \03(c:4113) is a special case gray color specifically for treeview text.
     """
-    return '\03(%s:%s)' % (pre,string)
+    return '\03(%s:%s)' % (pre, string)
 
-def bitwise_rgb(r,g,b):
+
+def bitwise_rgb(r, g, b):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -69,6 +74,7 @@ def bitwise_rgb(r,g,b):
     (Used for colored text in treeviews.)
     """
     return str(0x01000000 | ((r << 16) | (g << 8 | b)))
+
 
 def bitwise_hex(h):
     """
@@ -78,11 +84,11 @@ def bitwise_hex(h):
     (Used for colored text in treeviews.)
     """
     h = h.strip()
-    if h[0] == '#': h = h[1:]
+    if h[0] == '#':
+        h = h[1:]
     r, g, b = h[:2], h[2:4], h[4:]
     r, g, b = [int(n, 16) for n in (r, g, b)]
     return bitwise_rgb(r, g, b)
-
 
 
 def get_imagesaver(key):
@@ -117,7 +123,7 @@ def get_imagesavers():
     for x in range(host_svc.NumServers('saver')):
         saver = host_svc.ServerByIndex('saver', x)
         out_class = saver.InfoTag(lx.symbol.sSAV_OUTCLASS)
-        if  (out_class == 'image' or out_class == 'layeredimage'):
+        if (out_class == 'image' or out_class == 'layeredimage'):
             name = saver.Name()
             uname = saver.UserName()
             try:
@@ -128,7 +134,7 @@ def get_imagesavers():
     return savers
 
 
-def expand_path(inputString):
+def expand_path(input_string):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -148,27 +154,23 @@ def expand_path(inputString):
     contains a ":" anywhere at all, it assumes a MODO path alias.
     """
 
-    inputString = os.path.normpath(inputString)
+    input_string = os.path.normpath(input_string)
 
+    if input_string.startswith(os.path.sep):
+        full_path = input_string
 
-    if inputString.startswith(os.path.sep):
-        full_path = inputString
-
-
-    elif inputString.startswith('~'):
+    elif input_string.startswith('~'):
         try:
-            full_path = os.path.expanduser(inputString)
+            full_path = os.path.expanduser(input_string)
         except:
             return False
 
-
-    elif ":" in inputString:
+    elif ":" in input_string:
         try:
-            full_path = lx.eval("query platformservice alias ? {%s}" % inputString)
+            full_path = lx.eval("query platformservice alias ? {%s}" % input_string)
         except:
             debug('Could not expand path alias. Path cannot be parsed.')
             return False
-
 
     else:
         try:
@@ -177,17 +179,17 @@ def expand_path(inputString):
             debug('Could not get current scene folder. Path cannot be parsed.')
             return False
 
-        if inputString.startswith('.'):
-            full_path = os.path.join(current_scene_path,inputString[1:])
+        if input_string.startswith('.'):
+            full_path = os.path.join(current_scene_path, input_string[1:])
         else:
-            full_path = os.path.join(current_scene_path,inputString)
-
+            full_path = os.path.join(current_scene_path, input_string)
 
     if not os.path.splitext(full_path)[1]:
-        full_path = os.path.join(full_path,'')
+        full_path = os.path.join(full_path, '')
 
     full_path = os.path.normpath(full_path)
     return full_path
+
 
 def path_alias(path):
     """
@@ -200,13 +202,15 @@ def path_alias(path):
     except:
         return False
 
+
 def get_scene_render_range():
     start = modo.Scene().renderItem.channel('first').get()
     end = modo.Scene().renderItem.channel('last').get()
 
-    return "-".join((start,end))
+    return "-".join((start, end))
 
-def frames_from_string(inputString="*"):
+
+def frames_from_string(input_string="*"):
     """
     By Simon Lundberg & Adam O'Hern for Mechanical Color
 
@@ -236,19 +240,19 @@ def frames_from_string(inputString="*"):
             sortedList = frames_from_string(myRangeString).sort()
     """
     try:
-        inputString = get_scene_render_range() if inputString == "*" else inputString
+        input_string = get_scene_render_range() if input_string == "*" else input_string
 
         frames = []
 
-        cleanstring = ''.join([i for i in inputString if i in "0123456789-:,"])
-        rangeStrings = cleanstring.split(',')
+        cleanstring = ''.join([i for i in input_string if i in "0123456789-:,"])
+        range_strings = cleanstring.split(',')
 
-        for rangeString in rangeStrings:
-            if not "-" in rangeString[1:]:
+        for rangeString in range_strings:
+            if "-" not in rangeString[1:]:
                 try:
                     frames.append(int(re.split(r"\D", rangeString)[0]))
                 except:
-                    debug('Error in %s' % rangeString) #skip this one
+                    debug('Error in %s' % rangeString)
                 continue
 
             bookends = rangeString.split('-')
@@ -286,8 +290,7 @@ def frames_from_string(inputString="*"):
             try:
                 frames.extend(range(first, last, step))
             except:
-                debug('Error in %s' % rangeString) #skip this one
-
+                debug('Error in %s' % rangeString)
 
         frames = list(set(frames))
         return frames if frames else False
@@ -344,6 +347,7 @@ def get_user_value(name):
         return None
     return lx.eval("!user.value {%s} ?" % name)
 
+
 def set_or_create_user_value(name, value, valueType="string", life="config", username=None):
     """
     By Simon Lundberg for Mechanical Color
@@ -361,24 +365,14 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
             lx.eval("!user.value {%s} {%s}" % (name, value))
         except:
             lx.out("Error creating user value:", name, valueType, life)
-            exclog()
             return
-
 
 
 def build_arg_string(arg_dict):
     arg_string = ''
-    for k,v in arg_dict.iteritems():
+    for k, v in arg_dict.iteritems():
         if v is not None:
             v = str(v) if str(v).isalnum() else '{%s}' % str(v)
-            arg_string += " %s:%s" % (str(k),v)
+            arg_string += " %s:%s" % (str(k), v)
     return arg_string
-
-
-
-
-
-
-
-
 

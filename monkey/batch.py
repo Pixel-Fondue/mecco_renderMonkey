@@ -126,7 +126,7 @@ def run(batch_file_path):
     restore = {}
 
     util.debug('Setting up job.')
-    render.toConsole(True)
+    render.to_console(True)
 
     restore['threads'] = lx.eval('pref.value render.threads ?')
     lx.eval('pref.value render.threads auto')
@@ -537,7 +537,7 @@ def run(batch_file_path):
     # Clean up
     #
 
-    render.toConsole(False)
+    render.to_console(False)
     lx.eval('pref.value render.threads %s' % restore['threads'])
 
     return lx.symbol.e_OK

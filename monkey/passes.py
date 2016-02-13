@@ -1,4 +1,7 @@
-#python
+# python
+
+import modo
+import util
 
 def create_master_pass_group(groups,delimeter="_x_"):
     """
@@ -29,7 +32,7 @@ def create_master_pass_group(groups,delimeter="_x_"):
     return master_group
 
 
-def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],delimeter="_"):
+def combine(master_group, groups, channels, max_depth, depth=0, passname_parts=[], delimeter="_"):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -59,5 +62,5 @@ def combine(master_group,groups,channels,max_depth,depth=0,passname_parts=[],del
                 #Set channel to its current value; sets channel to 'edit' layer for absorption into the new pass.
                 c.set(c.get())
             except:
-                debug('Something went wrong setting channel "%s" to "%s".' % (c.name,c.get()))
+                util.debug('Something went wrong setting channel "%s" to "%s".' % (c.name,c.get()))
         lx.eval('edit.apply')

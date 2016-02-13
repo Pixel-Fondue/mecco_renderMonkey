@@ -1,6 +1,7 @@
-#python
+# python
 
-import traceback, lx
+import lx
+import traceback
 
 try:
     import batch
@@ -10,5 +11,6 @@ try:
     import io
     import passes
     import render
+
 except:
     lx.out(traceback.format_exc())

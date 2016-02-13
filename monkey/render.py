@@ -1,23 +1,28 @@
-#python
+# python
 
-import lx, modo
+import lx
+import modo
 import os
 import util
 
-def toConsole(state):
-    debug('log.toConsole %s' % str(state))
+from time import sleep
+
+
+def to_console(state):
+    util.debug('log.toConsole %s' % str(state))
     lx.eval('log.toConsole %s' % str(state))
     lx.eval('log.toConsoleRolling %s' % str(state))
 
-def render_frame(frame, outputPath="*", outputFormat="*", clear=False, group=None):
+
+def render_frame(frame, output_path="*", output_format="*", clear=False, group=None):
     """
     By Simon Lundberg and Adam O'Hern for Mechanical Color
 
     renders a specific frame
 
     frame:          Integer to choose frame
-    outputPath:     String for output if useOutput is False
-    outputFormat:   String for output format if useOutput is False
+    output_path:     String for output if useOutput is False
+    output_format:   String for output format if useOutput is False
     clear:          Boolean, if True it will clear render on finish
     group:          Pass group to render
 
@@ -35,7 +40,7 @@ def render_frame(frame, outputPath="*", outputFormat="*", clear=False, group=Non
     group = " group:{%s}" % group if group else ""
 
     try:
-        lx.eval('render.animation {%s} {%s}%s' % (outputPath,outputFormat,group))
+        lx.eval('render.animation {%s} {%s}%s' % (output_path, output_format, group))
 
     except:
         modo.Scene().renderItem.channel('first').set(first)
@@ -62,25 +67,24 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
     renders all frames in list
     """
 
-    progressbarEnable = True
+    progressbar_enable = True
 
     try:
         group = lx.eval("!group.current ? pass")
         group_name = lx.eval("query sceneservice item.name ? {%s}" % group)
-        if not modo.dialogs.yesNo("Use Pass Group",'Use render pass group "%s"?' % group_name):
+        if not modo.dialogs.yesNo("Use Pass Group", 'Use render pass group "%s"?' % group_name):
             group = None
     except:
         group = None
 
-
-    if check_output_paths():
+    if util.check_output_paths():
         output_dests = "Use filenames specified in render outputs?\n\n"
         for i in [i for i in modo.Scene().iterItems('renderOutput')]:
             dest = i.channel('filename').get()
-            dest = '.'.join((dest,get_imagesaver(i.channel('format').get())[2])) if dest else "none"
-            output_dests += "%s: %s\n" % (i.name,dest)
+            dest = '.'.join((dest, util.get_imagesaver(i.channel('format').get())[2])) if dest else "none"
+            output_dests += "%s: %s\n" % (i.name, dest)
 
-        if modo.dialogs.yesNo("Destination", output_dests)=='yes':
+        if modo.dialogs.yesNo("Destination", output_dests) == 'yes':
             dest_path = "*"
             dest_format = "*"
         else:
@@ -95,17 +99,17 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
                 prev = None
 
             try:
-                proj = os.path.join(lx.eval("query platformservice path.path ? project"),"")
+                proj = os.path.join(lx.eval("query platformservice path.path ? project"), "")
             except:
                 proj = None
 
             try:
-                scene = os.path.join(os.path.dirname(lx.eval("query sceneservice scene.file ? current")),"")
+                scene = os.path.join(os.path.dirname(lx.eval("query sceneservice scene.file ? current")), "")
             except:
                 scene = None
 
             try:
-                home = os.path.join(os.path.expanduser("~"),"")
+                home = os.path.join(os.path.expanduser("~"), "")
             except:
                 home = None
 
@@ -129,11 +133,10 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
             )
 
             dest_format = lx.eval("dialog.fileSaveFormat ? format")
-            dest_ext = lx.eval("dialog.fileSaveFormat ? extension")
             dest_path = dest_path.rsplit(".", 1)[0]
 
-            set_or_create_user_value("mecco_renderPath", os.path.dirname(dest_path))
-            set_or_create_user_value("mecco_renderFormat", dest_format)
+            util.set_or_create_user_value("mecco_renderPath", os.path.dirname(dest_path))
+            util.set_or_create_user_value("mecco_renderFormat", dest_format)
 
         except:
             lx.out("User aborted")
@@ -142,16 +145,16 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
     lx.out("Rendering frames:")
     lx.out(frames_list)
 
-    if progressbarEnable:
-        progressbar = lx.Monitor(len(frames_list))
+    progressbar = lx.Monitor(len(frames_list))
+    if progressbar_enable:
         progressbar.init(len(frames_list))
 
     for frame in frames_list:
-        clearFrame = False if frame == frames_list[-1] else True
+        clear_frame = False if frame == frames_list[-1] else True
 
-        if not render_frame(frame, dest_path, dest_format, clearFrame, group=group):
+        if not render_frame(frame, dest_path, dest_format, clear_frame, group=group):
                 break
 
         sleep(0.5)
-        if progressbarEnable:
+        if progressbar_enable:
             progressbar.step(1)

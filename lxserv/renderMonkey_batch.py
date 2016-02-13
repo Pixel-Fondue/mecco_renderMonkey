@@ -18,7 +18,7 @@ class CMD(lxu.command.BasicCommand):
         self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
 
     def die(self,e = lx.symbol.e_FAILED):
-        monkey.render.toConsole(False)
+        monkey.render.to_console(False)
         return e
 
     def last_path(self,new_path=None):
