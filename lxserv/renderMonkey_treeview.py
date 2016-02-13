@@ -46,7 +46,7 @@ class TreeNode(object):
         self._tooltips = {}
 
         self._columns = ((COL_NAME, -1),
-                        (COL_VALUE, -4))
+                        (COL_VALUE, -3))
 
     @classmethod
     def set_primary(cls,primary=None):
@@ -96,6 +96,11 @@ class TreeNode(object):
         m = ''
         if self._nodeType == NODETYPE_TASKPARAM_MULTI:
             m = GRAY + FONT_ITALIC
+        elif self._nodeType == NODETYPE_BATCHTASK:
+            m = GRAY
+
+        if self._value in (LIST, DICT):
+            m = GRAY
 
         return m + str(self._value)
 
@@ -105,14 +110,12 @@ class TreeNode(object):
             m = GRAY
         elif self._nodeType == NODETYPE_BATCHFILE:
             m = FONT_BOLD
-        elif self._nodeType == NODETYPE_BATCHTASK:
-            m = GRAY + TASK + SP
         elif self._nodeType == NODETYPE_TASKPARAM_SUB:
             m = GRAY
 
         k = str(self._key)
         k = k.replace('_',' ')
-        k = k.title()
+        k = k.title() if "." not in k else k
 
         return m + k
 
@@ -337,6 +340,36 @@ class BatchManager:
             debug(traceback.print_exc())
             return False
 
+    def grow_node(self, branch, parent_node, depth=0):
+        if isinstance(branch, (list, tuple)):
+            for index, value in enumerate(branch):
+                if isinstance(value, (list, tuple, dict)):
+
+                    if depth == 0:
+                        node_type = NODETYPE_BATCHTASK
+                        display_key = "{:02d}: {}".format(index + 1, basename(value[SCENE_PATH]))
+                        display_value = value[SCENE_PATH]
+                    else:
+                        node_type = NODETYPE_NULL
+                        display_key = index + 1
+                        display_value = LIST if isinstance(value,(list, tuple)) else DICT
+
+                    node = parent_node.add_child(display_key, display_value, node_type)
+                    self.grow_node(value, node, depth + 1)
+                else:
+                    parent_node.add_child(index + 1, value)
+
+        elif isinstance(branch, dict):
+            for key, value in branch.iteritems():
+                display_value = LIST if isinstance(value,(list, tuple)) else DICT
+                if isinstance(value, (list, tuple, dict)):
+                    node = parent_node.add_child(key, display_value)
+                    self.grow_node(value, node, depth + 1)
+                else:
+                    parent_node.add_child(key, value)
+
+        parent_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
+
     def regrow_tree(self):
         try:
             if not self._batch_file_path:
@@ -353,49 +386,7 @@ class BatchManager:
             file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
 
             if self._batch:
-                for task_index, task in enumerate(self._batch):
-
-                    if not task[SCENE_PATH]:
-                        break
-
-                    task_node = file_root.add_child(
-                        task_index,
-                        basename(task[SCENE_PATH]),
-                        NODETYPE_BATCHTASK
-                    )
-
-                    for param_key, param_value in iter(sorted(task.iteritems())):
-
-                        if isinstance(param_value, (list, tuple)):
-                            param_node = task_node.add_child(
-                                param_key,
-                                LIST,
-                                NODETYPE_TASKPARAM_MULTI
-                            )
-
-                            for k, v in enumerate(param_value):
-                                param_node.add_child(k, v, NODETYPE_TASKPARAM_SUB)
-
-                            param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
-
-                        elif isinstance(param_value, dict):
-                            param_node = task_node.add_child(
-                                param_key,
-                                DICT,
-                                NODETYPE_TASKPARAM_MULTI
-                            )
-
-                            for k, v in param_value.iteritems():
-                                param_node.add_child(k, v)
-
-                            param_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
-
-                        else:
-                            task_node.add_child(param_key, param_value, NODETYPE_TASKPARAM)
-
-                    task_node.add_child(ADD_PARAM, EMPTY, NODETYPE_ADDNODE)
-
-            file_root.add_child(ADD_TASK, EMPTY, NODETYPE_ADDNODE)
+                self.grow_node(self._batch, file_root)
 
             return self._tree
 
@@ -435,6 +426,10 @@ class BatchManager:
 
         else:
             return False
+
+    def bumpByKey(self, keys, direction):
+        # TODO bumpByKey to reorder tasks
+        pass
 
     def get_by_keys(self, keys):
         obj = self._batch
@@ -669,6 +664,24 @@ class removeBatchSel(lxu.command.BasicCommand):
             keys = i.ancestor_keys()
 
             _BATCH.remove_by_key(keys)
+            _BATCH.save_to_file()
+
+            BatchTreeView.notify_NewShape()
+
+
+class bumpBatchSel(lxu.command.BasicCommand):
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('up/down', lx.symbol.sTYPE_STRING)
+
+    def basic_Execute(self, msg, flags):
+        direction = self.dyna_String(0)
+
+        sel = _BATCH.get_selection()
+        for i in sel:
+            keys = i.ancestor_keys()
+
+            _BATCH.bumpByKey(keys,direction)
             _BATCH.save_to_file()
 
             BatchTreeView.notify_NewShape()

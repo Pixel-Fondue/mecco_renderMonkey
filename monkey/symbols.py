@@ -19,6 +19,7 @@ CMD_newBatchFile = 'monkey.newBatchFile'
 CMD_saveBatchAs = 'monkey.saveBatchAs'
 
 BATCHFILE = "batch_file"
+PARAMETERS = "parameters"
 SCENE_PATH = "scene"
 FORMAT = "format"
 FRAMES = "frames"
@@ -48,8 +49,8 @@ TREE_ROOT_TITLE = 'Tasks'
 TASK = 'Task'
 SCENE = 'Scene'
 ITEM = 'item'
-LIST = 'list'
-DICT = 'dict'
+LIST = '(list)'
+DICT = '(dict)'
 EMPTY = ''
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add control...)'
@@ -62,6 +63,7 @@ OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
 LXO_FILE = '$LXOB'
 VPTYPE = 'vpapplication'
 SP = " "
+
 NODETYPE_BATCHFILE = 'batchFile'
 NODETYPE_BATCHTASK = 'batchTask'
 NODETYPE_TASKPARAM = 'taskParam'
