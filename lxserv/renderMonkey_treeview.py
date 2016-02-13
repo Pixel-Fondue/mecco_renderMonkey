@@ -22,6 +22,14 @@ fTREE_VIEW_ITEM_ATTR = 0x00000001
 fTREE_VIEW_ITEM_EXPAND = 0x00000002
 fTREE_VIEW_ATTR_EXPAND = 0x00000004
 
+REGIONS = [NODETYPE_BATCHFILE,
+           NODETYPE_BATCHTASK,
+           NODETYPE_TASKPARAM,
+           NODETYPE_TASKPARAM_MULTI,
+           NODETYPE_TASKPARAM_SUB,
+           NODETYPE_ADDNODE,
+           NODETYPE_NULL]
+
 
 class TreeNode(object):
 
@@ -307,7 +315,7 @@ class BatchManager:
             if file_path:
                 return monkey.io.write_yaml(self._batch, file_path)
             else:
-                file_path = monkey.util.path_alias('%s:%s' % (KIT_ALIAS, QUICK_BATCH_PATH))
+                file_path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
                 return self.save_to_file(file_path)
 
         except:
@@ -608,7 +616,7 @@ class BatchTreeView(lxifc.TreeView,
     def treeview_IsInputRegion(self, column_index, regionID):
         if regionID == 0:
             return True
-        elif column_index == regionID - 1:
+        if self.targetNode().nodeType() == REGIONS[regionID]:
             return True
 
         return False
@@ -676,7 +684,7 @@ class exampleBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_save_dialog()
         if path:
-            lx.eval('%s {%s}' % (CMD_batchTemplate,path))
+            lx.eval('{} {{{}}}'.format(CMD_batchTemplate,path))
             _BATCH.load_from_file(path)
             BatchTreeView.notify_NewShape()
 
@@ -684,7 +692,7 @@ class exampleBatch(lxu.command.BasicCommand):
 class openBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH._batch_file_path:
-            lx.eval('file.open {%s}' % _BATCH._batch_file_path)
+            lx.eval('file.open {{{}}}'.format(_BATCH._batch_file_path))
 
 
 class revealBatchInFilesystem(lxu.command.BasicCommand):
@@ -715,15 +723,7 @@ class saveBatchAs(lxu.command.BasicCommand):
 
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
-sINMAP = "name[{}] regions[1@{} 2@{} 3@{} 4@{} 5@{} 6@{} 7@{}]".format(sSRV_USERNAME,
-                                                                       NODETYPE_BATCHFILE,
-                                                                       NODETYPE_BATCHTASK,
-                                                                       NODETYPE_TASKPARAM,
-                                                                       NODETYPE_TASKPARAM_MULTI,
-                                                                       NODETYPE_TASKPARAM_SUB,
-                                                                       NODETYPE_ADDNODE,
-                                                                       NODETYPE_NULL
-                                                                       )
+sINMAP = "name[{}] regions[{}]".format(sSRV_USERNAME," ".join(['{}@{}'.format(n, i) for n, i in enumerate(REGIONS)]))
 
 tags = {lx.symbol.sSRV_USERNAME: sSRV_USERNAME,
         lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
