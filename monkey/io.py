@@ -106,18 +106,8 @@ def read_yaml(file_path):
     Note: YAML does not support hard tabs (\t), so this script replaces those with four spaces ('    ').
     """
 
-    try:
-        yaml_file = open(file_path, 'r')
-    except:
-        util.debug(traceback.format_exc())
-        return False
-
-    try:
-        yaml_object = yaml.safe_load(re.sub('\\t', '    ', yaml_file.read()))
-    except:
-        util.debug(traceback.format_exc())
-        yaml_file.close()
-        return False
+    yaml_file = open(file_path, 'r')
+    yaml_object = yaml.safe_load(re.sub('\\t', '    ', yaml_file.read()))
 
     yaml_file.close()
     return yaml_object

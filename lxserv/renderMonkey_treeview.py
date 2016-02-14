@@ -6,7 +6,6 @@ import monkey
 from monkey.symbols import *
 from monkey.util import debug, markup, bitwise_rgb, bitwise_hex, breakpoint
 
-import traceback
 from os.path import basename
 
 RED = markup('c',bitwise_rgb(255,0,0))
@@ -111,7 +110,9 @@ class TreeNode(object):
 
     def name(self):
         m = ''
-        if self._node_type in (NODETYPE_ADDNODE,NODETYPE_NULL):
+        if self._node_type == NODETYPE_BATCHTASK:
+            m = ''
+        elif self._node_type in (NODETYPE_ADDNODE,NODETYPE_NULL):
             m = GRAY
         elif self._node_type == NODETYPE_BATCHFILE:
             m = FONT_BOLD
@@ -200,162 +201,77 @@ class TreeNode(object):
 
 class BatchManager:
 
-    def __init__(self, batch_file_path='', batch=None):
+    def __init__(self, batch_file_path=''):
         self._batch_file_path = batch_file_path
-        self._batch = batch if batch else []
         self._tree = TreeNode(TREE_ROOT_TITLE,LIST)
-
-        if self._batch_file_path:
-            self.load_from_file()
 
         self.regrow_tree()
 
+    def tree_root(self):
+        return self._tree.child_by_key(BATCHFILE)
+
     def add_task(self, paths_list):
-        try:
-            if not self._batch_file_path:
-                self.save_temp_file()
+        if not self._batch_file_path:
+            self.save_temp_file()
 
-            if not paths_list:
-                return False
-
-            if not isinstance(paths_list, list):
-                paths_list = [paths_list]
-
-            for path in paths_list:
-                self._batch.append({
-                    SCENE_PATH: path,
-                    FORMAT: monkey.defaults.get('filetype'),
-                    FRAMES: monkey.defaults.get('frames'),
-                    DESTINATION: monkey.defaults.get('destination'),
-                    PATTERN: monkey.defaults.get('output_pattern'),
-                    GROUPS: [],
-                    WIDTH: None,
-                    HEIGHT: None,
-                    OUTPUTS: [],
-                    CAMERA: '',
-                    RENDER_CHANNELS: {}
-                })
-
-            self.save_to_file()
-            self.regrow_tree()
-
-            return self._batch
-
-        except:
-            debug(traceback.print_exc())
+        if not paths_list:
             return False
 
-    def clear_all_task_parameters(self, task_index):
-        try:
-            self._batch[task_index] = {}
+        if not isinstance(paths_list, list):
+            paths_list = [paths_list]
 
-            self.save_to_file()
-            self.regrow_tree()
+        nodes = []
+        for path in paths_list:
+            task = {
+                SCENE_PATH: path,
+                FORMAT: monkey.defaults.get('filetype'),
+                FRAMES: monkey.defaults.get('frames'),
+                DESTINATION: monkey.defaults.get('destination'),
+                PATTERN: monkey.defaults.get('output_pattern'),
+                GROUPS: [],
+                WIDTH: None,
+                HEIGHT: None,
+                OUTPUTS: [],
+                CAMERA: '',
+                RENDER_CHANNELS: {}
+            }
+            nodes.append(self.grow_node(task,self.tree_root()))
 
-            return self._batch[task_index]
-
-        except:
-            debug(traceback.print_exc())
-            return False
-
-    def clear_task_parameters(self, task_index, parameters_list):
-        try:
-            for p in parameters_list:
-                if p in self._batch[task_index]:
-                    del self._batch[task_index][p]
-
-            self.save_to_file()
-            self.regrow_tree()
-
-            return self._batch[task_index]
-
-        except:
-            debug(traceback.print_exc())
-            return False
-
-    def edit_task(self, task_index, parameters_dict):
-        try:
-            for k, v in parameters_dict.iteritems():
-                self._batch[task_index][k] = v
-
-            self.save_to_file()
-            self.regrow_tree()
-
-            return self._batch[task_index]
-
-        except:
-            debug(traceback.print_exc())
-            return False
+        self.save_to_file()
+        return nodes if len(nodes) > 1 else nodes[0]
 
     def load_from_file(self, file_path=None):
-        try:
-            if file_path is None:
-                file_path = self._batch_file_path
-            else:
-                self._batch_file_path = file_path
+        if file_path is None:
+            file_path = self._batch_file_path
+        else:
+            self._batch_file_path = file_path
 
-            self._batch = monkey.io.read_yaml(file_path)
-            self.regrow_tree()
+        return self.regrow_tree()
 
-            return self._batch
-        except:
-            debug(traceback.print_exc())
+    def read_from_file(self):
+        if not self._batch_file_path:
             return False
+
+        batch = monkey.io.read_yaml(self._batch_file_path)
+        return batch
 
     def close_file(self):
-        try:
-            self._tree.clear_selection()
-            self.build_empty_tree()
-            self._batch_file_path = None
-            self._batch = None
-
-            return self._batch
-        except:
-            debug(traceback.print_exc())
-            return False
+        self._tree.clear_selection()
+        self.build_empty_tree()
+        self._batch_file_path = None
 
     def save_to_file(self, file_path=None):
-        try:
-            if file_path:
-                self._batch_file_path = file_path
-                return monkey.io.write_yaml(self._batch, file_path)
-
-            elif self._batch_file_path:
-                return monkey.io.write_yaml(self._batch, self._batch_file_path)
-
+        if not file_path:
+            if self._batch_file_path:
+                file_path = self._batch_file_path
             else:
-                return self.save_batch_as()
+                file_path = monkey.io.yaml_save_dialog()
 
-        except:
-            debug(traceback.print_exc())
-            return False
+        return monkey.io.write_yaml(self.tree_to_object(), file_path)
 
-    def save_temp_file(self, file_path=None):
-        try:
-            if file_path:
-                return monkey.io.write_yaml(self._batch, file_path)
-            else:
-                file_path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
-                return self.save_to_file(file_path)
-
-        except:
-            debug(traceback.print_exc())
-            return False
-
-    def save_batch_as(self, file_path=None):
-        try:
-            if file_path:
-                self._batch_file_path = file_path
-                return self.save_to_file()
-            else:
-                path = monkey.io.yaml_save_dialog()
-                if path:
-                    return self.save_to_file(path)
-                else:
-                    return False
-        except:
-            debug(traceback.print_exc())
-            return False
+    def save_temp_file(self):
+        file_path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
+        return self.save_to_file(file_path)
 
     def iterate_anything(self, obj):
         if isinstance(obj, (list, tuple)):
@@ -385,56 +301,74 @@ class BatchManager:
         parent_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
     def regrow_tree(self):
-        try:
-            if not self._batch_file_path:
-                return self.build_empty_tree()
+        if not self._batch_file_path:
+            return self.build_empty_tree()
 
-            self._tree.clear_children()
+        self._tree.clear_children()
 
-            file_root = self._tree.add_child(
-                BATCHFILE,
-                FONT_BOLD + basename(self._batch_file_path),
-                NODETYPE_BATCHFILE
-            )
+        file_root = self._tree.add_child(
+            BATCHFILE,
+            FONT_BOLD + basename(self._batch_file_path),
+            NODETYPE_BATCHFILE
+        )
 
-            file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
+        file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
 
-            if self._batch:
-                self.grow_node(self._batch, file_root)
+        batch = self.read_from_file()
+        if batch:
+            self.grow_node(batch, file_root)
 
-            return self._tree
-
-        except:
-            debug(traceback.print_exc())
-            return False
+        return self._tree
 
     def build_empty_tree(self):
-        try:
-            self._tree.clear_children()
-            self._tree.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
-            self._tree.clear_selection()
-            return self._tree
-        except:
-            debug(traceback.print_exc())
-            return False
+        self._tree.clear_children()
+        self._tree.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
+        self._tree.clear_selection()
+        return self._tree
+
+    def read_node(self, node):
+        if node.value_type() in (list.__name__, tuple.__name__):
+            object = []
+            for child in node.children():
+                child_value = self.read_node(child)
+                if child_value is not None:
+                    object.append(child_value)
+            return object
+
+        elif node.value_type() == dict.__name__:
+            object = {}
+            for child in node.children():
+                child_value = self.read_node(child)
+                if child_value is not None:
+                    object[child._key] = child_value
+            return object
+
+        else:
+            if not node.value_type():
+                return None
+            from pydoc import locate
+            _type = locate(node.value_type())
+            return _type(node._value)
+
+    def tree_to_object(self):
+        batch = []
+        for i in self._tree.child_by_key(BATCHFILE)._children:
+            if i.value_type() is not None:
+                batch.append(self.read_node(i))
+        return batch
 
     def batch_file_path(self):
         return self._batch_file_path
 
     def remove_by_key(self, keys):
-        obj = self._batch
         if keys:
-            for key in keys[:-1]:
-                obj = obj[key]
-            del obj[keys[-1]]
+            node = self.tree().get_by_keys(keys)
+            parent = node.parent()
 
-            self.tree().get_by_keys(keys).destroy()
+            node.destroy()
 
-            if len(keys) > 1:
-                if type(self.get_by_keys(keys[:-1])) in (list, tuple):
-                    self.tree().get_by_keys(keys[:-1]).update_child_keys()
-            else:
-                self.tree().update_child_keys()
+            if parent.value_type() in (list, tuple):
+                parent.update_child_keys()
 
             return True
 
@@ -445,15 +379,6 @@ class BatchManager:
         # TODO bumpByKey to reorder tasks
         pass
 
-    def get_by_keys(self, keys):
-        obj = self._batch
-        if keys:
-            for key in keys[:-1]:
-                obj = obj[key]
-            return obj[keys[-1]]
-        else:
-            return obj
-
     def get_selection(self):
         return self._tree.selected_children()
 
@@ -462,9 +387,6 @@ class BatchManager:
 
     def tree(self):
         return self._tree.child_by_key(BATCHFILE)
-
-    def batch(self):
-        return self._batch
 
 
 _BATCH = BatchManager()
@@ -703,8 +625,8 @@ class bumpBatchSel(lxu.command.BasicCommand):
 
 class runCurrentBatch(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batch_file_path:
-            return monkey.batch.run(_BATCH._batch_file_path)
+        if _BATCH.batch_file_path():
+            return monkey.batch.run(_BATCH.batch_file_path())
 
 
 class exampleBatch(lxu.command.BasicCommand):
@@ -718,14 +640,14 @@ class exampleBatch(lxu.command.BasicCommand):
 
 class openBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batch_file_path:
-            lx.eval('file.open {{{}}}'.format(_BATCH._batch_file_path))
+        if _BATCH.batch_file_path():
+            lx.eval('file.open {{{}}}'.format(_BATCH.batch_file_path()))
 
 
 class revealBatchInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        if _BATCH._batch_file_path:
-            lx.eval('file.revealInFileViewer {{{}}}'.format(_BATCH._batch_file_path))
+        if _BATCH.batch_file_path():
+            lx.eval('file.revealInFileViewer {{{}}}'.format(_BATCH.batch_file_path()))
 
 
 class newBatchFile(lxu.command.BasicCommand):
@@ -742,9 +664,7 @@ class saveBatchAs(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_save_dialog()
         if path:
-            monkey.io.write_yaml(_BATCH.batch(),path)
-
-            _BATCH.load_from_file(path)
+            _BATCH.save_to_file(path)
             BatchTreeView.notify_NewShape()
 
 
