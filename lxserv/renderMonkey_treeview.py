@@ -35,11 +35,12 @@ class TreeNode(object):
 
     _primary = None
 
-    def __init__(self, key, value=None, parent=None, nodeType=None):
+    def __init__(self, key, value=None, parent=None, node_type=None, value_type=None):
         self._key = key
         self._value = value
         self._parent = parent
-        self._nodeType = nodeType
+        self._node_type = node_type
+        self._value_type = value_type
         self._children = []
         self._state = 0
         self._selected = False
@@ -56,8 +57,8 @@ class TreeNode(object):
     def primary(cls):
         return cls._primary
 
-    def add_child(self, key, value=None, nodeType=None):
-        self._children.append(TreeNode(key, value, self, nodeType))
+    def add_child(self, key, value=None, node_type=None, value_type=None):
+        self._children.append(TreeNode(key, value, self, node_type, value_type))
         return self._children[-1]
 
     def clear_children(self):
@@ -74,7 +75,7 @@ class TreeNode(object):
         for child in self._children:
             child.clear_selection()
 
-    def set_selected(self,val=True):
+    def set_selected(self, val=True):
         if val:
             self.set_primary(self)
         self._selected = val
@@ -82,36 +83,35 @@ class TreeNode(object):
     def is_selected(self):
         return self._selected
 
-    def set_state(self,flag):
+    def set_state(self, flag):
         self._state = self._state | flag
 
-    def set_tooltip(self,idx,tip):
+    def set_tooltip(self, idx, tip):
         self._tooltips[idx] = tip
 
-    def tooltip(self,idx):
+    def tooltip(self, idx):
         if self._tooltips.has_key(idx):
             return self._tooltips[idx]
 
     def value(self):
         m = ''
-        if self._nodeType == NODETYPE_TASKPARAM_MULTI:
-            m = GRAY + FONT_ITALIC
-        elif self._nodeType == NODETYPE_BATCHTASK:
+        if self._value_type in (list.__name__,dict.__name__,tuple.__name__):
             m = GRAY
 
-        if self._value in (LIST, DICT):
+        elif self._node_type == NODETYPE_BATCHTASK:
+            m = GRAY
+
+        elif self._node_type == NODETYPE_ADDNODE:
             m = GRAY
 
         return m + str(self._value)
 
     def name(self):
         m = ''
-        if self._nodeType in (NODETYPE_ADDNODE,NODETYPE_NULL):
+        if self._node_type in (NODETYPE_ADDNODE,NODETYPE_NULL):
             m = GRAY
-        elif self._nodeType == NODETYPE_BATCHFILE:
+        elif self._node_type == NODETYPE_BATCHFILE:
             m = FONT_BOLD
-        elif self._nodeType == NODETYPE_TASKPARAM_SUB:
-            m = GRAY
 
         k = str(self._key)
         k = k.replace('_',' ')
@@ -122,12 +122,19 @@ class TreeNode(object):
     def key(self):
         return str(self._key)
 
-    def nodeType(self):
-        return str(self._nodeType)
+    def node_type(self):
+        return str(self._node_type)
 
-    def set_nodeType(self, prefix):
-        self._nodeType = prefix
-        return self._nodeType
+    def set_node_type(self, node_type):
+        self._node_type = node_type
+        return self._node_type
+
+    def value_type(self):
+        return self._value_type
+
+    def set_value_type(self, value_type):
+        self._value_type = value_type
+        return self._value_type
 
     def columns(self):
         return self._columns
@@ -340,33 +347,40 @@ class BatchManager:
             debug(traceback.print_exc())
             return False
 
+    def iterate_anything(self, obj):
+        if isinstance(obj, (list, tuple)):
+            return {k+1:v for k, v in enumerate(obj)}.iteritems()
+        if isinstance(obj, dict):
+            return obj.iteritems()
+
     def grow_node(self, branch, parent_node, depth=0):
-        if isinstance(branch, (list, tuple)):
-            for index, value in enumerate(branch):
-                if isinstance(value, (list, tuple, dict)):
 
-                    if depth == 0:
-                        node_type = NODETYPE_BATCHTASK
-                        display_key = "{:02d}: {}".format(index + 1, basename(value[SCENE_PATH]))
-                        display_value = value[SCENE_PATH]
-                    else:
-                        node_type = NODETYPE_NULL
-                        display_key = index + 1
-                        display_value = LIST if isinstance(value,(list, tuple)) else DICT
+        if depth == 0:      node_type = NODETYPE_BATCHTASK
+        elif depth == 1:    node_type = NODETYPE_TASKPARAM
+        elif depth == 2:    node_type = NODETYPE_TASKPARAM_SUB
+        else:               node_type = NODETYPE_NULL
 
-                    node = parent_node.add_child(display_key, display_value, node_type)
-                    self.grow_node(value, node, depth + 1)
+        if isinstance(branch, (list, tuple, dict)):
+            for key, value in self.iterate_anything(branch):
+
+                value_type = type(value).__name__
+
+                if depth == 0:
+                    tier_key = basename(value[SCENE_PATH])
+                    tier_value = value[SCENE_PATH]
                 else:
-                    parent_node.add_child(index + 1, value)
+                    tier_key = key
+                    tier_value = type(value).__name__
 
-        elif isinstance(branch, dict):
-            for key, value in branch.iteritems():
-                display_value = LIST if isinstance(value,(list, tuple)) else DICT
+                if depth == 1 and key == SCENE_PATH:
+                    continue
+
                 if isinstance(value, (list, tuple, dict)):
-                    node = parent_node.add_child(key, display_value)
+                    node = parent_node.add_child(tier_key, tier_value, node_type, value_type)
                     self.grow_node(value, node, depth + 1)
+
                 else:
-                    parent_node.add_child(key, value)
+                    parent_node.add_child(key, value, node_type, value_type)
 
         parent_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
 
@@ -611,7 +625,7 @@ class BatchTreeView(lxifc.TreeView,
     def treeview_IsInputRegion(self, column_index, regionID):
         if regionID == 0:
             return True
-        if self.targetNode().nodeType() == REGIONS[regionID]:
+        if self.targetNode().node_type() == REGIONS[regionID]:
             return True
 
         return False
