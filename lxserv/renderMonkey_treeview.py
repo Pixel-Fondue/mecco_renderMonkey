@@ -4,7 +4,7 @@ import lx, lxu, lxifc
 
 import monkey
 from monkey.symbols import *
-from monkey.util import debug, markup, bitwise_rgb, bitwise_hex
+from monkey.util import debug, markup, bitwise_rgb, bitwise_hex, breakpoint
 
 import traceback
 from os.path import basename
@@ -97,14 +97,17 @@ class TreeNode(object):
         m = ''
         if self._value_type in (list.__name__,dict.__name__,tuple.__name__):
             m = GRAY
-
         elif self._node_type == NODETYPE_BATCHTASK:
             m = GRAY
-
         elif self._node_type == NODETYPE_ADDNODE:
             m = GRAY
 
-        return m + str(self._value)
+        if self._node_type == NODETYPE_BATCHTASK:
+            v = self.child_by_key(SCENE_PATH).value()
+        else:
+            v = str(self._value)
+
+        return m + v
 
     def name(self):
         m = ''
@@ -112,10 +115,17 @@ class TreeNode(object):
             m = GRAY
         elif self._node_type == NODETYPE_BATCHFILE:
             m = FONT_BOLD
+        elif isinstance(self._key,int):
+            m = GRAY
 
-        k = str(self._key)
-        k = k.replace('_',' ')
-        k = k.title() if "." not in k else k
+        if self._node_type == NODETYPE_BATCHTASK:
+            k = basename(self.child_by_key(SCENE_PATH).value())
+        elif isinstance(self._key,int):
+            k = str(self._key + 1)
+        else:
+            k = str(self._key)
+            k = k.replace('_',' ')
+            k = k.title() if "." not in k else k
 
         return m + k
 
@@ -349,7 +359,7 @@ class BatchManager:
 
     def iterate_anything(self, obj):
         if isinstance(obj, (list, tuple)):
-            return {k+1:v for k, v in enumerate(obj)}.iteritems()
+            return {k:v for k, v in enumerate(obj)}.iteritems()
         if isinstance(obj, dict):
             return obj.iteritems()
 
@@ -361,22 +371,12 @@ class BatchManager:
         else:               node_type = NODETYPE_NULL
 
         if isinstance(branch, (list, tuple, dict)):
-            for key, value in self.iterate_anything(branch):
+            for key, value in sorted(self.iterate_anything(branch)):
 
                 value_type = type(value).__name__
 
-                if depth == 0:
-                    tier_key = basename(value[SCENE_PATH])
-                    tier_value = value[SCENE_PATH]
-                else:
-                    tier_key = key
-                    tier_value = type(value).__name__
-
-                if depth == 1 and key == SCENE_PATH:
-                    continue
-
                 if isinstance(value, (list, tuple, dict)):
-                    node = parent_node.add_child(tier_key, tier_value, node_type, value_type)
+                    node = parent_node.add_child(key, value_type, node_type, value_type)
                     self.grow_node(value, node, depth + 1)
 
                 else:
