@@ -3,6 +3,8 @@
 import lx
 import os
 
+from symbols import *
+
 DEFAULTS = {
     'filetype': 'JPG',
     'frames': '1',
@@ -31,3 +33,16 @@ def get(key):
         return DEFAULTS[key]
     else:
         return False
+
+TASK_PARAMS = {
+                FORMAT: DEFAULTS['filetype'],
+                FRAMES: DEFAULTS['frames'],
+                DESTINATION: DEFAULTS['destination'],
+                PATTERN: DEFAULTS['output_pattern'],
+                GROUPS: [],
+                WIDTH: None,
+                HEIGHT: None,
+                OUTPUTS: [],
+                CAMERA: '',
+                RENDER_CHANNELS: {}
+            }

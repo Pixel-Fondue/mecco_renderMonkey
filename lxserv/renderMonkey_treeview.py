@@ -220,25 +220,13 @@ class BatchManager:
         if not isinstance(paths_list, list):
             paths_list = [paths_list]
 
-        nodes = []
         for path in paths_list:
-            task = {
-                SCENE_PATH: path,
-                FORMAT: monkey.defaults.get('filetype'),
-                FRAMES: monkey.defaults.get('frames'),
-                DESTINATION: monkey.defaults.get('destination'),
-                PATTERN: monkey.defaults.get('output_pattern'),
-                GROUPS: [],
-                WIDTH: None,
-                HEIGHT: None,
-                OUTPUTS: [],
-                CAMERA: '',
-                RENDER_CHANNELS: {}
-            }
-            nodes.append(self.grow_node(task,self.tree_root()))
+            task = monkey.defaults.TASK_PARAMS
+            task[SCENE_PATH] = path
+            self.grow_node([task], self.tree_root(), 1)
 
         self.save_to_file()
-        return nodes if len(nodes) > 1 else nodes[0]
+        self.regrow_tree()
 
     def load_from_file(self, file_path=None):
         if file_path is None:
@@ -267,6 +255,7 @@ class BatchManager:
             else:
                 file_path = monkey.io.yaml_save_dialog()
 
+        self._batch_file_path = file_path
         return monkey.io.write_yaml(self.tree_to_object(), file_path)
 
     def save_temp_file(self):
@@ -322,7 +311,16 @@ class BatchManager:
 
     def build_empty_tree(self):
         self._tree.clear_children()
-        self._tree.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
+
+        file_root = self._tree.add_child(
+            BATCHFILE,
+            GRAY + NO_FILE_SELECTED,
+            NODETYPE_BATCHFILE
+        )
+
+        file_root.set_state(fTREE_VIEW_ITEM_EXPAND)
+
+        file_root.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
         self._tree.clear_selection()
         return self._tree
 
@@ -346,8 +344,13 @@ class BatchManager:
         else:
             if not node.value_type():
                 return None
+
             from pydoc import locate
             _type = locate(node.value_type())
+
+            if _type is None:
+                return None
+
             return _type(node._value)
 
     def tree_to_object(self):

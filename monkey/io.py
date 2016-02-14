@@ -145,10 +145,9 @@ def yamlize(data):
 
 
 def write_yaml(data, output_path):
-    try:
-        target = open(output_path, 'w')
-        target.write(yamlize(data))
-        target.close()
-        return True
-    except:
+    if not test_writeable(os.path.dirname(output_path)):
         return False
+
+    target = open(output_path, 'w')
+    target.write(yamlize(data))
+    target.close()

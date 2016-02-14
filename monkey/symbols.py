@@ -45,6 +45,7 @@ EMPTY_PROMPT = 'no batch file'
 EMPTY_TASKS = 'no tasks'
 ADD_GENERIC = '(add...)'
 SELECT_BATCH_FILE_PROMPT = '(select batch file)'
+NO_FILE_SELECTED = "(no batch file)"
 TREE_ROOT_TITLE = 'Tasks'
 TASK = 'Task'
 SCENE = 'Scene'
