@@ -107,10 +107,10 @@ def read_yaml(file_path):
     """
 
     yaml_file = open(file_path, 'r')
-    yaml_object = yaml.safe_load(re.sub('\\t', '    ', yaml_file.read()))
+    yaml_data = yaml.safe_load(re.sub('\\t', '    ', yaml_file.read()))
 
     yaml_file.close()
-    return yaml_object
+    return yaml_data
 
 
 def test_writeable(test_dir_path):

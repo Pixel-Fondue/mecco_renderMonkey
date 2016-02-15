@@ -253,7 +253,7 @@ def frames_from_string(input_string="*"):
                 try:
                     frames.append(int(re.split(r"\D", rangeString)[0]))
                 except:
-                    debug('Error in {}'.format(rangeString))
+                    pass
                 continue
 
             bookends = rangeString.split('-')

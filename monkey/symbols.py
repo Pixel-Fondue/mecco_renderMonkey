@@ -5,18 +5,18 @@ from os.path import join
 KIT_ALIAS = 'kit_mecco_renderMonkey'
 QUICK_BATCH_PATH = join('tmp', 'quick_batch.yaml')
 
-CMD_openBatchFile = "monkey.openBatchFile"
-CMD_closeBatchFile = "monkey.closeBatchFile"
-CMD_addBatchTask = "monkey.addBatchTask"
-CMD_removeBatchSel = "monkey.removeBatchSel"
-CMD_runCurrentBatch = "monkey.runCurrentBatch"
-CMD_exampleBatch = "monkey.exampleBatch"
-CMD_openBatchInFilesystem = "monkey.openBatchInFilesystem"
+CMD_OpenBatchFile = "monkey.OpenBatchFile"
+CMD_CloseBatchFile = "monkey.CloseBatchFile"
+CMD_AddBatchTask = "monkey.AddBatchTask"
+CMD_RemoveBatchSel = "monkey.RemoveBatchSel"
+CMD_RunCurrentBatch = "monkey.RunCurrentBatch"
+CMD_ExampleBatch = "monkey.ExampleBatch"
+CMD_OpenBatchInFilesystem = "monkey.OpenBatchInFilesystem"
 CMD_echoSelected = "monkey.echoSelected"
 CMD_batchTemplate = 'monkey.batchTemplate'
-CMD_revealBatchInFilesystem = 'monkey.revealBatchInFilesystem'
-CMD_newBatchFile = 'monkey.newBatchFile'
-CMD_saveBatchAs = 'monkey.saveBatchAs'
+CMD_RevealBatchInFilesystem = 'monkey.RevealBatchInFilesystem'
+CMD_NewBatchFile = 'monkey.NewBatchFile'
+CMD_SaveBatchAs = 'monkey.SaveBatchAs'
 
 BATCHFILE = "batch_file"
 PARAMETERS = "parameters"
