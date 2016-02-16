@@ -41,8 +41,8 @@ TASK_PARAMS = {
                 DESTINATION: DEFAULTS['destination'],
                 PATTERN: DEFAULTS['output_pattern'],
                 GROUPS: [],
-                WIDTH: None,
-                HEIGHT: None,
+                WIDTH: 0,
+                HEIGHT: 0,
                 OUTPUTS: [],
                 CAMERA: '',
                 RENDER_CHANNELS: {}

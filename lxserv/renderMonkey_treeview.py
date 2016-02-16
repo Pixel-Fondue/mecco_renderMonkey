@@ -1,6 +1,6 @@
 # python
 
-import lx, lxu, lxifc
+import lx, lxu, lxifc, modo
 
 import monkey
 from monkey.symbols import *
@@ -25,16 +25,17 @@ class TreeNode(object):
 
     _primary = None
 
-    def __init__(self, key, value=None, parent=None, node_type=None, value_type=None, selectable=True):
+    def __init__(self, key, value=None, parent=None, node_region=None, value_type=None, selectable=True, ui_only=False):
         self._key = key
         self._value = value
         self._parent = parent
-        self._node_region = node_type
+        self._node_region = node_region
         self._value_type = value_type
         self._children = []
         self._state = 0
         self._selected = False
         self._selectable = selectable
+        self._ui_only = ui_only
         self._tooltips = {}
 
         self._columns = ((COL_NAME, -1), (COL_VALUE, -3))
@@ -47,8 +48,8 @@ class TreeNode(object):
     def primary(cls):
         return cls._primary
 
-    def add_child(self, key, value=None, node_type=None, value_type=None, selectable=True):
-        self._children.append(TreeNode(key, value, self, node_type, value_type, selectable))
+    def add_child(self, key, value=None, node_region=None, value_type=None, selectable=True, ui_only=False):
+        self._children.append(TreeNode(key, value, self, node_region, value_type, selectable, ui_only))
         return self._children[-1]
 
     def clear_children(self):
@@ -57,13 +58,19 @@ class TreeNode(object):
                 self._children.remove(child)
 
     def clear_selection(self):
-        if self._primary:
+        if self.primary():
             self.set_primary(None)
 
         self.set_selected(False)
 
         for child in self._children:
             child.clear_selection()
+
+    def ui_only(self):
+        return self._ui_only
+
+    def set_ui_only(self, ui_only=True):
+        self._ui_only = ui_only
 
     def set_selected(self, val=True):
         if val:
@@ -103,6 +110,8 @@ class TreeNode(object):
 
         if self._node_region == REGIONS[1]:
             v = self.child_by_key(SCENE_PATH).raw_value()
+        elif self._value_type == IMAGE_FORMAT:
+            v = monkey.util.get_imagesaver(self._value)[1]
         else:
             v = str(self._value)
 
@@ -114,7 +123,7 @@ class TreeNode(object):
             m = ''
         elif self._node_region in (REGIONS[5], REGIONS[6]):
             m = GRAY
-        elif self._node_region == REGIONS[0]:
+        elif self._node_region == REGIONS[7]:
             m = FONT_BOLD
         elif isinstance(self._key, int):
             m = GRAY
@@ -139,9 +148,12 @@ class TreeNode(object):
     def node_region(self):
         return str(self._node_region)
 
-    def set_node_region(self, node_type):
-        self._node_region = node_type
+    def set_node_region(self, node_region):
+        self._node_region = node_region
         return self._node_region
+
+    def set_value(self,value):
+        self._value = value
 
     def value_type(self):
         return self._value_type
@@ -193,30 +205,42 @@ class TreeNode(object):
     def insert_child(self, index, node):
         self._children.insert(index, node)
 
-    def parent_index(self):
+    def parent_child_index(self):
         return self.parent().children().index(self)
 
-    def set_parent_index(self,index):
+    def set_parent_child_index(self,index):
         self.destroy()
         self.parent().insert_child(index, self)
 
     def reorder_up(self):
-        if self.parent_index() > 0:
-            self.set_parent_index(self.parent_index()-1)
+        if self.parent_child_index() > 0:
+            self.set_parent_child_index(self.parent_child_index()-1)
 
     def reorder_down(self):
-        if self.parent_index() + 1 < len(
-                [i for i in self.parent().children() if i.selectable()]
+        if self.parent_child_index() + 1 < len(
+                [i for i in self.parent().children() if not i.ui_only()]
         ):
-            self.set_parent_index(self.parent_index()+1)
+            self.set_parent_child_index(self.parent_child_index()+1)
 
     def reorder_top(self):
-        self.set_parent_index(0)
+        self.set_parent_child_index(0)
 
     def reorder_bottom(self):
-        self.set_parent_index(
-            len([i for i in self.parent().children() if i.selectable()]) - 1
+        self.set_parent_child_index(
+            len([i for i in self.parent().children() if not i.ui_only()]) - 1
         )
+        
+    def select_shift_up(self):
+        if self.parent_child_index() > 0:
+            self.set_selected(False)
+            self.parent().children()[self.parent_child_index() - 1].set_selected()
+
+    def select_shift_down(self):
+        if self.parent_child_index() + 1 < len(
+                [i for i in self.parent().children() if not i.ui_only()]
+        ):
+            self.set_selected(False)
+            self.parent().children()[self.parent_child_index() + 1].set_selected()
 
     def update_child_keys(self):
         for key, child in enumerate(sorted(self.children(), key=lambda x: x.key())):
@@ -292,24 +316,33 @@ class BatchManager:
 
     def grow_node(self, branch, parent_node, depth=0):
 
-        if depth == 0:      node_type = REGIONS[1]
-        elif depth == 1:    node_type = REGIONS[2]
-        elif depth == 2:    node_type = REGIONS[4]
-        else:               node_type = REGIONS[6]
+        if depth == 0:      node_region = REGIONS[1]
+        elif depth == 1:    node_region = REGIONS[2]
+        elif depth == 2:    node_region = REGIONS[4]
+        else:               node_region = REGIONS[6]
 
         if isinstance(branch, (list, tuple, dict)):
             for key, value in sorted(self.iterate_anything(branch)):
 
-                value_type = type(value).__name__
+                if key == SCENE_PATH:
+                    value_type = PATH_OPEN_SCENE
+                elif key == DESTINATION:
+                    value_type = PATH_SAVE_IMAGE
+                elif key == FORMAT:
+                    value_type = IMAGE_FORMAT
+                elif key == FRAMES:
+                    value_type = FRAME_RANGE
+                else:
+                    value_type = type(value).__name__
 
                 if isinstance(value, (list, tuple, dict)):
-                    node = parent_node.add_child(key, value_type, node_type, value_type)
+                    node = parent_node.add_child(key, value_type, node_region, value_type)
                     self.grow_node(value, node, depth + 1)
 
                 else:
-                    parent_node.add_child(key, value, node_type, value_type)
+                    parent_node.add_child(key, value, node_region, value_type)
 
-        parent_node.add_child(ADD_GENERIC, EMPTY, REGIONS[5], selectable=False)
+        parent_node.add_child(ADD_GENERIC, EMPTY, REGIONS[5], selectable=False, ui_only=True)
 
     def regrow_tree(self):
         batch_file_path = self._batch_file_path if self._batch_file_path else NO_FILE_SELECTED
@@ -320,7 +353,7 @@ class BatchManager:
         batch_root_node = self._tree.add_child(
             BATCHFILE,
             batch_file_path,
-            REGIONS[0]
+            REGIONS[7]
         )
 
         batch_root_node.add_state_flag(fTREE_VIEW_ITEM_EXPAND)
@@ -330,7 +363,7 @@ class BatchManager:
             self.grow_node(batch, batch_root_node)
 
         if len(batch_root_node.children()) == 0:
-            batch_root_node.add_child(EMPTY_PROMPT, EMPTY, REGIONS[6], selectable=False)
+            batch_root_node.add_child(EMPTY_PROMPT, EMPTY, REGIONS[6], selectable=False, ui_only=True)
 
         return self._tree
 
@@ -338,30 +371,32 @@ class BatchManager:
         if node.value_type() in (list.__name__, tuple.__name__):
             data = []
             for child in node.children():
-                child_value = self.node_data(child)
-                if child_value is not None:
+                if not child.ui_only():
+                    child_value = self.node_data(child)
                     data.append(child_value)
             return data
 
         elif node.value_type() == dict.__name__:
             data = {}
             for child in node.children():
-                child_value = self.node_data(child)
-                if child_value is not None:
+                if not child.ui_only():
+                    child_value = self.node_data(child)
                     data[child.key()] = child_value
             return data
 
+        elif node.value_type() in (PATH_SAVE_IMAGE,
+                                   PATH_SAVE_SCENE,
+                                   PATH_OPEN_SCENE,
+                                   IMAGE_FORMAT,
+                                   str.__name__,
+                                   int.__name__,
+                                   float.__name__,
+                                   bool.__name__
+                                   ):
+            return node.raw_value()
+
         else:
-            if not node.value_type():
-                return None
-
-            from pydoc import locate
-            _type = locate(node.value_type())
-
-            if _type is None:
-                return None
-
-            return _type(node.raw_value())
+            return None
 
     def tree_to_object(self):
         batch = []
@@ -573,7 +608,7 @@ class BatchAddTask(lxu.command.BasicCommand):
             BatchTreeView.notify_NewShape()
 
 
-class BatchDeleteSel(lxu.command.BasicCommand):
+class BatchDeleteNodes(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         sel = _BATCH.tree().selected_children()
         _BATCH.tree().clear_selection()
@@ -586,7 +621,7 @@ class BatchDeleteSel(lxu.command.BasicCommand):
         BatchTreeView.notify_NewShape()
 
 
-class BatchReorderSel(lxu.command.BasicCommand):
+class BatchReorderNodes(lxu.command.BasicCommand):
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
         self.dyna_Add('mode', lx.symbol.sTYPE_STRING)
@@ -618,6 +653,156 @@ class BatchReorderSel(lxu.command.BasicCommand):
         _BATCH.tree().clear_selection()
         for node in sel:
             node.set_selected()
+
+
+class BatchSelectShift(lxu.command.BasicCommand):
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('mode', lx.symbol.sTYPE_STRING)
+        self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
+
+    def basic_Execute(self, msg, flags):
+        mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else SELECT_SHIFT_ARGS['UP']
+
+        if mode not in [v for k, v in SELECT_SHIFT_ARGS.iteritems()]:
+            lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().selected_children()
+
+        for node in sel:
+            if mode == SELECT_SHIFT_ARGS['UP']:
+                node.select_shift_up()
+            elif mode == SELECT_SHIFT_ARGS['DOWN']:
+                node.select_shift_down()
+
+        BatchTreeView.notify_NewShape()
+
+        # Unsure why we lose selection, but we do. Have to re-select.
+        _BATCH.tree().clear_selection()
+        for node in sel:
+            node.set_selected()
+
+
+class BatchEditNodes(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        primary_node = _BATCH.tree().primary()
+        if not primary_node:
+            lx.out("Nothing selected.")
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().children()[0].selected_children()
+        if len(set([i.value_type() for i in sel])) > 1:
+            sel = [_BATCH.tree().primary()]
+
+        if primary_node.node_region() == REGIONS[1]:
+            path = monkey.io.lxo_open_dialog()
+            if path is not False:
+                for node in sel:
+                    node.child_by_key(SCENE_PATH).set_value(path)
+
+        elif primary_node.value_type() == PATH_OPEN_SCENE:
+            path = monkey.io.lxo_open_dialog()
+            if path is not False:
+                for node in sel:
+                    node.set_value(path)
+
+        elif primary_node.value_type() == PATH_SAVE_IMAGE:
+            path = monkey.io.image_save_dialg()
+            format = lx.eval("dialog.fileSaveFormat ? format")
+
+            if path is not False:
+                for node in sel:
+                    node.set_value(path)
+                    if node.parent().child_by_key(FORMAT):
+                        node.parent().child_by_key(FORMAT).set_value(format)
+                    else:
+                        node.parent().add_child(FORMAT, format, REGIONS[2], IMAGE_FORMAT)
+
+        elif primary_node.value_type() == IMAGE_FORMAT:
+            path = monkey.io.image_save_dialg()
+            format = lx.eval("dialog.fileSaveFormat ? format")
+
+            if path is not False:
+                for node in sel:
+                    node.parent().child_by_key(SCENE_PATH).set_value(path)
+                    node.set_value(format)
+
+        elif primary_node.value_type() == FRAME_RANGE:
+            lx.eval('monkey.BatchEditString')
+            frames_list = monkey.util.frames_from_string(primary_node.raw_value())
+            if not frames_list:
+                modo.dialogs.alert('Invalid Frame Range','Invalid frame range.','error')
+            else:
+                for node in sel:
+                    node.set_value(''.join([i for i in primary_node.raw_value() if i in "0123456789-:,"]))
+
+
+        elif primary_node.value_type() in (int.__name__, float.__name__):
+            try:
+                lx.eval('monkey.BatchEditNumber')
+            except:
+                pass
+
+        elif primary_node.value_type() == (str.__name__):
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        BatchTreeView.notify_NewAttributes()
+        _BATCH.save_to_file()
+
+
+class BatchEditNumber(lxu.command.BasicCommand):
+
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('value', lx.symbol.sTYPE_FLOAT)
+
+    def basic_Execute(self, msg, flags):
+        if not self.dyna_IsSet(0) or self.dyna_Float(0) is None:
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().children()[0].selected_children()
+        if not sel:
+            return lx.symbol.e_FAILED
+
+        if len(set([i.value_type() for i in sel])) > 1:
+            sel = [_BATCH.tree().primary()]
+
+        for node in sel:
+            if self.dyna_Float(0).is_integer():
+                node.set_value(int(self.dyna_Float(0)))
+            else:
+                node.set_value(self.dyna_Float(0))
+
+    def cmd_DialogInit(self):
+        self.attr_SetFlt(0, float(_BATCH.tree().primary().raw_value()))
+
+
+class BatchEditString(lxu.command.BasicCommand):
+
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('value', lx.symbol.sTYPE_STRING)
+
+    def basic_Execute(self, msg, flags):
+        if not self.dyna_IsSet(0) or self.dyna_String(0) is None:
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().children()[0].selected_children()
+        if not sel:
+            return lx.symbol.e_FAILED
+
+        if len(set([i.value_type() for i in sel])) > 1:
+            sel = [_BATCH.tree().primary()]
+
+        for node in sel:
+            node.set_value(self.dyna_String(0))
+
+    def cmd_DialogInit(self):
+        self.attr_SetString(0, str(_BATCH.tree().primary().raw_value()))
 
 
 class BatchRender(lxu.command.BasicCommand):
@@ -667,11 +852,19 @@ class BatchSaveAs(lxu.command.BasicCommand):
             BatchTreeView.notify_NewShape()
 
 
+class BatchOpenTaskScene(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        sel = _BATCH.tree().children()[0].selected_children()
+        sel = set([node for node in sel if node.node_region() == REGIONS[1]])
+        if len(sel):
+            for node in sel:
+                lx.eval('scene.open {{{}}}'.format(node.child_by_key(SCENE_PATH).raw_value()))
+
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
 
 sINMAP = "name[{}] regions[{}]".format(
     sSRV_USERNAME, " ".join(
-        ['{}@{}'.format(n, i) for n, i in enumerate(REGIONS)]
+        ['{}@{}'.format(n, i) for n, i in enumerate(REGIONS) if n != 0]
     )
 )
 
@@ -684,11 +877,17 @@ lx.bless(BatchTreeView, SERVERNAME, tags)
 lx.bless(BatchOpen, CMD_BatchOpen)
 lx.bless(BatchClose, CMD_BatchClose)
 lx.bless(BatchAddTask, CMD_BatchAddTask)
-lx.bless(BatchDeleteSel, CMD_BatchDeleteSel)
-lx.bless(BatchReorderSel, CMD_BatchReorderSel)
+lx.bless(BatchDeleteNodes, CMD_BatchDeleteNodes)
+lx.bless(BatchReorderNodes, CMD_BatchReorderNodes)
+lx.bless(BatchSelectShift, CMD_BatchSelectShift)
+lx.bless(BatchEditNodes, CMD_BatchEditNodes)
+lx.bless(BatchOpenTaskScene, CMD_BatchOpenTaskScene)
 lx.bless(BatchRender, CMD_BatchRender)
 lx.bless(BatchExample, CMD_BatchExample)
 lx.bless(BatchOpenInFilesystem, CMD_BatchOpenInFilesystem)
 lx.bless(BatchRevealInFilesystem, CMD_BatchRevealInFilesystem)
 lx.bless(BatchNew, CMD_BatchNew)
 lx.bless(BatchSaveAs, CMD_BatchSaveAs)
+
+lx.bless(BatchEditNumber, CMD_BatchEditNumber)
+lx.bless(BatchEditString, CMD_BatchEditString)

@@ -42,12 +42,21 @@ def lxo_open_dialog():
                 names=('lxo',),
                 unames=('MODO Scene file',),
                 patterns=('*.lxo',),
-                path=None
             )
         )
     except:
         return False
 
+def image_save_dialg():
+    savers = util.get_imagesavers()
+
+    return modo.dialogs.customFile(
+        'fileSave',
+        'Image Destination',
+        [i[0] for i in savers],
+        [i[1] for i in savers],
+        ext=[i[2] for i in savers],
+    )
 
 def yaml_open_dialog():
     """

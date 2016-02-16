@@ -10,8 +10,11 @@ QUICK_BATCH_PATH = join('tmp', 'quick_batch.yaml')
 CMD_BatchOpen = "monkey.BatchOpen"
 CMD_BatchClose = "monkey.BatchClose"
 CMD_BatchAddTask = "monkey.BatchAddTask"
-CMD_BatchDeleteSel = "monkey.BatchDeleteSel"
-CMD_BatchReorderSel = "monkey.BatchReorderSel"
+CMD_BatchDeleteNodes = "monkey.BatchDeleteNodes"
+CMD_BatchReorderNodes = "monkey.BatchReorderNodes"
+CMD_BatchSelectShift = "monkey.BatchSelectShift"
+CMD_BatchEditNodes = "monkey.BatchEditNodes"
+CMD_BatchOpenTaskScene = "monkey.BatchOpenTaskScene"
 CMD_BatchRender = "monkey.BatchRender"
 CMD_BatchExample = "monkey.BatchExample"
 CMD_BatchOpenInFilesystem = "monkey.BatchOpenInFilesystem"
@@ -19,6 +22,9 @@ CMD_BatchExportTemplate = 'monkey.BatchExportTemplate'
 CMD_BatchRevealInFilesystem = 'monkey.BatchRevealInFilesystem'
 CMD_BatchNew = 'monkey.BatchNew'
 CMD_BatchSaveAs = 'monkey.BatchSaveAs'
+
+CMD_BatchEditNumber = 'monkey.BatchEditNumber'
+CMD_BatchEditString = 'monkey.BatchEditString'
 
 # Special Node Names
 BATCHFILE = "batch_file"
@@ -35,6 +41,13 @@ DICT = '(dict)'
 TASK = 'Task'
 SP = " "
 EMPTY = ''
+
+# Special Data Types
+PATH_OPEN_SCENE = 'path_open_scene'
+PATH_SAVE_SCENE = 'path_save_scene'
+PATH_SAVE_IMAGE = 'path_save_image'
+IMAGE_FORMAT = 'image_format'
+FRAME_RANGE = 'frame_range'
 
 # Task Parameters
 SCENE_PATH = "scene"
@@ -75,21 +88,28 @@ VPTYPE = 'vpapplication'
 
 # Node Types
 REGIONS = [
-    'batchFile',
+    '(anywhere)', # 0 is reserved ".anywhere" region index
     'batchTask',
     'taskParam',
     'taskParamMulti',
     'taskParamSub',
     'addNode',
-    'null'
+    'null',
+    'batchFile'
 ]
 # Misc
 LXO_FILE = '$LXOB'
 
-# BatchReorderSel Arguments
+# BatchReorderNodes Arguments
 REORDER_ARGS = {
     'TOP': 'top',
     'BOTTOM': 'bottom',
+    'UP': 'up',
+    'DOWN': 'down'
+}
+
+# BatchSelectShift Arguments
+SELECT_SHIFT_ARGS = {
     'UP': 'up',
     'DOWN': 'down'
 }
@@ -98,26 +118,14 @@ REORDER_ARGS = {
 fTREE_VIEW_ITEM_ATTR             = 0x00000001
 fTREE_VIEW_ITEM_EXPAND           = 0x00000002
 fTREE_VIEW_ATTR_EXPAND           = 0x00000004
-
-# More Flags
-fTREE_VIEW_ISTREE                = 0x00000001        # Cell has a tree-style layout
-fTREE_VIEW_HASSUB                = 0x00000002        # Item has sub-items, causing an expansion arrow to be shown for ISTREE columns
-fTREE_VIEW_EXPSUB                = 0x00000004        # Sub-items are expanded and the children are visible for ISTREE columns
-fTREE_VIEW_HASATTR               = 0x00000008        # Item has attribute children, causing a +/- arrow to be shown for ISTREE columns
-fTREE_VIEW_EXPATTR               = 0x00000010        # Attribute children are expanded and visible for ISTREE columns
-fTREE_VIEW_DESCENDANT_SELECTED   = 0x00000020        # Item itself isn't selected, but any of it's descendants are
-fTREE_VIEW_SELECTED              = 0x00000040        # Item itself is selected
-fTREE_VIEW_PRIMARY               = 0x00000080        # Item is the primary selection
-fTREE_VIEW_NOSELECT              = 0x00000100        # Item is not selectable, and should not show roll-over hilighting
-fTREE_VIEW_INS_ABOVE             = 0x00000200        # Insertion line above the item
-fTREE_VIEW_INS_BELOW             = 0x00000400        # Insertion line below the item
-fTREE_VIEW_INS_SUB               = 0x00000800        # Insertion line as a child of the item
-fTREE_VIEW_INS_ON                = 0x00001000        # Insertion line on the item (drop onto the item)
 fTREE_VIEW_HIDDEN                = 0x00002000        # Item is hidden and will note be drawn.
 fTREE_VIEW_ISATTR                = 0x00004000        # Item is an attribute of it's parent, instead of a normal child for ISTREE columns
-fTREE_VIEW_ANCHOR                = 0x00008000        # Item represents the anchor for keyboard navigation.  Usually the primary selected item, assuming that item can be selected in the first place
+fTREE_VIEW_NOSELECT              = 0x00000100        # Item is not selectable, and should not show roll-over hilighting
+fTREE_VIEW_EXPATTR               = 0x00000010        # Attribute children are expanded and visible for ISTREE columns
+fTREE_VIEW_EXPSUB                = 0x00000004        # Sub-items are expanded and the children are visible for ISTREE columns
+fTREE_VIEW_SELECTED              = 0x00000040
 
-# Even More Flags
+# More Flags
 fTREE_VIEW_ROWCOLOR_NONE         = 0x00000000        # No color
 fTREE_VIEW_ROWCOLOR_RED          = 0x00010000
 fTREE_VIEW_ROWCOLOR_MAGENTA      = 0x00020000
