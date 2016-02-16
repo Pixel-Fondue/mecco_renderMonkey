@@ -503,6 +503,21 @@ def run(batch_file_path):
             util.status("Rendering frame %04d." % frame)
 
             #
+            # Run task commands
+            #
+
+            failed = False
+            for command in task(COMMANDS):
+                try:
+                    lx.eval(command)
+                except:
+                    util.status('Command "{}" failed. Skip frame.'.format(command))
+                    util.debug(traceback.format_exc())
+                    failed = True
+            if failed:
+                continue
+
+            #
             # Build render command
             #
 
@@ -512,17 +527,17 @@ def run(batch_file_path):
                     "group": master_pass_group_name
                 })
 
-            command = 'render.animation %s' % args
+            render_command = 'render.animation %s' % args
 
             #
             # Render the frame
             #
 
             try:
-                lx.eval(command)
+                lx.eval(render_command)
                 set_frame_status(batch_file_path, task_index, frame, STATUS_COMPLETE)
             except:
-                util.status('"%s" failed. Skip frame.' % command)
+                util.status('"%s" failed. Skip frame.' % render_command)
                 util.debug(traceback.format_exc())
 
         #

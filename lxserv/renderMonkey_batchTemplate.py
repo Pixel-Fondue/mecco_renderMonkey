@@ -9,7 +9,7 @@ import traceback, os
 from monkey.symbols import *
 
 
-class batchTemplate(lxu.command.BasicCommand):
+class BatchExportTemplate(lxu.command.BasicCommand):
 
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
@@ -125,7 +125,10 @@ class batchTemplate(lxu.command.BasicCommand):
             readme += "#     If a list of groups is provided, it will multiply each successive group by the former.\n"
             readme += "#     For example, ['group1','group2'] renders each pass of group2 for each pass of group1.\n"
             readme += "#     This is useful for pass groups containing orthogonal information,\n"
-            readme += "#     e.g. ['variations','views'] renders each 'view' pass for each 'variation' pass.\n"
+            readme += "#     e.g. ['variations','views'] renders each 'view' pass for each 'variation' pass.\n\n"
+
+            readme += "# \"%s\" - (default: None) A list of commands to run before rendering a given task." % COMMANDS
+
 
             target = open(output_path,'a')
             target.write(readme)
@@ -135,4 +138,4 @@ class batchTemplate(lxu.command.BasicCommand):
             monkey.util.debug(traceback.format_exc())
 
 
-lx.bless(batchTemplate, CMD_batchTemplate)
+lx.bless(BatchExportTemplate, CMD_BatchExportTemplate)

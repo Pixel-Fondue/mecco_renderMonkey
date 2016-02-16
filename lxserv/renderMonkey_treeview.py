@@ -4,45 +4,37 @@ import lx, lxu, lxifc
 
 import monkey
 from monkey.symbols import *
-from monkey.util import markup, bitwise_rgb, bitwise_hex, breakpoint
+from monkey.util import markup, bitwise_rgb, bitwise_hex
+# from monkey.util import debug, breakpoint
 
 from os.path import basename
 
+# Text Colors
 RED = markup('c', bitwise_rgb(255, 0, 0))
 BLUE = markup('c', bitwise_hex('#0e76b7'))
 GRAY = markup('c', '4113')
 
+# Font Styles
 FONT_DEFAULT = markup('f', 'FONT_DEFAULT')
 FONT_NORMAL = markup('f', 'FONT_NORMAL')
 FONT_BOLD = markup('f', 'FONT_BOLD')
 FONT_ITALIC = markup('f', 'FONT_ITALIC')
-
-fTREE_VIEW_ITEM_ATTR = 0x00000001
-fTREE_VIEW_ITEM_EXPAND = 0x00000002
-fTREE_VIEW_ATTR_EXPAND = 0x00000004
-
-REGIONS = [NODETYPE_BATCHFILE,
-           NODETYPE_BATCHTASK,
-           NODETYPE_TASKPARAM,
-           NODETYPE_TASKPARAM_MULTI,
-           NODETYPE_TASKPARAM_SUB,
-           NODETYPE_ADDNODE,
-           NODETYPE_NULL]
 
 
 class TreeNode(object):
 
     _primary = None
 
-    def __init__(self, key, value=None, parent=None, node_type=None, value_type=None):
+    def __init__(self, key, value=None, parent=None, node_type=None, value_type=None, selectable=True):
         self._key = key
         self._value = value
         self._parent = parent
-        self._node_type = node_type
+        self._node_region = node_type
         self._value_type = value_type
         self._children = []
         self._state = 0
         self._selected = False
+        self._selectable = selectable
         self._tooltips = {}
 
         self._columns = ((COL_NAME, -1), (COL_VALUE, -3))
@@ -55,8 +47,8 @@ class TreeNode(object):
     def primary(cls):
         return cls._primary
 
-    def add_child(self, key, value=None, node_type=None, value_type=None):
-        self._children.append(TreeNode(key, value, self, node_type, value_type))
+    def add_child(self, key, value=None, node_type=None, value_type=None, selectable=True):
+        self._children.append(TreeNode(key, value, self, node_type, value_type, selectable))
         return self._children[-1]
 
     def clear_children(self):
@@ -84,7 +76,10 @@ class TreeNode(object):
     def state(self):
         return self._state
 
-    def set_state(self, flag):
+    def set_state(self, state):
+        self._state = state
+
+    def add_state_flag(self, flag):
         self._state = self._state | flag
 
     def set_tooltip(self, idx, tip):
@@ -101,12 +96,12 @@ class TreeNode(object):
         m = ''
         if self._value_type in (list.__name__, dict.__name__, tuple.__name__):
             m = GRAY
-        elif self._node_type == NODETYPE_BATCHTASK:
+        elif self._node_region == REGIONS[1]:
             m = GRAY
-        elif self._node_type == NODETYPE_ADDNODE:
+        elif self._node_region == REGIONS[5]:
             m = GRAY
 
-        if self._node_type == NODETYPE_BATCHTASK:
+        if self._node_region == REGIONS[1]:
             v = self.child_by_key(SCENE_PATH).raw_value()
         else:
             v = str(self._value)
@@ -115,16 +110,16 @@ class TreeNode(object):
 
     def display_name(self):
         m = ''
-        if self._node_type == NODETYPE_BATCHTASK:
+        if self._node_region == REGIONS[1]:
             m = ''
-        elif self._node_type in (NODETYPE_ADDNODE, NODETYPE_NULL):
+        elif self._node_region in (REGIONS[5], REGIONS[6]):
             m = GRAY
-        elif self._node_type == NODETYPE_BATCHFILE:
+        elif self._node_region == REGIONS[0]:
             m = FONT_BOLD
         elif isinstance(self._key, int):
             m = GRAY
 
-        if self._node_type == NODETYPE_BATCHTASK:
+        if self._node_region == REGIONS[1]:
             k = basename(self.child_by_key(SCENE_PATH).raw_value())
         elif isinstance(self._key, int):
             k = str(self._key + 1)
@@ -141,12 +136,12 @@ class TreeNode(object):
     def set_key(self, key):
         self._key = key
 
-    def node_type(self):
-        return str(self._node_type)
+    def node_region(self):
+        return str(self._node_region)
 
-    def set_node_type(self, node_type):
-        self._node_type = node_type
-        return self._node_type
+    def set_node_region(self, node_type):
+        self._node_region = node_type
+        return self._node_region
 
     def value_type(self):
         return self._value_type
@@ -154,6 +149,12 @@ class TreeNode(object):
     def set_value_type(self, value_type):
         self._value_type = value_type
         return self._value_type
+    
+    def selectable(self):
+        return self._selectable
+    
+    def set_selectable(self, selectable=True):
+        self._selectable = selectable
 
     def columns(self):
         return self._columns
@@ -189,6 +190,34 @@ class TreeNode(object):
     def children(self):
         return self._children
 
+    def insert_child(self, index, node):
+        self._children.insert(index, node)
+
+    def parent_index(self):
+        return self.parent().children().index(self)
+
+    def set_parent_index(self,index):
+        self.destroy()
+        self.parent().insert_child(index, self)
+
+    def reorder_up(self):
+        if self.parent_index() > 0:
+            self.set_parent_index(self.parent_index()-1)
+
+    def reorder_down(self):
+        if self.parent_index() + 1 < len(
+                [i for i in self.parent().children() if i.selectable()]
+        ):
+            self.set_parent_index(self.parent_index()+1)
+
+    def reorder_top(self):
+        self.set_parent_index(0)
+
+    def reorder_bottom(self):
+        self.set_parent_index(
+            len([i for i in self.parent().children() if i.selectable()]) - 1
+        )
+
     def update_child_keys(self):
         for key, child in enumerate(sorted(self.children(), key=lambda x: x.key())):
             child.set_key(key if isinstance(key, int) else child.key())
@@ -213,21 +242,21 @@ class BatchManager:
         if not batch_root_node:
             batch_root_node = self._tree.children()[0]
 
-        if not self._batch_file_path:
-            self.save_temp_file()
-
         if not paths_list:
             return False
 
-        if not isinstance(paths_list, list):
-            paths_list = [paths_list]
+        paths_list = paths_list if isinstance(paths_list, list) else [paths_list]
 
         for path in paths_list:
             task = monkey.defaults.TASK_PARAMS
             task[SCENE_PATH] = path
             self.grow_node([task], batch_root_node, 1)
 
-        self.save_to_file()
+        if self._batch_file_path:
+            self.save_to_file()
+        else:
+            self.save_temp_file()
+
         self.regrow_tree()
 
     def node_file_root(self, tree_node):
@@ -263,10 +292,10 @@ class BatchManager:
 
     def grow_node(self, branch, parent_node, depth=0):
 
-        if depth == 0:      node_type = NODETYPE_BATCHTASK
-        elif depth == 1:    node_type = NODETYPE_TASKPARAM
-        elif depth == 2:    node_type = NODETYPE_TASKPARAM_SUB
-        else:               node_type = NODETYPE_NULL
+        if depth == 0:      node_type = REGIONS[1]
+        elif depth == 1:    node_type = REGIONS[2]
+        elif depth == 2:    node_type = REGIONS[4]
+        else:               node_type = REGIONS[6]
 
         if isinstance(branch, (list, tuple, dict)):
             for key, value in sorted(self.iterate_anything(branch)):
@@ -280,7 +309,7 @@ class BatchManager:
                 else:
                     parent_node.add_child(key, value, node_type, value_type)
 
-        parent_node.add_child(ADD_GENERIC, EMPTY, NODETYPE_ADDNODE)
+        parent_node.add_child(ADD_GENERIC, EMPTY, REGIONS[5], selectable=False)
 
     def regrow_tree(self):
         batch_file_path = self._batch_file_path if self._batch_file_path else NO_FILE_SELECTED
@@ -291,17 +320,17 @@ class BatchManager:
         batch_root_node = self._tree.add_child(
             BATCHFILE,
             batch_file_path,
-            NODETYPE_BATCHFILE
+            REGIONS[0]
         )
 
-        batch_root_node.set_state(fTREE_VIEW_ITEM_EXPAND)
+        batch_root_node.add_state_flag(fTREE_VIEW_ITEM_EXPAND)
 
         if self._batch_file_path:
             batch = monkey.io.read_yaml(self._batch_file_path)
             self.grow_node(batch, batch_root_node)
 
         if len(batch_root_node.children()) == 0:
-            batch_root_node.add_child(EMPTY_PROMPT, EMPTY, NODETYPE_NULL)
+            batch_root_node.add_child(EMPTY_PROMPT, EMPTY, REGIONS[6], selectable=False)
 
         return self._tree
 
@@ -472,25 +501,16 @@ class BatchTreeView(lxifc.TreeView,
 
     def treeview_Select(self, mode):
 
-        special = [
-            ADD_TASK,
-            ADD_PARAM,
-            ADD_GENERIC,
-            REPLACE_BATCH_FILE,
-            EMPTY_PROMPT
-        ]
-
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             _BATCH.tree().clear_selection()
 
-            if self.targetNode().key() in special:
-                self.targetNode().parent().set_selected()
+            if self.targetNode().selectable():
+                self.targetNode().set_selected()
             else:
-                self.targetNode().set_selected()
+                self.targetNode().parent().set_selected()
 
-        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-            if self.targetNode().key() not in special:
-                self.targetNode().set_selected()
+        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD and self.targetNode().selectable():
+            self.targetNode().set_selected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
             self.targetNode().set_selected(False)
@@ -507,7 +527,7 @@ class BatchTreeView(lxifc.TreeView,
     def treeview_IsInputRegion(self, column_index, regionID):
         if regionID == 0:
             return True
-        if self.targetNode().node_type() == REGIONS[regionID]:
+        if self.targetNode().node_region() == REGIONS[regionID]:
             return True
 
         return False
@@ -526,7 +546,7 @@ class BatchTreeView(lxifc.TreeView,
             return EMPTY
 
 
-class OpenBatchFile(lxu.command.BasicCommand):
+class BatchOpen(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_open_dialog()
         if path:
@@ -535,13 +555,13 @@ class OpenBatchFile(lxu.command.BasicCommand):
             BatchTreeView.notify_NewShape()
 
 
-class CloseBatchFile(lxu.command.BasicCommand):
+class BatchClose(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         _BATCH.close_file()
         BatchTreeView.notify_NewShape()
 
 
-class AddBatchTask(lxu.command.BasicCommand):
+class BatchAddTask(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         paths_list = monkey.io.lxo_open_dialog()
         if not isinstance(paths_list, list):
@@ -553,7 +573,7 @@ class AddBatchTask(lxu.command.BasicCommand):
             BatchTreeView.notify_NewShape()
 
 
-class RemoveBatchSel(lxu.command.BasicCommand):
+class BatchDeleteSel(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         sel = _BATCH.tree().selected_children()
         _BATCH.tree().clear_selection()
@@ -566,35 +586,69 @@ class RemoveBatchSel(lxu.command.BasicCommand):
         BatchTreeView.notify_NewShape()
 
 
-class RunCurrentBatch(lxu.command.BasicCommand):
+class BatchReorderSel(lxu.command.BasicCommand):
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('mode', lx.symbol.sTYPE_STRING)
+        self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
+
+    def basic_Execute(self, msg, flags):
+        mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else REORDER_ARGS['TOP']
+
+        if mode not in [v for k, v in REORDER_ARGS.iteritems()]:
+            lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().selected_children()
+
+        for node in sel:
+            if mode == REORDER_ARGS['TOP']:
+                node.reorder_top()
+            elif mode == REORDER_ARGS['BOTTOM']:
+                node.reorder_bottom()
+            elif mode == REORDER_ARGS['UP']:
+                node.reorder_up()
+            elif mode == REORDER_ARGS['DOWN']:
+                node.reorder_down()
+
+        _BATCH.save_to_file()
+        BatchTreeView.notify_NewShape()
+
+        # Unsure why we lose selection, but we do. Have to re-select.
+        _BATCH.tree().clear_selection()
+        for node in sel:
+            node.set_selected()
+
+
+class BatchRender(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH.batch_file_path():
             return monkey.batch.run(_BATCH.batch_file_path())
 
 
-class ExampleBatch(lxu.command.BasicCommand):
+class BatchExample(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_save_dialog()
         if path:
-            lx.eval('{} {{{}}}'.format(CMD_batchTemplate, path))
+            lx.eval('{} {{{}}}'.format(CMD_BatchExportTemplate, path))
             _BATCH.set_batch_file(path)
             _BATCH.regrow_tree()
             BatchTreeView.notify_NewShape()
 
 
-class OpenBatchInFilesystem(lxu.command.BasicCommand):
+class BatchOpenInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH.batch_file_path():
             lx.eval('file.open {{{}}}'.format(_BATCH.batch_file_path()))
 
 
-class RevealBatchInFilesystem(lxu.command.BasicCommand):
+class BatchRevealInFilesystem(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         if _BATCH.batch_file_path():
             lx.eval('file.revealInFileViewer {{{}}}'.format(_BATCH.batch_file_path()))
 
 
-class NewBatchFile(lxu.command.BasicCommand):
+class BatchNew(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_save_dialog()
         if path:
@@ -605,7 +659,7 @@ class NewBatchFile(lxu.command.BasicCommand):
             BatchTreeView.notify_NewShape()
 
 
-class SaveBatchAs(lxu.command.BasicCommand):
+class BatchSaveAs(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         path = monkey.io.yaml_save_dialog()
         if path:
@@ -627,13 +681,14 @@ tags = {lx.symbol.sSRV_USERNAME: sSRV_USERNAME,
 
 lx.bless(BatchTreeView, SERVERNAME, tags)
 
-lx.bless(OpenBatchFile, CMD_OpenBatchFile)
-lx.bless(CloseBatchFile, CMD_CloseBatchFile)
-lx.bless(AddBatchTask, CMD_AddBatchTask)
-lx.bless(RemoveBatchSel, CMD_RemoveBatchSel)
-lx.bless(RunCurrentBatch, CMD_RunCurrentBatch)
-lx.bless(ExampleBatch, CMD_ExampleBatch)
-lx.bless(OpenBatchInFilesystem, CMD_OpenBatchInFilesystem)
-lx.bless(RevealBatchInFilesystem, CMD_RevealBatchInFilesystem)
-lx.bless(NewBatchFile, CMD_NewBatchFile)
-lx.bless(SaveBatchAs, CMD_SaveBatchAs)
+lx.bless(BatchOpen, CMD_BatchOpen)
+lx.bless(BatchClose, CMD_BatchClose)
+lx.bless(BatchAddTask, CMD_BatchAddTask)
+lx.bless(BatchDeleteSel, CMD_BatchDeleteSel)
+lx.bless(BatchReorderSel, CMD_BatchReorderSel)
+lx.bless(BatchRender, CMD_BatchRender)
+lx.bless(BatchExample, CMD_BatchExample)
+lx.bless(BatchOpenInFilesystem, CMD_BatchOpenInFilesystem)
+lx.bless(BatchRevealInFilesystem, CMD_BatchRevealInFilesystem)
+lx.bless(BatchNew, CMD_BatchNew)
+lx.bless(BatchSaveAs, CMD_BatchSaveAs)

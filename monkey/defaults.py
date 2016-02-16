@@ -37,6 +37,7 @@ def get(key):
 TASK_PARAMS = {
                 FORMAT: DEFAULTS['filetype'],
                 FRAMES: DEFAULTS['frames'],
+                COMMANDS: [],
                 DESTINATION: DEFAULTS['destination'],
                 PATTERN: DEFAULTS['output_pattern'],
                 GROUPS: [],
