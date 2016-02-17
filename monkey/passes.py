@@ -17,8 +17,22 @@ def create_master_pass_group(groups,delimeter="_x_"):
 
     channels = set()
     for group in groups:
+
         for channel in group.groupChannels:
             channels.add(channel)
+
+        groupItems = [i for i in group.itemGraph('itemGroups').forward() if i.type != 'actionclip']
+        for item in groupItems:
+            for channel in item.channels():
+                channels.add(channel)
+
+            transformItems = [i for i in item.itemGraph('xfrmCore').reverse() if i.type in ('scale', 'rotation', 'translation')]
+            for transformItem in transformItems:
+                for channel in transformItem.channels():
+                    channels.add(channel)
+
+
+
         for action in [i for i in groups[0].itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP]:
             action.actionClip.SetActive(0)
 
@@ -54,6 +68,8 @@ def combine(master_group, groups, channels, max_depth, depth=0, passname_parts=[
 
                 combine(master_group,subgroups,channels,max_depth,depth+1,passname_parts+[p.name])
 
+                p.actionClip.SetActive(0)
+
     elif depth == max_depth:
         layer_name = delimeter.join(passname_parts)
         lx.eval('group.layer group:{%s} name:{%s} transfer:false grpType:pass' % (master_group.name,layer_name))
@@ -62,5 +78,5 @@ def combine(master_group, groups, channels, max_depth, depth=0, passname_parts=[
                 #Set channel to its current value; sets channel to 'edit' layer for absorption into the new pass.
                 c.set(c.get())
             except:
-                util.debug('Something went wrong setting channel "%s" to "%s".' % (c.name,c.get()))
+                util.debug('Something went wrong setting channel "%s".' % (c.name))
         lx.eval('edit.apply')

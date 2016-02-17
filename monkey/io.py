@@ -4,6 +4,9 @@ import os, traceback, json, re, random
 import modo
 import util, yaml
 
+from symbols import *
+from defaults import get
+
 
 def yaml_save_dialog():
     """
@@ -158,5 +161,51 @@ def write_yaml(data, output_path):
         return False
 
     target = open(output_path, 'w')
-    target.write(yamlize(data))
+    target.write("\n\n".join((yamlize(data), generate_readme())))
     target.close()
+
+def generate_readme():
+    readme = open(util.path_alias(':'.join((KIT_ALIAS, 'monkey/batch_file_docs.txt'))), 'r')
+    readme = readme.read()
+
+    substitutions = {
+        'scene_path': SCENE_PATH,
+        'format': FORMAT,
+        'format_default': get(FORMAT),
+        'frames': FRAMES,
+        'frames_default': get(FRAMES),
+        'destination': DESTINATION,
+        'destination_default': get(DESTINATION),
+        'output_pattern': PATTERN,
+        'groups': GROUPS,
+        'camera': CAMERA,
+        'render_channels': RENDER_CHANNELS,
+        'outputs': OUTPUTS,
+        'width': WIDTH,
+        'height': HEIGHT,
+        'commands': COMMANDS
+    }
+
+    substitutions['format_examples'] = "#" + "\n#".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in util.get_imagesavers()]) + "\n\n"
+
+    substitutions['frames_examples'] = "#    '*'                       Start/end frames defined in scene file.\n"
+    rr = ['1','1-5','5-1','0-10:2','1-21:5','1-3,10-16:2,20-23','1,1-5','(1 - 5),, 10-!@#15']
+    substitutions['frames_examples'] += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(util.frames_from_string(i))) for i in rr]) + "\n\n"
+
+    indent = 32
+    rr = [
+        ['frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
+        ['.frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
+        [os.sep + os.path.join('path','with','filename.xyz'), os.path.normpath(os.sep + os.path.join('path','with','filename.jpg'))]
+    ]
+    substitutions['destination_examples'] = "#" + "\n#".join(["    %s%s%s" % (i[0]," "*(indent-len(i[0])),i[1]) for i in rr]) + "\n"
+
+    rr = [
+        os.sep + os.path.join('already','perfectly','good','path') + os.sep,
+        os.sep + os.path.join('path','with','no','trailing_slash'),
+        os.path.join('~','path','to','righteousness'),
+        "kit_mecco_renderMonkey:path" + os.sep
+    ]
+    substitutions['destination_examples'] += "#" + "\n#".join(["    %s%s%s" % (i," "*(indent-len(i)),str(util.expand_path(i))) for i in rr]) + "\n\n"
+
+    return readme.format(s=substitutions)

@@ -274,7 +274,7 @@ class BatchManager:
         paths_list = paths_list if isinstance(paths_list, list) else [paths_list]
 
         for path in paths_list:
-            self.grow_node([{SCENE_PATH: path}], batch_root_node, 1)
+            self.grow_node([{SCENE_PATH: path, FRAMES: monkey.defaults.get(FRAMES)}], batch_root_node, 1)
 
         if self._batch_file_path:
             self.save_to_file()
@@ -994,7 +994,7 @@ class BatchRender(lxu.command.BasicCommand):
 
 class BatchExample(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
-        path = monkey.io.yaml_save_dialog()
+        path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
         if path:
             lx.eval('{} {{{}}}'.format(CMD_BatchExportTemplate, path))
             _BATCH.set_batch_file(path)
