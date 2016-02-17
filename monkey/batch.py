@@ -234,7 +234,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         frames = task[FRAMES] if FRAMES in task else util.get_scene_render_range()
         if not frames:
-            frames = defaults.get('frames')
+            frames = defaults.get(FRAMES)
 
         try:
             frames_list = util.frames_from_string(frames)
@@ -269,7 +269,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         # Parse Image Saver
         #
 
-        imagesaver = task[FORMAT] if FORMAT in task else defaults.get('filetype')
+        imagesaver = task[FORMAT] if FORMAT in task else defaults.get(FORMAT)
         try:
             if not util.get_imagesaver(imagesaver):
                 status("'%s' is not a valid image saver. Skip task." % imagesaver)
@@ -433,7 +433,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         #
 
         try:
-            destination = task[DESTINATION] if DESTINATION in task else defaults.get('destination')
+            destination = task[DESTINATION] if DESTINATION in task else defaults.get(DESTINATION)
             destination = util.expand_path(destination)
 
             if os.path.splitext(destination)[1]:
@@ -550,7 +550,11 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         #
 
         for frame in frames_list:
-            main_monitor.Increment(1/len(frames_list))
+            try:
+                main_monitor.Increment(1/len(frames_list))
+            except:
+                status("User abort")
+                break
 
             #
             # Set render frame
@@ -611,7 +615,11 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                 if dry_run:
                     status("Render Command: " + render_command)
                 else:
-                    lx.eval(render_command)
+                    try:
+                        lx.eval(render_command)
+                    except:
+                        status("User abort.")
+                        break
                 set_frame_status(batch_file_path, task_index, frame, STATUS_COMPLETE)
             except:
                 status('"%s" failed. Skip frame.' % render_command)

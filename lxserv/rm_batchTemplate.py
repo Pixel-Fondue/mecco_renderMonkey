@@ -25,16 +25,16 @@ class BatchExportTemplate(lxu.command.BasicCommand):
                     SCENE_PATH: monkey.defaults.get('test_path')
                 }, {
                     SCENE_PATH: monkey.defaults.get('test_path'),
-                    FORMAT: monkey.defaults.get('filetype'),
+                    FORMAT: monkey.defaults.get(FORMAT),
                     DESTINATION: monkey.defaults.get('test_output_path'),
                     GROUPS: monkey.defaults.get('test_passgroup')
                 }, {
                     SCENE_PATH: monkey.defaults.get('test_path'),
-                    FORMAT: monkey.defaults.get('filetype'),
+                    FORMAT: monkey.defaults.get(FORMAT),
                     FRAMES: monkey.defaults.get('test_single_frame'),
                     DESTINATION: monkey.defaults.get('test_output_path'),
-                    PATTERN: monkey.defaults.get('output_pattern'),
-                    GROUPS: monkey.defaults.get('test_passgroups'),
+                    PATTERN: monkey.defaults.get(PATTERN),
+                    GROUPS: monkey.defaults.get('test_pass_groups'),
                     CAMERA: monkey.defaults.get('test_camera'),
                     RENDER_CHANNELS: monkey.defaults.get('test_render_channels'),
                     OUTPUTS: monkey.defaults.get('test_outputs'),
@@ -63,7 +63,7 @@ class BatchExportTemplate(lxu.command.BasicCommand):
 
             readme += "# \"%s\" - (required) Should contain a valid OS path to a MODO scene file.\n\n" % SCENE_PATH
 
-            readme += "# \"%s\" - (default: *) Defaults to render output setting or, if none available, %s.\n" % (FORMAT,monkey.defaults.get('filetype'))
+            readme += "# \"%s\" - (default: *) Defaults to render output setting or, if none available, %s.\n" % (FORMAT,monkey.defaults.get(FORMAT))
             readme += "#    Allows any of the following:\n\n"
 
             readme += "#" + "\n#".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in monkey.util.get_imagesavers()]) + "\n\n"
@@ -88,7 +88,7 @@ class BatchExportTemplate(lxu.command.BasicCommand):
             readme += "# \"%s\" - (default: scene) Camera (by name or id) to use for rendering.\n" % CAMERA
             readme += "#     If none is provided, the one defined in the scene will be used.\n\n"
 
-            readme += "# \"%s\" - (default: %s) Where to save the rendered frames.\n" % (DESTINATION,monkey.defaults.get('destination'))
+            readme += "# \"%s\" - (default: %s) Where to save the rendered frames.\n" % (DESTINATION,monkey.defaults.get(DESTINATION))
             readme += "#    NOTE: Parsing is rather primitive. If the string begins with \"~\", it assumes you're parsing a user folder.\n"
             readme += "#    If it starts with \".\" or lacks a leading slash, it assumes a relative path from the current scene.\n"
             readme += "#    If it contains a \":\" anywhere at all, it assumes a MODO path alias. (Search for 'path alias' in MODO docs.)\n"

@@ -10,10 +10,14 @@ QUICK_BATCH_PATH = join('tmp', 'quick_batch.yaml')
 CMD_BatchOpen = "monkey.BatchOpen"
 CMD_BatchClose = "monkey.BatchClose"
 CMD_BatchAddTask = "monkey.BatchAddTask"
+CMD_BatchAddParam = "monkey.BatchAddParam"
+CMD_BatchAddToList = "monkey.BatchAddToList"
+CMD_BatchAddToDict = "monkey.BatchAddToDict"
 CMD_BatchDeleteNodes = "monkey.BatchDeleteNodes"
 CMD_BatchReorderNodes = "monkey.BatchReorderNodes"
 CMD_BatchSelectShift = "monkey.BatchSelectShift"
 CMD_BatchEditNodes = "monkey.BatchEditNodes"
+CMD_BatchResetNodes = "monkey.BatchResetNodes"
 CMD_BatchOpenTaskScene = "monkey.BatchOpenTaskScene"
 CMD_BatchRender = "monkey.BatchRender"
 CMD_BatchExample = "monkey.BatchExample"
@@ -22,15 +26,16 @@ CMD_BatchExportTemplate = 'monkey.BatchExportTemplate'
 CMD_BatchRevealInFilesystem = 'monkey.BatchRevealInFilesystem'
 CMD_BatchNew = 'monkey.BatchNew'
 CMD_BatchSaveAs = 'monkey.BatchSaveAs'
+CMD_BatchParamsList = 'monkey.BatchParamsList'
 
 CMD_BatchEditNumber = 'monkey.BatchEditNumber'
 CMD_BatchEditString = 'monkey.BatchEditString'
 
 # Special Node Names
-BATCHFILE = "batch_file"
+BATCHFILE = "batch"
 ADD_GENERIC = '(add...)'
 ADD_TASK = '(add task...)'
-ADD_PARAM = '(add control...)'
+ADD_PARAM = '(add parameter...)'
 NO_FILE_SELECTED = "(no batch file)"
 
 # Special Node Values
@@ -56,12 +61,27 @@ FRAMES = "frames"
 COMMANDS = "commands"
 DESTINATION = "destination"
 PATTERN = "suffix"
-GROUPS = "passgroups"
+GROUPS = "pass_groups"
 WIDTH = "frame_width"
 HEIGHT = "frame_height"
 OUTPUTS = "outputs"
 CAMERA = "camera"
 RENDER_CHANNELS = "render_channels"
+
+ALL_PARAMS = [
+    SCENE_PATH,
+    FORMAT,
+    FRAMES,
+    COMMANDS,
+    DESTINATION,
+    PATTERN,
+    GROUPS,
+    WIDTH,
+    HEIGHT,
+    OUTPUTS,
+    CAMERA,
+    RENDER_CHANNELS
+]
 
 # Status Messages
 STATUS = "status"
@@ -91,13 +111,17 @@ VPTYPE = 'vpapplication'
 # Node Types
 REGIONS = [
     '(anywhere)', # 0 is reserved ".anywhere" region index
-    'batchTask',
-    'taskParam',
-    'taskParamMulti',
-    'taskParamSub',
-    'addNode',
-    'null',
-    'batchFile'
+    'batchTask', #1
+    'taskParam', #2
+    'taskParamMulti', #3
+    'taskParamSub', #4
+    'addNode', #5
+    'null', #6
+    'batchFile', #7
+    'addTask', #8
+    'addParam', #9
+    'addToList', #10
+    'addToDict' #11
 ]
 # Misc
 LXO_FILE = '$LXOB'
