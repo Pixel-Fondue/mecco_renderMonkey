@@ -70,6 +70,8 @@ STATUS_IN_PROGRESS = "(In progress...)"
 STATUS_FAILED = "(Failed)"
 STATUS_AVAILABLE = "(Available)"
 STATUS_FILE_SUFFIX = "status"
+DRYRUN_FILE_SUFFIX = "dryRun"
+MESSAGE = 'Message'
 
 # Treeview Basics
 COL_NAME = "Name"

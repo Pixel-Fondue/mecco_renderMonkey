@@ -1,6 +1,6 @@
 # python
 
-import modo
+import lx, modo
 import util
 
 def create_master_pass_group(groups,delimeter="_x_"):

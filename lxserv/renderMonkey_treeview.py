@@ -729,10 +729,12 @@ class BatchEditNodes(lxu.command.BasicCommand):
                     node.set_value(format)
 
         elif primary_node.value_type() == FRAME_RANGE:
+            old_value = primary_node.raw_value()
             lx.eval('monkey.BatchEditString')
             frames_list = monkey.util.frames_from_string(primary_node.raw_value())
             if not frames_list:
                 modo.dialogs.alert('Invalid Frame Range','Invalid frame range.','error')
+                primary_node.set_value(old_value)
             else:
                 for node in sel:
                     node.set_value(''.join([i for i in primary_node.raw_value() if i in "0123456789-:,"]))
@@ -805,10 +807,40 @@ class BatchEditString(lxu.command.BasicCommand):
         self.attr_SetString(0, str(_BATCH.tree().primary().raw_value()))
 
 
+
 class BatchRender(lxu.command.BasicCommand):
+
+    def __init__(self):
+        lxu.command.BasicCommand.__init__(self)
+        self.dyna_Add('mode', lx.symbol.sTYPE_STRING)
+        self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
+
     def basic_Execute(self, msg, flags):
-        if _BATCH.batch_file_path():
-            return monkey.batch.run(_BATCH.batch_file_path())
+        try:
+            mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else 'run'
+
+            if _BATCH._batch_file_path:
+                dry = False
+                if mode == 'test':
+                    dry = True
+
+                res = 1
+                if mode == 'half':
+                    res = .5
+                elif mode == 'quarter':
+                    res = .25
+                elif mode == 'eighth':
+                    res = .125
+                elif mode == 'sixteenth':
+                    res = 1.0/16
+
+                monkey.batch.run(_BATCH._batch_file_path, dry_run=dry, res_multiply=res)
+
+            else:
+                return lx.symbol.e_FAILED
+
+        except SystemExit:
+            pass
 
 
 class BatchExample(lxu.command.BasicCommand):

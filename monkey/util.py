@@ -46,7 +46,7 @@ def status(string):
     Useful for user-related messages.
     """
 
-    lx.out("status: {{{}}}".format(string))
+    lx.out("status: {}".format(string))
 
 
 def markup(pre, string):
@@ -208,7 +208,7 @@ def get_scene_render_range():
     start = modo.Scene().renderItem.channel('first').get()
     end = modo.Scene().renderItem.channel('last').get()
 
-    return "-".join((start, end))
+    return "-".join((str(start), str(end)))
 
 
 def frames_from_string(input_string="*"):
@@ -374,5 +374,5 @@ def build_arg_string(arg_dict):
     for k, v in arg_dict.iteritems():
         if v is not None:
             v = str(v) if str(v).isalnum() else '{{{}}}'.format(str(v))
-            arg_string += " {{{}}}:{{{}}}".format(str(k), v)
+            arg_string += " {}:{}".format(str(k), v)
     return arg_string
