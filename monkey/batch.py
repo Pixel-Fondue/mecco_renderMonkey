@@ -46,12 +46,7 @@ def batch_has_status(batch_file_path):
 
 
 def batch_status_reset(batch_file_path):
-    try:
-        status_file = open(batch_status_file(batch_file_path), 'w')
-    except:
-        util.debug(traceback.format_exc())
-        return False
-
+    status_file = open(batch_status_file(batch_file_path), 'w')
     data = io.read_yaml(batch_file_path)
 
     try:
@@ -63,6 +58,10 @@ def batch_status_reset(batch_file_path):
 
     status_file.close()
     return True
+
+
+def batch_status_delete(batch_file_path):
+    return os.remove(batch_status_file(batch_file_path))
 
 
 def set_task_status(batch_file_path, task_index, status):
@@ -186,9 +185,9 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
     else:
         batch_status_create(batch, batch_file_path)
 
-    std_dialog = lx.service.StdDialog()
-    main_monitor = lx.object.Monitor(std_dialog.MonitorAllocate('Running Batch'))
-    main_monitor.Initialize(len(batch))
+    # std_dialog = lx.service.StdDialog()
+    # main_monitor = lx.object.Monitor(std_dialog.MonitorAllocate('Running Batch'))
+    # main_monitor.Initialize(len(batch))
 
     util.debug("Scanning for task.")
     for task_index, task in enumerate(batch):
@@ -550,11 +549,11 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         #
 
         for frame in frames_list:
-            try:
-                main_monitor.Increment(1/len(frames_list))
-            except:
-                status("User abort")
-                break
+            # try:
+            #     main_monitor.Increment(1/len(frames_list))
+            # except:
+            #     status("User abort")
+            #     break
 
             #
             # Set render frame
@@ -619,6 +618,9 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                         lx.eval(render_command)
                     except:
                         status("User abort.")
+                        set_frame_status(batch_file_path, task_index, frame, STATUS_ABORT)
+                        set_task_status(batch_file_path, task_index, STATUS_ABORT)
+                        lx.eval('file.open {{{}}}'.format(batch_status_file(batch_file_path)))
                         break
                 set_frame_status(batch_file_path, task_index, frame, STATUS_COMPLETE)
             except:
@@ -643,5 +645,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
     if dry_run:
         batch_dryRun_write(_STATUS, batch_file_path)
         lx.eval('file.open {%s}' % batch_dryRun_file(batch_file_path))
+    else:
+        lx.eval('file.open {{{}}}'.format(batch_status_file(batch_file_path)))
 
     return lx.symbol.e_OK

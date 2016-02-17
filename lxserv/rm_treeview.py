@@ -305,7 +305,9 @@ class BatchManager:
 
     def save_temp_file(self):
         file_path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
-        return self.save_to_file(file_path)
+        if monkey.batch.batch_has_status(file_path):
+            monkey.batch.batch_status_delete(file_path)
+        self.save_to_file(file_path)
 
     @staticmethod
     def iterate_anything(obj):
