@@ -643,9 +643,16 @@ class BatchAddParam(lxu.command.BasicCommand):
         if val is None:
             lx.out("Invalid parameter name.")
             return lx.symbol.e_FAILED
+
         if isinstance(val, (list, tuple, dict)):
             val = type(val).__name__
             val_type = val
+        elif param == SCENE_PATH:
+            val_type = PATH_SAVE_SCENE
+        elif param == FORMAT:
+            val_type = IMAGE_FORMAT
+        elif param == DESTINATION:
+            val_type = PATH_SAVE_IMAGE
         else:
             val_type = type(val).__name__
 
@@ -837,7 +844,8 @@ class BatchEditNodes(lxu.command.BasicCommand):
                     if node.parent().child_by_key(FORMAT):
                         node.parent().child_by_key(FORMAT).set_value(format)
                     else:
-                        node.parent().add_child(FORMAT, format, REGIONS[2], IMAGE_FORMAT)
+                        new_node = node.parent().add_child(FORMAT, format, REGIONS[2], IMAGE_FORMAT)
+                        new_node.reorder_bottom()
 
         elif primary_node.value_type() == IMAGE_FORMAT:
             path = monkey.io.image_save_dialg()
@@ -845,7 +853,12 @@ class BatchEditNodes(lxu.command.BasicCommand):
 
             if path is not False:
                 for node in sel:
-                    node.parent().child_by_key(SCENE_PATH).set_value(path)
+                    if node.parent().child_by_key(DESTINATION):
+                        node.parent().child_by_key(DESTINATION).set_value(path)
+                    else:
+                        new_node = node.parent().add_child(DESTINATION, path, REGIONS[2], PATH_SAVE_IMAGE)
+                        new_node.reorder_bottom()
+
                     node.set_value(format)
 
         elif primary_node.value_type() == FRAME_RANGE:
@@ -872,7 +885,7 @@ class BatchEditNodes(lxu.command.BasicCommand):
             except:
                 pass
 
-        BatchTreeView.notify_NewAttributes()
+        BatchTreeView.notify_NewShape()
         _BATCH.save_to_file()
 
 
