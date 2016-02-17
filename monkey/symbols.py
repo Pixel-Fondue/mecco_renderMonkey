@@ -27,6 +27,7 @@ CMD_BatchRevealInFilesystem = 'monkey.BatchRevealInFilesystem'
 CMD_BatchNew = 'monkey.BatchNew'
 CMD_BatchSaveAs = 'monkey.BatchSaveAs'
 CMD_BatchParamsList = 'monkey.BatchParamsList'
+CMD_BatchOpenStatusFile = 'monkey.BatchOpenStatusFile'
 
 CMD_BatchEditNumber = 'monkey.BatchEditNumber'
 CMD_BatchEditString = 'monkey.BatchEditString'

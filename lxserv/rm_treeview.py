@@ -983,7 +983,7 @@ class BatchRender(lxu.command.BasicCommand):
                 elif mode == 'sixteenth':
                     res = 1.0/16
 
-                monkey.batch.run(_BATCH._batch_file_path, dry_run=dry, res_multiply=res)
+                monkey.batch.run(_BATCH.batch_file_path(), dry_run=dry, res_multiply=res)
 
             else:
                 return lx.symbol.e_FAILED
@@ -1000,6 +1000,19 @@ class BatchExample(lxu.command.BasicCommand):
             _BATCH.set_batch_file(path)
             _BATCH.regrow_tree()
             BatchTreeView.notify_NewShape()
+
+
+class BatchOpenStatusFile(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        path = _BATCH.batch_file_path()
+        if not path:
+            modo.dialogs.alert("no batch file", "No batch file selected.", 'error')
+            return lx.symbol.e_FAILED
+        if not monkey.batch.batch_has_status(path):
+            modo.dialogs.alert("no status file", "No batch status file exists.", 'error')
+            return lx.symbol.e_FAILED
+
+        lx.eval('file.open {{{}}}'.format(monkey.batch.batch_status_file(path)))
 
 
 class BatchOpenInFilesystem(lxu.command.BasicCommand):
@@ -1073,6 +1086,7 @@ lx.bless(BatchOpenInFilesystem, CMD_BatchOpenInFilesystem)
 lx.bless(BatchRevealInFilesystem, CMD_BatchRevealInFilesystem)
 lx.bless(BatchNew, CMD_BatchNew)
 lx.bless(BatchSaveAs, CMD_BatchSaveAs)
+lx.bless(BatchOpenStatusFile, CMD_BatchOpenStatusFile)
 
 lx.bless(BatchEditNumber, CMD_BatchEditNumber)
 lx.bless(BatchEditString, CMD_BatchEditString)
