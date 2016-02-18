@@ -38,15 +38,14 @@ def lxo_open_dialog():
     """
 
     try:
-        return os.path.normpath(
-            modo.dialogs.customFile(
-                dtype='fileOpen',
+        paths_list = modo.dialogs.customFile(
+                dtype='fileOpenMulti',
                 title='Select Scene File',
                 names=('lxo',),
                 unames=('MODO Scene file',),
                 patterns=('*.lxo',),
-            )
         )
+        return [os.path.normpath(i) for i in paths_list]
     except:
         return False
 

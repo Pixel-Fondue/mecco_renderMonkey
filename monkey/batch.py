@@ -7,6 +7,7 @@ import util, defaults, io, render, passes, yaml
 from symbols import *
 
 _STATUS = []
+_ABORT = False
 
 def batch_status_file(batch_file_path):
     split = os.path.splitext(batch_file_path)
@@ -150,6 +151,8 @@ def status_reset():
 
 
 def run(batch_file_path, dry_run=False, res_multiply=1):
+
+    global _ABORT
 
     restore = {}
     status_reset()
@@ -623,11 +626,16 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                         set_task_status(batch_file_path, task_index, STATUS_ABORT)
                         lx.eval('!scene.close')
                         lx.eval('file.open {{{}}}'.format(batch_status_file(batch_file_path)))
+                        _ABORT = True
                         break
                 set_frame_status(batch_file_path, task_index, frame, STATUS_COMPLETE)
             except:
                 status('ERROR: "%s" failed. Skip frame.' % render_command)
                 util.debug(traceback.format_exc())
+
+        if _ABORT:
+            util.status('User aborted task %s (%s). Stop.' % (task_index, os.path.basename(task_path)))
+            break
 
         #
         # Task complete
