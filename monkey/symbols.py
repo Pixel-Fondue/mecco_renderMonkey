@@ -28,6 +28,7 @@ CMD_BatchNew = 'monkey.BatchNew'
 CMD_BatchSaveAs = 'monkey.BatchSaveAs'
 CMD_BatchParamsList = 'monkey.BatchParamsList'
 CMD_BatchOpenStatusFile = 'monkey.BatchOpenStatusFile'
+CMD_GLRenderWindow = 'monkey.GLRenderWindow'
 
 CMD_BatchEditNumber = 'monkey.BatchEditNumber'
 CMD_BatchEditString = 'monkey.BatchEditString'
