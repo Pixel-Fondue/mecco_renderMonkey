@@ -60,7 +60,8 @@ FRAME_RANGE = 'frame_range'
 SCENE_PATH = "scene"
 FORMAT = "format"
 FRAMES = "frames"
-COMMANDS = "commands"
+COMMANDS = "pre_task_commands"
+FRAME_COMMANDS = "pre_frame_commands"
 DESTINATION = "destination"
 PATTERN = "output_pattern"
 GROUPS = "pass_groups"
@@ -69,12 +70,14 @@ HEIGHT = "frame_height"
 OUTPUTS = "outputs"
 CAMERA = "camera"
 RENDER_CHANNELS = "render_channels"
+RENDER_OVERRIDE = "render_command_override"
 
 ALL_PARAMS = [
     SCENE_PATH,
     FORMAT,
     FRAMES,
     COMMANDS,
+    FRAME_COMMANDS,
     DESTINATION,
     PATTERN,
     GROUPS,
@@ -82,7 +85,8 @@ ALL_PARAMS = [
     HEIGHT,
     OUTPUTS,
     CAMERA,
-    RENDER_CHANNELS
+    RENDER_CHANNELS,
+    RENDER_OVERRIDE
 ]
 
 # Status Messages

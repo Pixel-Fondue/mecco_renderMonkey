@@ -17,6 +17,8 @@ DEFAULTS = {
     RENDER_CHANNELS: {},
     DESTINATION: './frames/',
     PATTERN: '[<pass>]_[<output>]_<FFFF>',
+    FRAME_COMMANDS: [],
+    RENDER_OVERRIDE: '',
     'debug': True,
     'breakpoints': True,
     'test_path': os.path.normpath(

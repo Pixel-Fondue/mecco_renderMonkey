@@ -547,6 +547,24 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             util.debug(traceback.format_exc())
             master_pass_group_name = None
 
+
+        #
+        # Run task commands
+        #
+
+        failed = False
+        if COMMANDS in task:
+            for command in task[COMMANDS]:
+                try:
+                    lx.eval(command)
+                except:
+                    status('ERROR: Command "{}" failed. Skip frame.'.format(command))
+                    util.debug(traceback.format_exc())
+                    failed = True
+        if failed:
+            continue
+
+
         #
         # Render Frames
         #
@@ -581,13 +599,14 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             set_frame_status(batch_file_path, task_index, frame, STATUS_IN_PROGRESS)
             status("\n- Rendering frame %04d." % frame)
 
+
             #
             # Run task commands
             #
 
             failed = False
-            if COMMANDS in task:
-                for command in task[COMMANDS]:
+            if FRAME_COMMANDS in task:
+                for command in task[FRAME_COMMANDS]:
                     try:
                         lx.eval(command)
                     except:
@@ -597,17 +616,21 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             if failed:
                 continue
 
+
             #
             # Build render command
             #
 
-            args = util.build_arg_string({
-                    "filename": '.'.join((destination, destination_extension)),
-                    "format": imagesaver,
-                    "group": master_pass_group_name
-                })
+            if RENDER_OVERRIDE in task:
+                render_command = task[RENDER_OVERRIDE]
+            else:
+                args = util.build_arg_string({
+                        "filename": '.'.join((destination, destination_extension)),
+                        "format": imagesaver,
+                        "group": master_pass_group_name
+                    })
 
-            render_command = 'render.animation' + args
+                render_command = 'render.animation' + args
 
             #
             # Render the frame

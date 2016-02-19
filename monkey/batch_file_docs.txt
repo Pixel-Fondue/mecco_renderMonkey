@@ -61,3 +61,9 @@
 #     Note that any invalid channel:value pair will cause the entire task to be skipped.
 
 # {s[commands]} - (default: None) A list of commands to run before rendering a given task.
+
+# {s[frame_commands]} - (default: None) A list of commands to run before rendering a given frame within a task.
+
+# {s[render_override]} - (default: None) Overrides the render command entirely. NOTE: This necessarily overrides
+#     task settings for '{s[destination]}', '{s[format]}', and '{s[groups]}', as these would have been included
+#     in the default render command. You'll have to provide these values yourself.

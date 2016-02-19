@@ -182,7 +182,9 @@ def generate_readme():
         'outputs': OUTPUTS,
         'width': WIDTH,
         'height': HEIGHT,
-        'commands': COMMANDS
+        'commands': COMMANDS,
+        'frame_commands': FRAME_COMMANDS,
+        'render_override': RENDER_OVERRIDE
     }
 
     substitutions['format_examples'] = "#" + "\n#".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in util.get_imagesavers()]) + "\n\n"
