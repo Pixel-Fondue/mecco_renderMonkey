@@ -73,6 +73,8 @@ class GLRenderWindow(lxu.command.BasicCommand):
         lx.eval('view3d.showSelectionRollover false')
         lx.eval('view3d.shadingStyle advgl active')
         lx.eval('view3d.wireframeOverlay none active')
+        lx.eval('view3d.renderCamera')
+        lx.eval('view3d.shadingStyle gnzgl')
         lx.eval('view3d.sameAsActive true')
 
         lx.eval('scheme.savePreset monkey_temp')
