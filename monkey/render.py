@@ -37,19 +37,33 @@ def render_frame(frame, output_path="*", output_format="*", clear=False, group=N
     modo.Scene().renderItem.channel('first').set(frame)
     modo.Scene().renderItem.channel('last').set(frame)
 
+    outputs = modo.Scene().items('renderOutput')
+    outputs_formats = [i.channel('format').get() for i in outputs]
+
+    if output_format != "*":
+        for i in outputs:
+            if i.channel('format').get():
+                i.channel('format').set(output_format)
+
     group = " group:{%s}" % group if group else ""
 
     try:
-        lx.eval('render.animation {%s} {%s}%s' % (output_path, output_format, group))
+        command = 'render {{{}}} {{{}}}{}'.format(output_path, output_format, group)
+        lx.eval(command)
 
     except:
         modo.Scene().renderItem.channel('first').set(first)
         modo.Scene().renderItem.channel('last').set(last)
+        for n, i in enumerate(outputs):
+            i.channel('format').set(outputs_formats[n])
+
         lx.out("User aborted")
         return False
 
     modo.Scene().renderItem.channel('first').set(first)
     modo.Scene().renderItem.channel('last').set(last)
+    for n, i in enumerate(outputs):
+        i.channel('format').set(outputs_formats[n])
 
     sleep(0.1)
 
@@ -72,14 +86,14 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
     try:
         group = lx.eval("!group.current ? pass")
         group_name = lx.eval("query sceneservice item.name ? {%s}" % group)
-        if not modo.dialogs.yesNo("Use Pass Group", 'Use render pass group "%s"?' % group_name):
+        if modo.dialogs.yesNo("Use Pass Group", 'Use render pass group "%s"?' % group_name) == 'no':
             group = None
     except:
         group = None
 
     if util.check_output_paths():
         output_dests = "Use filenames specified in render outputs?\n\n"
-        for i in [i for i in modo.Scene().iterItems('renderOutput')]:
+        for i in [i for i in modo.Scene().iterItems('renderOutput') if util.check_enable(i)]:
             dest = i.channel('filename').get()
             dest = '.'.join((dest, util.get_imagesaver(i.channel('format').get())[2])) if dest else "none"
             output_dests += "%s: %s\n" % (i.name, dest)
