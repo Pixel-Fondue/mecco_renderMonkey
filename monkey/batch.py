@@ -625,7 +625,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                 render_command = task[RENDER_OVERRIDE]
             else:
                 args = util.build_arg_string({
-                        "filename": '.'.join((destination, destination_extension)),
+                        "filename": destination,
                         "format": imagesaver,
                         "group": master_pass_group_name
                     })
