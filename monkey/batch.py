@@ -452,27 +452,27 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         # Parse Image Saver
         #
 
-        if FORMAT in task:
-            imagesaver = task[FORMAT]
-        elif task[DESTINATION] == '*' or task[FORMAT] == '*':
-            imagesaver = None
-        else:
-            imagesaver = defaults.get(FORMAT)
+        try:
+            if FORMAT in task:
+                imagesaver = task[FORMAT]
+            else:
+                imagesaver = defaults.get(FORMAT)
 
-        if imagesaver:
-            try:
-                if not util.get_imagesaver(imagesaver):
-                    status("ERROR: '%s' is not a valid image saver. Skip task." % imagesaver)
-                    set_task_status(batch_file_path, task_index, STATUS_FAILED)
-                    lx.eval('!scene.close')
-                    continue
-                destination_extension = util.get_imagesaver(imagesaver)[2].lower()
-            except:
-                status('ERROR: Failed to get image saver "%s". Skip task.' % imagesaver)
-                util.debug(traceback.format_exc())
+            if (DESTINATION in task and task[DESTINATION] == '*') or (FORMAT in task and task[FORMAT] == '*'):
+                imagesaver = None
+
+            if imagesaver and not util.get_imagesaver(imagesaver):
+                status("ERROR: '%s' is not a valid image saver. Skip task." % imagesaver)
                 set_task_status(batch_file_path, task_index, STATUS_FAILED)
                 lx.eval('!scene.close')
                 continue
+
+        except:
+            status('ERROR: Failed to get image saver. Skip task.')
+            util.debug(traceback.format_exc())
+            set_task_status(batch_file_path, task_index, STATUS_FAILED)
+            lx.eval('!scene.close')
+            continue
 
         status(FORMAT + ": " + str(imagesaver))
 
@@ -536,10 +536,31 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         try:
             if output_items:
+
+                # since outputs were explicitly chosen by user, we need to override
+                # the default behavior of including alphas in output files, and instead
+                # output all render outputs manually. This means assigning the destination
+                # to the output's filename and then rendering to * in the render command.
+
+                # But, if destination is * already, we'll assume the user knows what they're
+                # doing and honor that.
+
+                force_dest = True if destination and destination != '*' else False
+
                 for o in scene.items(lx.symbol.sITYPE_RENDEROUTPUT):
                     o.channel(lx.symbol.sICHAN_TEXTURELAYER_ENABLE).set(0)
                 for o in output_items:
                     o.channel(lx.symbol.sICHAN_TEXTURELAYER_ENABLE).set(1)
+
+                    if force_dest:
+                        if not o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FILENAME).get():
+                            o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FILENAME).set(destination)
+                        if not o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FORMAT).get():
+                            o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FORMAT).set(imagesaver if imagesaver else defaults.get(FORMAT))
+
+                if force_dest:
+                    destination = '*'
+                    imagesaver = None
         except:
             status("ERROR: Failed to set output visibility. Skip task.")
             util.debug(traceback.format_exc())
