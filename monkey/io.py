@@ -195,6 +195,7 @@ def generate_readme():
 
     indent = 32
     rr = [
+        ['*', 'Render output filenames defined in scene file.'],
         ['frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
         ['.frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
         [os.sep + os.path.join('path','with','filename.xyz'), os.path.normpath(os.sep + os.path.join('path','with','filename.jpg'))]

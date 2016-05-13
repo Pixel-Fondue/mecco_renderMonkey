@@ -267,26 +267,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         status(FRAMES + ": " + ", ".join([str(i) for i in frames_list]))
 
-        #
-        # Parse Image Saver
-        #
-
-        imagesaver = task[FORMAT] if FORMAT in task else defaults.get(FORMAT)
-        try:
-            if not util.get_imagesaver(imagesaver):
-                status("ERROR: '%s' is not a valid image saver. Skip task." % imagesaver)
-                set_task_status(batch_file_path, task_index, STATUS_FAILED)
-                lx.eval('!scene.close')
-                continue
-            destination_extension = util.get_imagesaver(imagesaver)[2].lower()
-        except:
-            status('ERROR: Failed to get image saver "%s". Skip task.' % imagesaver)
-            util.debug(traceback.format_exc())
-            set_task_status(batch_file_path, task_index, STATUS_FAILED)
-            lx.eval('!scene.close')
-            continue
-
-        status(FORMAT + ": " + imagesaver)
 
         #
         # Parse Output Pattern
@@ -436,16 +416,20 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         try:
             destination = task[DESTINATION] if DESTINATION in task else defaults.get(DESTINATION)
-            destination = util.expand_path(destination)
 
-            if os.path.splitext(destination)[1]:
-                destination_filename = os.path.splitext(os.path.basename(destination))[0]
-                destination_dirname = os.path.dirname(destination)
+            if destination == '*':
+                destination_dirname = None
             else:
-                destination_filename = os.path.splitext(os.path.basename(task_path))[0]
-                destination_dirname = destination
+                destination = util.expand_path(destination)
 
-            destination = os.path.sep.join([destination_dirname, destination_filename])
+                if os.path.splitext(destination)[1]:
+                    destination_filename = os.path.splitext(os.path.basename(destination))[0]
+                    destination_dirname = os.path.dirname(destination)
+                else:
+                    destination_filename = os.path.splitext(os.path.basename(task_path))[0]
+                    destination_dirname = destination
+
+                destination = os.path.sep.join([destination_dirname, destination_filename])
 
         except:
             status('ERROR: Failed to establish valid destination. Skip task.')
@@ -454,14 +438,44 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             lx.eval('!scene.close')
             continue
 
-        if not io.test_writeable(destination_dirname):
+        if destination_dirname and not io.test_writeable(destination_dirname):
             status("ERROR: Could not write to destination. Skip task.")
             util.debug(traceback.format_exc())
             set_task_status(batch_file_path, task_index, STATUS_FAILED)
             lx.eval('!scene.close')
             continue
 
-        status(DESTINATION + ": " + destination)
+        status(DESTINATION + ": " + str(destination))
+
+
+        #
+        # Parse Image Saver
+        #
+
+        if FORMAT in task:
+            imagesaver = task[FORMAT]
+        elif task[DESTINATION] == '*' or task[FORMAT] == '*':
+            imagesaver = None
+        else:
+            imagesaver = defaults.get(FORMAT)
+
+        if imagesaver:
+            try:
+                if not util.get_imagesaver(imagesaver):
+                    status("ERROR: '%s' is not a valid image saver. Skip task." % imagesaver)
+                    set_task_status(batch_file_path, task_index, STATUS_FAILED)
+                    lx.eval('!scene.close')
+                    continue
+                destination_extension = util.get_imagesaver(imagesaver)[2].lower()
+            except:
+                status('ERROR: Failed to get image saver "%s". Skip task.' % imagesaver)
+                util.debug(traceback.format_exc())
+                set_task_status(batch_file_path, task_index, STATUS_FAILED)
+                lx.eval('!scene.close')
+                continue
+
+        status(FORMAT + ": " + str(imagesaver))
+
 
         #
         # Set render channels

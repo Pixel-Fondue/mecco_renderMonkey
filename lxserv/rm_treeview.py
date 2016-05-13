@@ -161,10 +161,10 @@ class TreeNode(object):
     def set_value_type(self, value_type):
         self._value_type = value_type
         return self._value_type
-    
+
     def selectable(self):
         return self._selectable
-    
+
     def set_selectable(self, selectable=True):
         self._selectable = selectable
 
@@ -229,7 +229,7 @@ class TreeNode(object):
         self.set_parent_child_index(
             len([i for i in self.parent().children() if not i.ui_only()]) - 1
         )
-        
+
     def select_shift_up(self):
         if self.parent_child_index() > 0:
             self.set_selected(False)
@@ -889,6 +889,63 @@ class BatchEditNodes(lxu.command.BasicCommand):
         _BATCH.save_to_file()
 
 
+class BatchEditNodesAdvanced(lxu.command.BasicCommand):
+    def basic_Execute(self, msg, flags):
+        primary_node = _BATCH.tree().primary()
+        if not primary_node:
+            lx.out("Nothing selected.")
+            return lx.symbol.e_FAILED
+
+        sel = _BATCH.tree().children()[0].selected_children()
+        if len(set([i.value_type() for i in sel])) > 1:
+            sel = [_BATCH.tree().primary()]
+
+        if primary_node.node_region() == REGIONS[1]:
+            path = monkey.io.lxo_open_dialog()
+            if path is not False:
+                for node in sel:
+                    node.child_by_key(SCENE_PATH).set_value(path)
+
+        elif primary_node.value_type() == PATH_OPEN_SCENE:
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        elif primary_node.value_type() == PATH_SAVE_IMAGE:
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        elif primary_node.value_type() == IMAGE_FORMAT:
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        elif primary_node.value_type() == FRAME_RANGE:
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        elif primary_node.value_type() in (int.__name__, float.__name__):
+            try:
+                lx.eval('monkey.BatchEditNumber')
+            except:
+                pass
+
+        elif primary_node.value_type() == (str.__name__):
+            try:
+                lx.eval('monkey.BatchEditString')
+            except:
+                pass
+
+        BatchTreeView.notify_NewShape()
+        _BATCH.save_to_file()
+
+
 class BatchEditNumber(lxu.command.BasicCommand):
 
     def __init__(self):
@@ -1078,6 +1135,7 @@ lx.bless(BatchDeleteNodes, CMD_BatchDeleteNodes)
 lx.bless(BatchReorderNodes, CMD_BatchReorderNodes)
 lx.bless(BatchSelectShift, CMD_BatchSelectShift)
 lx.bless(BatchEditNodes, CMD_BatchEditNodes)
+lx.bless(BatchEditNodesAdvanced, CMD_BatchEditNodesAdvanced)
 lx.bless(BatchResetNodes, CMD_BatchResetNodes)
 lx.bless(BatchOpenTaskScene, CMD_BatchOpenTaskScene)
 lx.bless(BatchRender, CMD_BatchRender)
