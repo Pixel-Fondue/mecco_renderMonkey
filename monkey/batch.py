@@ -160,8 +160,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
     util.debug('Setting up job.')
     render.to_console(True)
 
-    restore['threads'] = lx.eval('pref.value render.threads ?')
-    lx.eval('pref.value render.threads auto')
+    restore['autoThreads'] = lx.eval('pref.value render.autoThreads ?')
+    lx.eval('pref.value render.autoThreads true')
 
     batch = io.read_yaml(batch_file_path)
 
@@ -708,7 +708,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
     #
 
     render.to_console(False)
-    lx.eval('pref.value render.threads %s' % restore['threads'])
+    lx.eval('pref.value render.autoThreads %s' % restore['autoThreads'])
 
     if dry_run:
         batch_dryRun_write(_STATUS, batch_file_path)
