@@ -293,7 +293,7 @@ def frames_from_string(input_string="*"):
             except:
                 debug('Error in {}'.format(rangeString))
 
-        frames = list(set(frames))
+        frames = list(orderedSet(frames))
         return frames if frames else False
 
     except:
@@ -376,3 +376,11 @@ def build_arg_string(arg_dict):
             v = str(v) if str(v).isalnum() else '{{{}}}'.format(str(v))
             arg_string += " {}:{}".format(str(k), v)
     return arg_string
+
+
+def orderedSet(sequence):
+    checked = []
+    for i in sequence:
+        if i not in checked:
+            checked.append(i)
+    return checked
