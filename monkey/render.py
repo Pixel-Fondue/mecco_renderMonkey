@@ -45,10 +45,15 @@ def render_frame(frame, output_path="*", output_format="*", clear=False, group=N
             if i.channel('format').get():
                 i.channel('format').set(output_format)
 
-    group = " group:{%s}" % group if group else ""
-
     try:
-        command = 'render {{{}}} {{{}}}{}'.format(output_path, output_format, group)
+        args = util.build_arg_string({
+                "filename": output_path,
+                "format": output_format,
+                "group": group
+            })
+
+        command = 'render.animation' + args
+
         lx.eval(command)
 
     except:
@@ -164,6 +169,7 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
         progressbar.init(len(frames_list))
 
     for frame in frames_list:
+        lx.out("rendering frame:" + str(frame))
         clear_frame = False if frame == frames_list[-1] else True
 
         if not render_frame(frame, dest_path, dest_format, clear_frame, group=group):

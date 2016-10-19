@@ -25,7 +25,7 @@ def breakpoint(string):
     By Adam O'Hern for Mechanical Color
 
     Essentially a breakpoint function for debugging purposes.
-    Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well. 
+    Prints a string to lx.out() and, if defaults.get('breakpoint') returns True, throws a dialog as well.
     (See defaults.py)
     """
     t = traceback.extract_stack()[-2]
@@ -293,11 +293,17 @@ def frames_from_string(input_string="*"):
             except:
                 debug('Error in {}'.format(rangeString))
 
-        frames = list(set(frames))
+        frames = remove_duplicates(frames)
         return frames if frames else False
 
     except:
         debug(traceback.format_exc())
+
+
+def remove_duplicates(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
 
 def filter_numerical(string):

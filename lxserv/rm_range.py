@@ -30,7 +30,7 @@ class CMD(lxu.command.BasicCommand):
 
         except:
             monkey.util.debug(traceback.format_exc())
-            return lx.symbol.e_FAILEDs
+            return lx.symbol.e_FAILED
 
 
 lx.bless(CMD, CMD_NAME)
