@@ -48,7 +48,8 @@ def render_frame(frame, output_path="*", output_format="*", clear=False, group=N
     group = " group:{%s}" % group if group else ""
 
     try:
-        command = 'render {{{}}} {{{}}}{}'.format(output_path, output_format, group)
+        # command = 'render {{{}}} {{{}}}{}'.format(output_path, output_format, group)
+        command = 'render.animation filename:{%s} format:{%s}%s' % (output_path, output_format, group)
         lx.eval(command)
 
     except:
