@@ -1,4 +1,4 @@
-# RenderMonkey
+# RenderMonkey 3
 
 **Rendering utilities for MODO**
 
