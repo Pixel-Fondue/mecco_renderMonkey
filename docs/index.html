@@ -13,7 +13,7 @@
         <h1>Render Monkey Documentation</h1>
         <hr />
 
-        <h2 id="quickstart">Quickstart</h2>
+        <h2 id="quickstart">Standalone Quickstart</h2>
 
         <!-- <div class="videoWrapper">
           <iframe width="560" height="315" src="https://www.youtube.com/embed/CwEJFppLRK8" frameborder="0" allowfullscreen></iframe>
@@ -23,8 +23,39 @@
 
         <ol>
           <li>
-            <h3>Step 1: Title</h3>
-            Here's what you should do.
+            <h3>Step 1: Select local directory</h3>
+            Click the "Set Local Directory" button to pick the local folder where the file(s) to be rendered are stored.
+            <img src="./images/standalone_quickstart/managefiles01.png">
+          </li>
+          <li>
+            <h3>Step 2: Create project</h3>
+            Click the "Create Project" button to create a new project folder for storing your file(s) to be rendered in the cloud.
+            <img src="./images/standalone_quickstart/managefiles02.png">
+          </li>
+          <li>
+            <h3>Step 3: Upload files</h3>
+            Select the files you wish to upload in the "Local Files" directory.  Then, click the ">>" button to upload the files to the cloud project folder.
+            <img src="./images/standalone_quickstart/managefiles03.png">
+          </li>
+          <li>
+            <h3>Step 4: Launch render instances</h3>
+            Click on the "Manage Farm" tab.
+            <img src="./images/standalone_quickstart/managefarm01.png">
+            Next click on the "Launch Instances" button to select the configuration type for your render farm nodes, and the number of nodes to launch.
+            <strong>You can also set a custom storage size for the render nodes. The default storage size on a render node is 8GB if your scene files exceed this, then enter an appropriate size for your scene.</strong>
+            <img src="./images/standalone_quickstart/managefiles02.png">
+            Once you click "OK" the render nodes should appear in the "Render Farm" list.
+            <img src="./images/standalone_quickstart/managefiles03.png">
+          </li>
+          <li>
+            <h3>Step 5: Create render job</h3>
+            Click on the "Render" tab.
+            <img src="./images/standalone_quickstart/render01.png">
+            Next click on the 'Create Render Job' button to bring up the Render Job dialog.
+            Here you will select the software to use (if you uploaded more than one), the file to render, frames to render, the name of the output file, whether to render a certain pass and whether to render as a layered exr file.
+            <img src="./images/standalone_quickstart/render02.png">
+            Click "OK" to create the render job which and start rendering on the nodes launched in the previous step. As frames are finished, the images will automatically be downloaded since a local directory was chosen in the first step.
+            <img src="./images/standalone_quickstart/render03.png">
           </li>
         </ol>
 
