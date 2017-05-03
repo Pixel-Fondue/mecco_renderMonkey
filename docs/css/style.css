@@ -113,3 +113,8 @@ div.alert {
   color:red;
   padding:2em;
 }
+
+img {
+  max-width: 100%;
+  margin: 2em 0;
+}
