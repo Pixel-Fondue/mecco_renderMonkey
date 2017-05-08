@@ -169,6 +169,14 @@ class Window(QMainWindow):
 
   self.setCentralWidget(self.centralWidget)
 
+  self.frozen = False
+  if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        self.frozen = True
+        bundle_dir = sys._MEIPASS
+  else:
+        # we are running in a normal Python environment
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
   self.keyid = None
   self.secretkey = None
@@ -187,9 +195,6 @@ class Window(QMainWindow):
   self.session = None
 
   self.ccq = None
-
-  self.runexe = False;
-  #self.runexe = True;
 
   self.savepem = True;
 
@@ -708,7 +713,7 @@ class Window(QMainWindow):
    abspathArray.pop(-1)
    abspathArray.pop(-1)
    cwd = "/".join(abspathArray)
-   if self.runexe is True:
+   if self.frozen is True:
     os.chdir(cwd)
   elif platform == "win32":
    pass

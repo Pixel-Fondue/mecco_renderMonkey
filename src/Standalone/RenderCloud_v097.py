@@ -2642,42 +2642,6 @@ class Window(QMainWindow):
 				createbucket()
 
 
- def createBucketThreadOld(self,region,newbucketname):
-  print 'create bucket %s' %newbucketname
-  print region
-  s3Resource = self.cloud.session.resource('s3',region);
-  try:
-   newbucket = s3Resource.Bucket(newbucketname)
-   response = newbucket.create(newbucket,CreateBucketConfiguration={'LocationConstraint': region})
-   print 'New Bucket Created'
-  except botocore.exceptions.ClientError as e:
-   print("Bucket cannot be created please try another name")
-   reply = QInputDialog.getText(self, "Create Root Folder","Enter Root Folder Name:")
-   if reply[1]:
-				newbucketname = "%s--%s" %(reply[0],region)
-				print(newbucketname)
-				try:
-				 bucket = s3Resource.Bucket(newbucketname)
-				 response = bucket.create(bucket,CreateBucketConfiguration={'LocationConstraint':region})
-				except botocore.exceptions.ClientError as e:
-					print("Bucket cannot be created please try another name",5000)
-					self.statusBar().showMessage("Bucket cannot be created please try another name.",5000)
-					self.createBucketThread(region,newbucketname)
-				else:
-				 self.cloud.bucketname = newbucketname
-				 self.cloud.bucketList[region] = newbucketname
-				 self.cloud.connectCloud()
-
-				 self.dirDropdown.clear()
-				 self.cloud.populateProjectsList()
-
-				 projList = self.cloud.projects #gets cloud projects
-				 self.dirDropdown.addItems(projList) #adds them to dropdown list
-
-
-
-
-
  def populateRegions(self):
   self.cloud.getRegions();
   print self.cloud.regions;

@@ -63,11 +63,18 @@ class mRenderCloudObj():
   self.rn_ami = None
   self.key = None
   self.securitygroup = None
-  self.runexe = False;
-  #self.runexe = True;
   self.mainStatusBar = mainStatusBar
   self.cwd = None
   self.regions = []
+
+  self.frozen = False
+  if getattr(sys, 'frozen', False):
+        # we are running in a bundle
+        self.frozen = True
+        bundle_dir = sys._MEIPASS
+  else:
+        # we are running in a normal Python environment
+        bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
 
   self.initCreds()
@@ -87,7 +94,7 @@ class mRenderCloudObj():
    abspathArray.pop(-1)
    abspathArray.pop(-1)
    cwd = "/".join(abspathArray)
-   if self.runexe is True:
+   if self.frozen is True:
     os.chdir(cwd)
   elif platform == "win32":
    pass
@@ -451,6 +458,7 @@ class mRenderCloudObj():
    for result in paginator.paginate(Bucket=self.bucketname, Delimiter='/'):
     print result;
   except botocore.exceptions.ClientError as e:
+   print e
    self.mainStatusBar.showMessage("Unable to find storage bucket.")
    pass
   else:
