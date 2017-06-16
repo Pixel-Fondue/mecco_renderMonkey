@@ -2,6 +2,9 @@
 
 import lx
 import traceback
+import lumberjack
+
+from TmpBatch import *
 
 try:
     import batch
