@@ -19,7 +19,7 @@ Batch().bless(
     nice_name = 'Render Monkey Batch',
 
     # :param internal_name:   name of the treeview server (also used in config files)
-    internal_name = 'rmTreeView',
+    internal_name = 'rendermonkey3batch',
 
     # :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
     ident = 'RRTV',
