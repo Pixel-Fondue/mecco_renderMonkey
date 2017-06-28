@@ -39,10 +39,10 @@ BATCHFILE = "batch"
 ADD_GENERIC = '(add...)'
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add parameter...)'
-NO_FILE_SELECTED = "(no batch file)"
+# TODO DELETE NO_FILE_SELECTED = "(no batch file)"
 
 # Special Node Values
-LIST = '(list)'
+# TODO DELETE LIST = '(list)'
 DICT = '(dict)'
 
 # Useful Strings
@@ -90,33 +90,6 @@ ALL_PARAMS = [
     RENDER_OVERRIDE
 ]
 
-# Status Messages
-STATUS = "status"
-STATUS_COMPLETE = "(Complete)"
-STATUS_IN_PROGRESS = "(In progress...)"
-STATUS_FAILED = "(Failed)"
-STATUS_ABORT = "(Aborted)"
-STATUS_AVAILABLE = "(Available)"
-STATUS_FILE_SUFFIX = "status"
-DRYRUN_FILE_SUFFIX = "dryRun"
-MESSAGE = 'Message'
-
-# Treeview Basics
-COL_NAME = "Name"
-COL_VALUE = "Value"
-SERVERNAME = 'RenderMonkeyBatch'
-EMPTY_PROMPT = 'no batch file'
-EMPTY_TASKS = 'no tasks'
-
-TREE_ROOT_TITLE = 'Tasks'
-IDENT = 'RMTV'
-sSRV_USERNAME = "rendermonkeybatch"
-NICE_NAME = "RenderMonkey_Batch"
-OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
-VPTYPE = 'vpapplication'
-
-
-# Node Types
 REGIONS = [
     '(anywhere)', # 0 is reserved ".anywhere" region index
     'batchTask', #1
@@ -131,6 +104,31 @@ REGIONS = [
     'addToList', #10
     'addToDict' #11
 ]
+
+# Status Messages
+STATUS = "status"
+STATUS_COMPLETE = "(Complete)"
+STATUS_IN_PROGRESS = "(In progress...)"
+STATUS_FAILED = "(Failed)"
+STATUS_ABORT = "(Aborted)"
+STATUS_AVAILABLE = "(Available)"
+STATUS_FILE_SUFFIX = "status"
+DRYRUN_FILE_SUFFIX = "dryRun"
+MESSAGE = 'Message'
+
+# Treeview Basics
+SERVERNAME = 'RenderMonkeyBatch'
+EMPTY_PROMPT = 'no batch file'
+EMPTY_TASKS = 'no tasks'
+
+# TODO DELETE TREE_ROOT_TITLE = 'Tasks'
+IDENT = 'RMTV'
+sSRV_USERNAME = "rendermonkeybatch"
+NICE_NAME = "RenderMonkey_Batch"
+OPEN_FILE_DIALOG_TITLE = 'Open File(s)'
+VPTYPE = 'vpapplication'
+
+
 # Misc
 LXO_FILE = '$LXOB'
 

@@ -193,9 +193,10 @@ class Lumberjack(object):
     _nice_name = ""
     _viewport_type = ""
     _primary = None
+    _on_bless = None
     final_class = None
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """A lumberjack class is a self-contained model-view-controller system.
 
         It maintains:
@@ -204,8 +205,8 @@ class Lumberjack(object):
 
         The TreeNode object is the data model, the TreeView is the view model,
         and the lumberjack object acts as controller."""
-
-        pass
+        if 'on_bless' in kwargs:
+            self.__class__._on_bless = kwargs['on_bless']
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
     # your own class and then tell your Lumberjack Object to use it by overwriting this method
@@ -378,6 +379,9 @@ class Lumberjack(object):
         except:
             traceback.print_exc()
             raise Exception('Unable to bless %s.' % cls.__name__)
+            
+        if cls._on_bless is not None:
+            cls.on_bless(cls())
 
     @property
     def root(self):

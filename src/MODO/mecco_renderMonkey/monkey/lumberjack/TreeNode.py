@@ -5,7 +5,15 @@ from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
 
-fTREE_VIEW_ITEM_ATTR = 0x00000001
+fTREE_VIEW_ITEM_ATTR             = 0x00000001
+fTREE_VIEW_ITEM_EXPAND           = 0x00000002
+fTREE_VIEW_ATTR_EXPAND           = 0x00000004
+fTREE_VIEW_HIDDEN                = 0x00002000        # Item is hidden and will note be drawn.
+fTREE_VIEW_ISATTR                = 0x00004000        # Item is an attribute of it's parent, instead of a normal child for ISTREE columns
+fTREE_VIEW_NOSELECT              = 0x00000100        # Item is not selectable, and should not show roll-over hilighting
+fTREE_VIEW_EXPATTR               = 0x00000010        # Attribute children are expanded and visible for ISTREE columns
+fTREE_VIEW_EXPSUB                = 0x00000004        # Sub-items are expanded and the children are visible for ISTREE columns
+fTREE_VIEW_SELECTED              = 0x00000040
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
@@ -270,6 +278,9 @@ class TreeNode(object):
         return locals()
 
     tail_commands = property(**tail_commands())
+    
+    def add_state_flag(self, flag):
+        self._state = self._state | flag
 
     def state():
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.

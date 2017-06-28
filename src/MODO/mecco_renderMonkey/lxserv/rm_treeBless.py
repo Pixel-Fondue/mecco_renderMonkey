@@ -22,21 +22,21 @@ Batch().bless(
     internal_name = 'rendermonkey3batch',
 
     # :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
-    ident = 'RRTV',
+    ident = 'RRTA',
 
     # :param column_definitions:         a list of dictionaries, one for each column. Values in each
     #                         node's values dictionary must correspond with these strings
     column_definitions = {
-        'primary_position': 2,
+        'primary_position': 0,
         'list': [
                 {
-                    'name':'name',
-                    'width':12
+                    'name':'Name',
+                    'width':-1
                 },{
-                    'name':'value',
-                    'width':24,
-                    'justify':'center',
-                    'icon_resource':'uiicon_replay_prefix'
+                    'name':'Value',
+                    'width':-3,
+#                    'justify':'center',
+#                    'icon_resource':'uiicon_replay_prefix'
                 }
             ]
     },
