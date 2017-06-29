@@ -1,6 +1,7 @@
 # python
 
 import lumberjack
+from symbols import *
 from BatchTreeNode import BatchTreeNode
 
 # TODO refactor names
@@ -9,21 +10,6 @@ BATCHFILE = "batch"
 ADD_GENERIC = '(add...)'
 ADD_TASK = '(add task...)'
 ADD_PARAM = '(add parameter...)'
-REGIONS = [
-    '(anywhere)', # 0 is reserved ".anywhere" region index
-    'batchTask', #1
-    'taskParam', #2
-    'taskParamMulti', #3
-    'taskParamSub', #4
-    'addNode', #5
-    'null', #6
-    'batchFile', #7
-    'addTask', #8
-    'addParam', #9
-    'addToList', #10
-    'addToDict' #11
-]
-
 EMPTY = ''
 
 class Batch(lumberjack.Lumberjack):
@@ -198,3 +184,7 @@ class Batch(lumberjack.Lumberjack):
             if child.value_type() is not None:
                 batch.append(self.node_data(child))
         return batch
+
+    def select_event_treeview(self):
+        pass
+0

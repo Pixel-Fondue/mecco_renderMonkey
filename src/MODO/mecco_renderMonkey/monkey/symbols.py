@@ -2,12 +2,12 @@
 
 from os.path import join
 
+# TODO remove everythin possible
 # Globals
 KIT_ALIAS = 'kit_mecco_renderMonkey'
 QUICK_BATCH_PATH = join('tmp', 'quick_batch.yaml')
 
 # Blessings
-CMD_BatchOpen = "monkey.BatchOpen"
 CMD_BatchClose = "monkey.BatchClose"
 CMD_BatchAddTask = "monkey.BatchAddTask"
 CMD_BatchAddParam = "monkey.BatchAddParam"
@@ -89,7 +89,6 @@ ALL_PARAMS = [
     RENDER_CHANNELS,
     RENDER_OVERRIDE
 ]
-
 REGIONS = [
     '(anywhere)', # 0 is reserved ".anywhere" region index
     'batchTask', #1
@@ -145,17 +144,6 @@ SELECT_SHIFT_ARGS = {
     'UP': 'up',
     'DOWN': 'down'
 }
-
-# Flags
-fTREE_VIEW_ITEM_ATTR             = 0x00000001
-fTREE_VIEW_ITEM_EXPAND           = 0x00000002
-fTREE_VIEW_ATTR_EXPAND           = 0x00000004
-fTREE_VIEW_HIDDEN                = 0x00002000        # Item is hidden and will note be drawn.
-fTREE_VIEW_ISATTR                = 0x00004000        # Item is an attribute of it's parent, instead of a normal child for ISTREE columns
-fTREE_VIEW_NOSELECT              = 0x00000100        # Item is not selectable, and should not show roll-over hilighting
-fTREE_VIEW_EXPATTR               = 0x00000010        # Attribute children are expanded and visible for ISTREE columns
-fTREE_VIEW_EXPSUB                = 0x00000004        # Sub-items are expanded and the children are visible for ISTREE columns
-fTREE_VIEW_SELECTED              = 0x00000040
 
 # More Flags
 fTREE_VIEW_ROWCOLOR_NONE         = 0x00000000        # No color

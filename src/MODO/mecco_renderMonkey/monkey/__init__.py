@@ -3,8 +3,10 @@
 import lx
 import traceback
 import lumberjack
+import commander
 
 from TmpBatch import *
+from Notifier import *
 
 try:
     import batch

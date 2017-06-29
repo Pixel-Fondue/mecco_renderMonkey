@@ -20,13 +20,7 @@ FONT_NORMAL = markup('f', 'FONT_NORMAL')
 FONT_BOLD = markup('f', 'FONT_BOLD')
 FONT_ITALIC = markup('f', 'FONT_ITALIC')
 
-class BatchOpen(lxu.command.BasicCommand):
-    def basic_Execute(self, msg, flags):
-        path = monkey.io.yaml_open_dialog()
-        if path:
-            _BATCH.set_batch_file(path)
-            _BATCH.regrow_tree()
-            BatchTreeView.notify_NewShape()
+
 
 
 class BatchClose(lxu.command.BasicCommand):
@@ -552,7 +546,6 @@ sINMAP = "name[{}] regions[{}]".format(
 
 #lx.bless(BatchTreeView, SERVERNAME, tags)
 
-lx.bless(BatchOpen, CMD_BatchOpen)
 lx.bless(BatchClose, CMD_BatchClose)
 lx.bless(BatchAddTask, CMD_BatchAddTask)
 lx.bless(BatchAddParam, CMD_BatchAddParam)

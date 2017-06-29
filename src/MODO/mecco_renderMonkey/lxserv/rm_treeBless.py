@@ -1,13 +1,13 @@
 # python
 
-from monkey import Batch
+import monkey
 
-
+# TODO review
 # In order to be available in the GUI, a treeview needs to be "blessed" (same as
 # MODO commands.) Lumberjack does all of this automatically with a single
 # `bless()` method. It can only be fired once per session.
 
-Batch().bless(
+monkey.Batch().bless(
 
     # :param viewport_type:   category in the MODO UI popup
     #                         vpapplication, vp3DEdit, vptoolbars, vpproperties, vpdataLists,
@@ -58,14 +58,7 @@ Batch().bless(
     #                             'regionNameTwo'     # 2
     #                         ]
 
-    input_regions = [
-        '(anywhere)', # 0 is reserved ".anywhere" region index
-        'MacroCommandCommand',
-        'MacroCommandArg',
-        'MacroCommandEnable',
-        'MacroCommandPrefix',
-        'MacroCommandBlock'
-    ],
+    input_regions = monkey.symbols.REGIONS,
 
     # :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.
     #

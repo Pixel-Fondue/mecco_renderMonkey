@@ -376,7 +376,6 @@ class TreeView( lxifc.TreeView,
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
         """Returns True if the provided columnIndex corresponds to the provided regionID."""
-
         # NOTE: This code fires very, very frequently.
         # Speed is very important.
 

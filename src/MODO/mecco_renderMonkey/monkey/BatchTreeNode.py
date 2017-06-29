@@ -1,5 +1,6 @@
 
 import lumberjack
+from symbols import *
 
 # TODO remove after display_name and display_value refactoring
 def markup(pre, string):
@@ -12,22 +13,6 @@ GRAY = markup('c', '4113')
 FONT_BOLD = markup('f', 'FONT_BOLD')
 
 IMAGE_FORMAT = 'image_format'
-
-# Node Types
-REGIONS = [
-    '(anywhere)', # 0 is reserved ".anywhere" region index
-    'batchTask', #1
-    'taskParam', #2
-    'taskParamMulti', #3
-    'taskParamSub', #4
-    'addNode', #5
-    'null', #6
-    'batchFile', #7
-    'addTask', #8
-    'addParam', #9
-    'addToList', #10
-    'addToDict' #11
-]
 
 class BatchTreeNode(lumberjack.TreeNode):
 
