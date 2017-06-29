@@ -1,6 +1,6 @@
 # python
 
-import lumberjack
+import lumberjack, io
 from symbols import *
 from BatchTreeNode import BatchTreeNode
 
@@ -147,7 +147,7 @@ class Batch(lumberjack.Lumberjack):
         batch_root_node.add_state_flag(lumberjack.fTREE_VIEW_ITEM_EXPAND)
 
         if self.batch_file_path:
-            batch = monkey.io.read_yaml(self.batch_file_path)
+            batch = io.read_yaml(self.batch_file_path)
             self.grow_node(batch, batch_root_node)
 
         if len(batch_root_node.children) == 0:

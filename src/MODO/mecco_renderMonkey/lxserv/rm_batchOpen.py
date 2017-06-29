@@ -40,9 +40,10 @@ class BatchOpenCommand(monkey.commander.CommanderClass):
 
         # Rebuild the tree
         try:
-            batch.set_batch_file(path)
+            batch.set_batch_file(input_path)
             batch.regrow_tree()
         except Exception as err:
+            lx.out(str(err))
             pass
             # TODO use message table
             #modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')

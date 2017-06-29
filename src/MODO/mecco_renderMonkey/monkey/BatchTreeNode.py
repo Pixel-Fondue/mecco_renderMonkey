@@ -1,5 +1,5 @@
 
-import lumberjack
+import lumberjack, os
 from symbols import *
 
 # TODO remove after display_name and display_value refactoring
@@ -29,11 +29,11 @@ class BatchTreeNode(lumberjack.TreeNode):
 
         self.columns[COL_NAME] = lumberjack.TreeValue()
         self.columns[COL_NAME].input_region = self._node_region
-        self.columns[COL_NAME].display_value = self.display_name()
+        self.columns[COL_NAME].value = self.display_name
 
         self.columns[COL_VALUE] = lumberjack.TreeValue()
         self.columns[COL_VALUE].input_region = self._node_region
-        self.columns[COL_VALUE].display_value = self.display_value()
+        self.columns[COL_VALUE].value = self.display_value
 
     # TODO refactor to use font and color attrs from TreeNodeValue
     def display_name(self):
@@ -48,14 +48,14 @@ class BatchTreeNode(lumberjack.TreeNode):
             m = GRAY
 
         if self._node_region == REGIONS[1]:
-            k = basename(self.child_by_key(SCENE_PATH).raw_value())
+            k = os.path.basename(self.child_by_key(SCENE_PATH).raw_value())
         elif isinstance(self._key, int):
             k = str(self._key + 1)
         else:
             k = str(self._key)
             k = k.replace('_', ' ')
             k = k.title() if "." not in k else k
-
+        
         return m + k
 
     def display_value(self):
@@ -83,6 +83,11 @@ class BatchTreeNode(lumberjack.TreeNode):
         if idx in self._tooltips:
             return self._tooltips[idx]
 
+    def child_by_key(self, key):
+        for child in self._children:
+            if key == child.key():
+                return child
+        return None
 
 #    def ui_only(self):
 #        return self._ui_only
@@ -90,11 +95,11 @@ class BatchTreeNode(lumberjack.TreeNode):
 #    def set_ui_only(self, ui_only=True):
 #        self._ui_only = ui_only
 
-#    def raw_value(self):
-#        return self._value
+    def raw_value(self):
+        return self._value
 
-#    def key(self):
-#        return str(self._key)
+    def key(self):
+        return str(self._key)
 
 #    def set_key(self, key):
 #        self._key = key
@@ -121,12 +126,6 @@ class BatchTreeNode(lumberjack.TreeNode):
 
   #  def set_selectable(self, selectable=True):
   #      self._selectable = selectable
-
- #   def child_by_key(self, key):
- #       for child in self._children:
- #           if key == child.key():
- #               return child
- #       return False
 
 
 #    def ancestors(self, path=None):

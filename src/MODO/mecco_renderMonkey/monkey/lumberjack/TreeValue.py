@@ -171,8 +171,11 @@ class TreeValue(object):
         def fget(self):
             if self._display_value is not None:
                 display_string = str(self._display_value)
-            elif self.value is not None:
-                display_string = str(self.value)
+            elif self._value is not None:
+                if hasattr(self._value, '__call__'):
+                    display_string = str(self._value())
+                else:
+                    display_string = str(self._value)
             else:
                 display_string = ''
 
@@ -188,7 +191,7 @@ class TreeValue(object):
             markup += display_string
             return markup
         def fset(self, value):
-            self._display_value = str(value)
+            self._display_value = value
         return locals()
 
     display_value = property(**display_value())
