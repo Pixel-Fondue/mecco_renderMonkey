@@ -7,6 +7,7 @@ import commander
 
 from TmpBatch import *
 from Notifier import *
+from Message import *
 
 try:
     import batch

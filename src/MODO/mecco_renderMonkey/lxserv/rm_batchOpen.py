@@ -1,7 +1,7 @@
 # python
 
 import lx, monkey, os
-#from monkey import message as message
+from monkey import message as message
 
 class BatchOpenCommand(monkey.commander.CommanderClass):
     _path = lx.eval('query platformservice alias ? {scripts:}')
@@ -43,10 +43,7 @@ class BatchOpenCommand(monkey.commander.CommanderClass):
             batch.set_batch_file(input_path)
             batch.regrow_tree()
         except Exception as err:
-            lx.out(str(err))
-            pass
-            # TODO use message table
-            #modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
+            modo.dialogs.alert(message("MECCO_RM", "OPEN_FILE_FAIL"), message("MECCO_RM", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
 
         finally:
             batch.rebuild_view()

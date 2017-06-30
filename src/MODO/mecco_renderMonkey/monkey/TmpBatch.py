@@ -15,6 +15,9 @@ EMPTY = ''
 class Batch(lumberjack.Lumberjack):
 
     _batch_file_path = ''
+    # Keeps track of unsaved changes for use in `replay.fileClose`.
+    # TODO temporary true since is not yet properly assigned
+    _unsaved_changes = True
 
     def __init__(self):
         super(Batch, self).__init__(on_bless=self.on_bless)
@@ -30,6 +33,31 @@ class Batch(lumberjack.Lumberjack):
         return locals()
 
     batch_file_path = property(**batch_file_path())
+    
+    def unsaved_changes():
+        doc = '''
+        dict: local context
+        Gets and sets the current batch unsaved changes state
+        '''
+        def fget(self):
+            return self.__class__._unsaved_changes
+        def fset(self, value):
+            self.__class__._unsaved_changes = value
+        return locals()
+
+    unsaved_changes = property(**unsaved_changes())
+    
+    def is_empty():
+        doc = '''
+        Gets empty state
+        Returns True if there are no any content to save.
+        '''
+        def fget(self):
+            #TODO Always return true. Need to define empty state
+            return False
+        return locals()
+
+    is_empty = property(**is_empty())
     
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we overwrite the create_child method to create our `TreeNode` subclasses.
