@@ -48,7 +48,7 @@ class BatchTreeNode(lumberjack.TreeNode):
             m = GRAY
 
         if self._node_region == REGIONS[1]:
-            k = os.path.basename(self.child_by_key(SCENE_PATH).raw_value())
+            k = os.path.basename(self.__class__.child_by_key(self, SCENE_PATH).raw_value())
         elif isinstance(self._key, int):
             k = str(self._key + 1)
         else:
@@ -68,7 +68,7 @@ class BatchTreeNode(lumberjack.TreeNode):
             m = GRAY
 
         if self._node_region == REGIONS[1]:
-            v = self.child_by_key(SCENE_PATH).raw_value()
+            v = self.__class__.child_by_key(self, SCENE_PATH).raw_value()
         elif self._value_type == IMAGE_FORMAT:
             v = monkey.util.get_imagesaver(self._value)[1]
         else:
@@ -83,14 +83,15 @@ class BatchTreeNode(lumberjack.TreeNode):
         if idx in self._tooltips:
             return self._tooltips[idx]
 
-    def child_by_key(self, key):
-        for child in self._children:
+    @staticmethod
+    def child_by_key(root, key):
+        for child in root._children:
             if key == child.key():
                 return child
         return None
 
-#    def ui_only(self):
-#        return self._ui_only
+    def ui_only(self):
+        return self._ui_only
 
 #    def set_ui_only(self, ui_only=True):
 #        self._ui_only = ui_only
@@ -114,8 +115,8 @@ class BatchTreeNode(lumberjack.TreeNode):
 #    def set_value(self,value):
 #        self._value = value
 
-#    def value_type(self):
-#        return self._value_type
+    def value_type(self):
+        return self._value_type
 
  #   def set_value_type(self, value_type):
  #       self._value_type = value_type

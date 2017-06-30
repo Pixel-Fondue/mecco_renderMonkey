@@ -33,7 +33,7 @@ class BatchOpenCommand(monkey.commander.CommanderClass):
 
         # Get the path from the user, if not given as argument:
         if not input_path:
-            input_path = monkey.io.yaml_open_dialog()
+            input_path = monkey.io.yaml_open_dialog(self.__class__._path)
             if input_path is None:
                 return
             self.__class__._path = input_path
@@ -42,6 +42,7 @@ class BatchOpenCommand(monkey.commander.CommanderClass):
         try:
             batch.set_batch_file(input_path)
             batch.regrow_tree()
+            batch.unsaved_changed = False
         except Exception as err:
             modo.dialogs.alert(message("MECCO_RM", "OPEN_FILE_FAIL"), message("MECCO_RM", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
 

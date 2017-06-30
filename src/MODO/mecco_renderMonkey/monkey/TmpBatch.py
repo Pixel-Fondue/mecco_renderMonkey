@@ -3,6 +3,10 @@
 import lumberjack, io
 from symbols import *
 from BatchTreeNode import BatchTreeNode
+import defaults
+import batch
+import util
+import io
 
 # TODO refactor names
 NO_FILE_SELECTED = "(no batch file)"
@@ -17,7 +21,7 @@ class Batch(lumberjack.Lumberjack):
     _batch_file_path = ''
     # Keeps track of unsaved changes for use in `replay.fileClose`.
     # TODO temporary true since is not yet properly assigned
-    _unsaved_changes = True
+    _unsaved_changes = False
 
     def __init__(self):
         super(Batch, self).__init__(on_bless=self.on_bless)
@@ -66,7 +70,7 @@ class Batch(lumberjack.Lumberjack):
     
     def add_task(self, paths_list, batch_root_node=None):
         if not batch_root_node:
-            batch_root_node = self.root.children()[0]
+            batch_root_node = self.root.children[0]
 
         if not paths_list:
             return False
@@ -74,7 +78,7 @@ class Batch(lumberjack.Lumberjack):
         paths_list = paths_list if isinstance(paths_list, list) else [paths_list]
 
         for path in paths_list:
-            self.grow_node([{SCENE_PATH: path, FRAMES: monkey.defaults.get(FRAMES)}], batch_root_node, 1)
+            self.grow_node([{SCENE_PATH: path, FRAMES: defaults.get(FRAMES)}], batch_root_node, 1)
 
         if self.batch_file_path:
             self.save_to_file()
@@ -99,14 +103,14 @@ class Batch(lumberjack.Lumberjack):
             self.batch_file_path = file_path
 
         elif not self.batch_file_path:
-            self.batch_file_path = monkey.io.yaml_save_dialog()
+            self.batch_file_path = io.yaml_save_dialog()
 
-        return monkey.io.write_yaml(self.tree_to_object(), self.batch_file_path)
+        return io.write_yaml(self.tree_to_object(), self.batch_file_path)
 
     def save_temp_file(self):
-        file_path = monkey.util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
-        if monkey.batch.batch_has_status(file_path):
-            monkey.batch.batch_status_delete(file_path)
+        file_path = util.path_alias(':'.join((KIT_ALIAS, QUICK_BATCH_PATH)))
+        if batch.batch_has_status(file_path):
+            batch.batch_status_delete(file_path)
         self.save_to_file(file_path)
 
     @staticmethod
@@ -186,7 +190,7 @@ class Batch(lumberjack.Lumberjack):
     def node_data(self, node):
         if node.value_type() in (list.__name__, tuple.__name__):
             data = []
-            for child in node.children():
+            for child in node.children:
                 if not child.ui_only():
                     child_value = self.node_data(child)
                     data.append(child_value)
@@ -194,7 +198,7 @@ class Batch(lumberjack.Lumberjack):
 
         elif node.value_type() == dict.__name__:
             data = {}
-            for child in node.children():
+            for child in node.children:
                 if not child.ui_only():
                     child_value = self.node_data(child)
                     data[child.key()] = child_value
@@ -208,7 +212,7 @@ class Batch(lumberjack.Lumberjack):
 
     def tree_to_object(self):
         batch = []
-        for child in self.root.child_by_key(BATCHFILE).children():
+        for child in BatchTreeNode.child_by_key(self.root,BATCHFILE).children:
             if child.value_type() is not None:
                 batch.append(self.node_data(child))
         return batch

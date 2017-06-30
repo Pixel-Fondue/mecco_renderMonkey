@@ -30,7 +30,7 @@ def yaml_save_dialog():
         return False
 
 
-def lxo_open_dialog():
+def lxo_open_dialog(path=None):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -44,10 +44,11 @@ def lxo_open_dialog():
                 names=('lxo',),
                 unames=('MODO Scene file',),
                 patterns=('*.lxo',),
+                path=path
         )
         return [os.path.normpath(i) for i in paths_list]
     except:
-        return False
+        return None
 
 def image_save_dialg():
     savers = util.get_imagesavers()
@@ -60,7 +61,7 @@ def image_save_dialg():
         ext=[i[2] for i in savers],
     )
 
-def yaml_open_dialog():
+def yaml_open_dialog(path = None):
     """
     By Adam O'Hern for Mechanical Color
 
@@ -75,11 +76,11 @@ def yaml_open_dialog():
                 names=('yaml',),
                 unames=('renderMonkey Batch File',),
                 patterns=('*.yaml',),
-                path=None
+                path=path
             )
         )
     except:
-        return False
+        return None
 
 
 def read_json(file_path):
