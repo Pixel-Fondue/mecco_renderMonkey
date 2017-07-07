@@ -20,55 +20,6 @@ FONT_NORMAL = markup('f', 'FONT_NORMAL')
 FONT_BOLD = markup('f', 'FONT_BOLD')
 FONT_ITALIC = markup('f', 'FONT_ITALIC')
 
-class BatchAddParam(lxu.command.BasicCommand):
-    def __init__(self):
-        lxu.command.BasicCommand.__init__(self)
-        self.dyna_Add('parameter', lx.symbol.sTYPE_STRING)
-
-    def basic_Execute(self, msg, flags):
-        param = self.dyna_String(0).lower() if self.dyna_IsSet(0) else None
-        if not param:
-            return lx.symbol.e_FAILED
-
-        primary_node = _BATCH.tree().primary()
-        if not primary_node:
-            lx.out("Nothing selected.")
-            return lx.symbol.e_FAILED
-
-        sel = _BATCH.tree().children()[0].selected_children()
-        sel = set([node for node in sel if node.node_region() == REGIONS[1]])
-        sel = [node for node in sel if not param in [child.key() for child in node.children()]]
-
-        val = monkey.defaults.get(param)
-        if val is None:
-            lx.out("Invalid parameter name.")
-            return lx.symbol.e_FAILED
-
-        if isinstance(val, (list, tuple, dict)):
-            val = type(val).__name__
-            val_type = val
-        elif param == SCENE_PATH:
-            val_type = PATH_SAVE_SCENE
-        elif param == FORMAT:
-            val_type = IMAGE_FORMAT
-        elif param == DESTINATION:
-            val_type = PATH_SAVE_IMAGE
-        else:
-            val_type = type(val).__name__
-
-        for node in sel:
-            new_node = node.add_child(param, val, REGIONS[2], val_type)
-            new_node.reorder_bottom()
-
-            if val_type in (list.__name__, tuple.__name__, dict.__name__):
-                region = REGIONS[11] if val_type == dict.__name__ else REGIONS[10]
-                new_node.add_child(ADD_GENERIC, EMPTY, region, selectable=False, ui_only=True)
-                new_node.add_state_flag(fTREE_VIEW_ITEM_EXPAND)
-
-        _BATCH.save_to_file()
-        BatchTreeView.notify_NewShape()
-
-
 class BatchAddToList(lxu.command.BasicCommand):
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
@@ -525,7 +476,6 @@ sINMAP = "name[{}] regions[{}]".format(
 
 #lx.bless(BatchTreeView, SERVERNAME, tags)
 
-lx.bless(BatchAddParam, CMD_BatchAddParam)
 lx.bless(BatchAddToList, CMD_BatchAddToList)
 lx.bless(BatchAddToDict, CMD_BatchAddToDict)
 lx.bless(BatchDeleteNodes, CMD_BatchDeleteNodes)

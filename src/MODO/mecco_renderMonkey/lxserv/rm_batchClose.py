@@ -36,6 +36,7 @@ class BatchCloseCommand(monkey.commander.CommanderClass):
         # Rebuild the tree
         try:
             batch.close_file()
+            batch.unsaved_changed = False
         except Exception as err:
             modo.dialogs.alert(message("MECCO_RM", "CLOSE_FILE_FAIL"), message("MECCO_RM", "CLOSE_FILE_FAIL_MSG", str(err)), dtype='warning')
 

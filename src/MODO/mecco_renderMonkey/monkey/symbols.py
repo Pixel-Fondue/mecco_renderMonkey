@@ -8,8 +8,6 @@ KIT_ALIAS = 'kit_mecco_renderMonkey'
 QUICK_BATCH_PATH = join('tmp', 'quick_batch.yaml')
 
 # Blessings
-CMD_BatchAddTask = "monkey.BatchAddTask"
-CMD_BatchAddParam = "monkey.BatchAddParam"
 CMD_BatchAddToList = "monkey.BatchAddToList"
 CMD_BatchAddToDict = "monkey.BatchAddToDict"
 CMD_BatchDeleteNodes = "monkey.BatchDeleteNodes"

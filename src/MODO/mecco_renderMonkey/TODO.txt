@@ -1,0 +1,9 @@
+Review error handling of batch commands
+	- Use exceptions
+	- Use message dialogs / message table
+
+Move constants from symbols.py that are using only once into corresponding file
+
+Make TreeNode more specific to RM and avoid from constructs like new_node.add_state_flag(monkey.lumberjack.fTREE_VIEW_ITEM_EXPAND)
+
+Review and enhance unsaved_changes mechanism

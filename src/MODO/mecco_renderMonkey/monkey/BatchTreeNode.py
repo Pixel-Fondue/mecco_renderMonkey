@@ -1,5 +1,5 @@
 
-import lumberjack, os
+import lumberjack, os, lx
 from symbols import *
 
 # TODO remove after display_name and display_value refactoring
@@ -93,6 +93,14 @@ class BatchTreeNode(lumberjack.TreeNode):
     def ui_only(self):
         return self._ui_only
 
+        
+    def non_ui_only_child_count(self):
+        res = 0
+        for node in self.children:
+            if not node.ui_only():
+                res += 1
+        return res
+
 #    def set_ui_only(self, ui_only=True):
 #        self._ui_only = ui_only
 
@@ -105,8 +113,8 @@ class BatchTreeNode(lumberjack.TreeNode):
 #    def set_key(self, key):
 #        self._key = key
 
-#    def node_region(self):
-#        return str(self._node_region)
+    def node_region(self):
+        return str(self._node_region)
 
 #    def set_node_region(self, node_region):
 #        self._node_region = node_region
