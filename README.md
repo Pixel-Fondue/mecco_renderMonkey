@@ -1,5 +1,7 @@
-#RenderMonkey
+# RenderMonkey
 **Rendering utilities for MODO**
+
+RenderMonkey is a collection of rendering automation tools for MODO. It was originally developed by Mechanical Color LLC as a proprietary paid product, and is now released as open-source under the MIT license.
 
 RM has several inter-related featuresets: easy progressive rendering, render range, combine pass groups, and batch rendering.
 
