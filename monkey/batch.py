@@ -500,7 +500,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         render_channels = task[RENDER_CHANNELS] if RENDER_CHANNELS in task else {}
         if render_channels:
             try:
-                for channel, value in render_channels.iteritems():
+                for channel, value in render_channels.items():
                     try:
                         scene.renderItem.channel(channel).set(value)
                         status('{}: {} = {}'.format(

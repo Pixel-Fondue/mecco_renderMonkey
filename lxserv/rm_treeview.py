@@ -315,9 +315,9 @@ class BatchManager:
     @staticmethod
     def iterate_anything(obj):
         if isinstance(obj, (list, tuple)):
-            return {k: v for k, v in enumerate(obj)}.iteritems()
+            return {k: v for k, v in enumerate(obj)}.items()
         if isinstance(obj, dict):
-            return obj.iteritems()
+            return obj.items()
 
     def grow_node(self, branch, parent_node, depth=0):
 
@@ -761,7 +761,7 @@ class BatchReorderNodes(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else REORDER_ARGS['TOP']
 
-        if mode not in [v for k, v in REORDER_ARGS.iteritems()]:
+        if mode not in [v for k, v in REORDER_ARGS.items()]:
             lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
             return lx.symbol.e_FAILED
 
@@ -795,7 +795,7 @@ class BatchSelectShift(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else SELECT_SHIFT_ARGS['UP']
 
-        if mode not in [v for k, v in SELECT_SHIFT_ARGS.iteritems()]:
+        if mode not in [v for k, v in SELECT_SHIFT_ARGS.items()]:
             lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
             return lx.symbol.e_FAILED
 

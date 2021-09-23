@@ -376,7 +376,7 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
 
 def build_arg_string(arg_dict):
     arg_string = ''
-    for k, v in arg_dict.iteritems():
+    for k, v in arg_dict.items():
         if v is not None:
             v = str(v) if str(v).isalnum() else '{{{}}}'.format(str(v))
             arg_string += " {}:{}".format(str(k), v)
