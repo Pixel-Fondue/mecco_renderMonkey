@@ -1,11 +1,16 @@
 # python
 
-import lx, modo
-import os, traceback, re, sys
-import defaults
-
-from os.path import basename
+import os
+import re
+import sys
+import traceback
 from math import copysign
+from os.path import basename
+
+import lx
+import modo
+
+from . import defaults
 
 
 def debug(string):
@@ -283,11 +288,11 @@ def frames_from_string(input_string="*"):
                 step *= -1
                 sign = int(copysign(1, step))
                 first = max(start, end)
-                last = min(start, end)+sign
+                last = min(start, end) + sign
             else:
                 sign = int(copysign(1, step))
                 first = min(start, end)
-                last = max(start, end)+sign
+                last = max(start, end) + sign
             try:
                 frames.extend(range(first, last, step))
             except:

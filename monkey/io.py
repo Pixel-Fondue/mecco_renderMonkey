@@ -1,11 +1,17 @@
 # python
 
-import os, traceback, json, re, random
-import modo
-import util, yaml
+import json
+import os
+import random
+import re
+import traceback
 
-from symbols import *
-from defaults import get
+import modo
+
+from . import util
+import yaml
+from .defaults import get
+from .symbols import *
 
 
 def yaml_save_dialog():
@@ -39,15 +45,16 @@ def lxo_open_dialog():
 
     try:
         paths_list = modo.dialogs.customFile(
-                dtype='fileOpenMulti',
-                title='Select Scene File',
-                names=('lxo',),
-                unames=('MODO Scene file',),
-                patterns=('*.lxo',),
+            dtype='fileOpenMulti',
+            title='Select Scene File',
+            names=('lxo',),
+            unames=('MODO Scene file',),
+            patterns=('*.lxo',),
         )
         return [os.path.normpath(i) for i in paths_list]
     except:
         return False
+
 
 def image_save_dialg():
     savers = util.get_imagesavers()
@@ -59,6 +66,7 @@ def image_save_dialg():
         [i[1] for i in savers],
         ext=[i[2] for i in savers],
     )
+
 
 def yaml_open_dialog():
     """
@@ -163,6 +171,7 @@ def write_yaml(data, output_path):
     target.write("\n\n".join((yamlize(data), generate_readme())))
     target.close()
 
+
 def generate_readme():
     readme = open(util.path_alias(':'.join((KIT_ALIAS, 'monkey/batch_file_docs.txt'))), 'r')
     readme = readme.read()
@@ -187,27 +196,37 @@ def generate_readme():
         'render_override': RENDER_OVERRIDE
     }
 
-    substitutions['format_examples'] = "#" + "\n#".join(["    %s: %s (*.%s)" % (i[0],i[1],i[2]) for i in util.get_imagesavers()]) + "\n\n"
+    substitutions['format_examples'] = "#" + "\n#".join(
+        ["    %s: %s (*.%s)" % (i[0], i[1], i[2]) for i in util.get_imagesavers()]) + "\n\n"
 
-    substitutions['frames_examples'] = "#    '*'                       Start/end frames defined in scene file.\n"
-    rr = ['1','1-5','5-1','0-10:2','1-21:5','1-3,10-16:2,20-23','1,1-5','(1 - 5),, 10-!@#15']
-    substitutions['frames_examples'] += "#" + "\n#".join(["    '%s'%s%s" % (i," "*(24-len(i)),str(util.frames_from_string(i))) for i in rr]) + "\n\n"
+    substitutions[
+        'frames_examples'] = "#    '*'                       Start/end frames defined in scene file.\n"
+    rr = ['1', '1-5', '5-1', '0-10:2', '1-21:5', '1-3,10-16:2,20-23', '1,1-5', '(1 - 5),, 10-!@#15']
+    substitutions['frames_examples'] += "#" + "\n#".join(
+        ["    '%s'%s%s" % (i, " " * (24 - len(i)), str(util.frames_from_string(i))) for i in
+         rr]) + "\n\n"
 
     indent = 32
     rr = [
         ['*', 'Render output filenames defined in scene file.'],
-        ['frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
-        ['.frames' + os.sep, os.path.normpath(os.sep + os.path.join('path','to','scene','file','frames'))],
-        [os.sep + os.path.join('path','with','filename.xyz'), os.path.normpath(os.sep + os.path.join('path','with','filename.jpg'))]
+        ['frames' + os.sep,
+         os.path.normpath(os.sep + os.path.join('path', 'to', 'scene', 'file', 'frames'))],
+        ['.frames' + os.sep,
+         os.path.normpath(os.sep + os.path.join('path', 'to', 'scene', 'file', 'frames'))],
+        [os.sep + os.path.join('path', 'with', 'filename.xyz'),
+         os.path.normpath(os.sep + os.path.join('path', 'with', 'filename.jpg'))]
     ]
-    substitutions['destination_examples'] = "#" + "\n#".join(["    %s%s%s" % (i[0]," "*(indent-len(i[0])),i[1]) for i in rr]) + "\n"
+    substitutions['destination_examples'] = "#" + "\n#".join(
+        ["    %s%s%s" % (i[0], " " * (indent - len(i[0])), i[1]) for i in rr]) + "\n"
 
     rr = [
-        os.sep + os.path.join('already','perfectly','good','path') + os.sep,
-        os.sep + os.path.join('path','with','no','trailing_slash'),
-        os.path.join('~','path','to','righteousness'),
+        os.sep + os.path.join('already', 'perfectly', 'good', 'path') + os.sep,
+        os.sep + os.path.join('path', 'with', 'no', 'trailing_slash'),
+        os.path.join('~', 'path', 'to', 'righteousness'),
         "kit_mecco_renderMonkey:path" + os.sep
     ]
-    substitutions['destination_examples'] += "#" + "\n#".join(["    %s%s%s" % (i," "*(indent-len(i)),str(util.expand_path(i))) for i in rr]) + "\n\n"
+    substitutions['destination_examples'] += "#" + "\n#".join(
+        ["    %s%s%s" % (i, " " * (indent - len(i)), str(util.expand_path(i))) for i in
+         rr]) + "\n\n"
 
     return readme.format(s=substitutions)

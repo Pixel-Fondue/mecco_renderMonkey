@@ -3,7 +3,7 @@
 import lx
 import modo
 import os
-import util
+from . import util
 
 from time import sleep
 
@@ -49,7 +49,8 @@ def render_frame(frame, output_path="*", output_format="*", clear=False, group=N
 
     try:
         # command = 'render {{{}}} {{{}}}{}'.format(output_path, output_format, group)
-        command = 'render.animation filename:{%s} format:{%s}%s' % (output_path, output_format, group)
+        command = 'render.animation filename:{%s} format:{%s}%s' % (
+        output_path, output_format, group)
         lx.eval(command)
 
     except:
@@ -96,7 +97,8 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
         output_dests = "Use filenames specified in render outputs?\n\n"
         for i in [i for i in modo.Scene().iterItems('renderOutput') if util.check_enable(i)]:
             dest = i.channel('filename').get()
-            dest = '.'.join((dest, util.get_imagesaver(i.channel('format').get())[2])) if dest else "none"
+            dest = '.'.join(
+                (dest, util.get_imagesaver(i.channel('format').get())[2])) if dest else "none"
             output_dests += "%s: %s\n" % (i.name, dest)
 
         if modo.dialogs.yesNo("Destination", output_dests) == 'yes':
@@ -119,7 +121,8 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
                 proj = None
 
             try:
-                scene = os.path.join(os.path.dirname(lx.eval("query sceneservice scene.file ? current")), "")
+                scene = os.path.join(
+                    os.path.dirname(lx.eval("query sceneservice scene.file ? current")), "")
             except:
                 scene = None
 
@@ -136,7 +139,8 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
                 previous_format = "openexr"
 
             savers = util.get_imagesavers()
-            savers.insert(0, savers.pop(savers.index([i for i in savers if previous_format in i][0])))
+            savers.insert(0,
+                          savers.pop(savers.index([i for i in savers if previous_format in i][0])))
 
             dest_path = modo.dialogs.customFile(
                 'fileSave',
@@ -168,7 +172,7 @@ def render_frames(frames_list, dest_path=None, dest_format=None):
         clear_frame = False if frame == frames_list[-1] else True
 
         if not render_frame(frame, dest_path, dest_format, clear_frame, group=group):
-                break
+            break
 
         sleep(0.5)
         if progressbar_enable:
