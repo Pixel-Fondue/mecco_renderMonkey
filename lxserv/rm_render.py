@@ -8,12 +8,13 @@ DEFAULT_FRAMES = '1'
 DEFAULT_USE_PASSES = 0
 BLESS = 'monkey.renderProg'
 
+
 class myGreatCommand(lxu.command.BasicCommand):
 
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
 
-        #command accepts an argument
+        # command accepts an argument
         self.dyna_Add('time', lx.symbol.sTYPE_STRING)
         self.dyna_Add('frames', lx.symbol.sTYPE_STRING)
         self.dyna_Add('usePasses', lx.symbol.sTYPE_BOOLEAN)
@@ -26,8 +27,6 @@ class myGreatCommand(lxu.command.BasicCommand):
                 lx.out('Invalid frame range.')
                 return False
 
-
-
             use_passes = self.dyna_String(2) if self.dyna_IsSet(2) else DEFAULT_USE_PASSES
 
             if use_passes:
@@ -35,7 +34,8 @@ class myGreatCommand(lxu.command.BasicCommand):
                 try:
                     pass_group = modo.Scene().item(lx.eval('group.current ? pass'))
                     lx.out("Pass group: %s" % pass_group.name)
-                    pass_list = [i for i in pass_group.itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP and i.actionClip.Enabled()]
+                    pass_list = [i for i in pass_group.itemGraph('itemGroups').forward() if
+                                 i.type == lx.symbol.a_ACTIONCLIP and i.actionClip.Enabled()]
                     lx.out("Passes:")
                     for i in pass_list:
                         lx.out("\t%s" % i.name)
@@ -43,8 +43,6 @@ class myGreatCommand(lxu.command.BasicCommand):
                     lx.out('No active pass group. Rendering without passes.')
                     use_passes = False
                     pass_list = []
-
-
 
             time_string = self.dyna_String(0) if self.dyna_IsSet(0) else DEFAULT_TIME
 
@@ -71,7 +69,8 @@ class myGreatCommand(lxu.command.BasicCommand):
 
             lx.out("Total seconds: %s" % total_seconds)
 
-            per_render_seconds = total_seconds / ( len(frames_list) * (len(pass_list) if pass_list else 1) )
+            per_render_seconds = total_seconds / (
+                        len(frames_list) * (len(pass_list) if pass_list else 1))
             lx.out("Seconds per render: %s" % per_render_seconds)
 
             m, s = divmod(per_render_seconds, 60)
@@ -79,16 +78,16 @@ class myGreatCommand(lxu.command.BasicCommand):
             per_render_string = "%d:%02d:%02d" % (h, m, s)
             lx.out("Seconds as string: %s" % per_render_string)
 
-            destination = os.path.join("E:\\","Users","Adam","Desktop","test.jpg")
+            destination = os.path.join("E:\\", "Users", "Adam", "Desktop", "test.jpg")
             image_saver = "JPG"
             frame_rate = 24
 
             lx.eval('iview.resume')
 
             for f in frames_list:
-#                render_command = '!!iview.renderAnim {%s} %04d %04d sequence false' % (per_render_string,f,f)
+                #                render_command = '!!iview.renderAnim {%s} %04d %04d sequence false' % (per_render_string,f,f)
                 lx.out("Rendering frame %04d..." % f)
-                lx.eval('select.time %s 0 0' % str(f/24.0))
+                lx.eval('select.time %s 0 0' % str(f / 24.0))
 
                 if use_passes and pass_list:
                     lx.out("Rendering passes:")
@@ -98,12 +97,12 @@ class myGreatCommand(lxu.command.BasicCommand):
                         p.actionClip.SetActive(1)
 
                         time.sleep(per_render_seconds)
-                        lx.eval('iview.saveImage {%s} %s' % (destination,image_saver))
+                        lx.eval('iview.saveImage {%s} %s' % (destination, image_saver))
 
                         lx.out("...complete.")
                 else:
                     time.sleep(per_render_seconds)
-                    lx.eval('iview.saveImage {%s} %s' % (destination,image_saver))
+                    lx.eval('iview.saveImage {%s} %s' % (destination, image_saver))
 
                     lx.out("Frame %04d complete." % f)
 
@@ -120,5 +119,3 @@ class myGreatCommand(lxu.command.BasicCommand):
 
 
 lx.bless(myGreatCommand, BLESS)
-
-

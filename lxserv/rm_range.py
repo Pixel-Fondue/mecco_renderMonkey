@@ -24,7 +24,8 @@ class CMD(lxu.command.BasicCommand):
                 monkey.render.render_frames(frames_list)
             else:
                 modo.dialogs.alert(
-                    "Invalid Frame Range", "error", 'No frame range recognized in "{}".'.format(frames_string)
+                    "Invalid Frame Range", "error",
+                    'No frame range recognized in "{}".'.format(frames_string)
                 )
                 return lx.symbol.e_FAILED
 

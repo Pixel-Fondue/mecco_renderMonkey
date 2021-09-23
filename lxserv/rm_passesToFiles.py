@@ -1,8 +1,9 @@
-#python
+# python
 import lx, lxu.command, modo
 from os.path import splitext
 
 BLESS = "monkey.passesToFiles"
+
 
 class commandClass(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
@@ -18,7 +19,8 @@ class commandClass(lxu.command.BasicCommand):
             scene = modo.Scene()
             group = scene.item(PASS_GROUP)
             outputs = [i for i in scene.iterItems() if i.type == 'renderOutput']
-            passes = [i for i in group.itemGraph('itemGroups').forward() if i.type == lx.symbol.a_ACTIONCLIP and i.enabled]
+            passes = [i for i in group.itemGraph('itemGroups').forward() if
+                      i.type == lx.symbol.a_ACTIONCLIP and i.enabled]
 
             if PATTERN:
                 restorePat = scene.renderItem.channel('outPat').get()
@@ -38,10 +40,12 @@ class commandClass(lxu.command.BasicCommand):
                     if OUTPUT:
                         output.channel('filename').set(OUTPUT + '_' + pass_.name)
                     else:
-                        output.channel('filename').set(output.channel('filename').get() + '_' + pass_.name)
+                        output.channel('filename').set(
+                            output.channel('filename').get() + '_' + pass_.name)
 
                 splitpath = splitext(lx.eval('query sceneservice scene.file ? current'))
-                lx.eval('scene.saveAs {%s_%s%s} $LXOB true' % (splitpath[0], pass_.name + "_floor", splitpath[1]) )
+                lx.eval('scene.saveAs {%s_%s%s} $LXOB true' % (
+                splitpath[0], pass_.name + "_floor", splitpath[1]))
 
                 for i, output in enumerate(outputs):
                     output.channel('filename').set(restoreOut[i])

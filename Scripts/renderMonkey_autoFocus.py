@@ -1,4 +1,5 @@
 #python
+import lx
 
 lx.eval("dialog.setup info")
 lx.eval("dialog.title {Autofocus}")
