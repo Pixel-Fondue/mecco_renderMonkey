@@ -9,16 +9,16 @@ import lxu
 from monkey.symbols import *
 
 
-def is_enabled(cmd_string) :
-  msg = lx.service.Message().Allocate()
-  cmd = lx.service.Command().SpawnFromString(cmd_string)[2]
-  try:
-    cmd.Enable(msg)
-  except RuntimeError, e:
-    if e.message == 'bad result: CMD_DISABLED':
-      return False
-    raise
-  return True
+def is_enabled(cmd_string):
+    msg = lx.service.Message().Allocate()
+    cmd = lx.service.Command().SpawnFromString(cmd_string)[2]
+    try:
+        cmd.Enable(msg)
+    except RuntimeError as e:
+        if e.message == 'bad result: CMD_DISABLED':
+            return False
+        raise
+    return True
 
 
 class BatchParamsPopup(lxifc.UIValueHints):
@@ -31,11 +31,12 @@ class BatchParamsPopup(lxifc.UIValueHints):
     def uiv_PopCount(self):
         return len(self._items[0])
 
-    def uiv_PopUserName(self,index):
+    def uiv_PopUserName(self, index):
         return self._items[1][index]
 
-    def uiv_PopInternalName(self,index):
+    def uiv_PopInternalName(self, index):
         return self._items[0][index]
+
 
 class BatchParamsList(lxu.command.BasicCommand):
     def __init__(self):
@@ -53,10 +54,10 @@ class BatchParamsList(lxu.command.BasicCommand):
             lx.eval('monkey.BatchAddParam %s' % self.dyna_Int(0))
 
     def arg_UIValueHints(self, index):
-        commands = [[],[]]
+        commands = [[], []]
         for param in ALL_PARAMS:
-              commands[0].append(param)
-              commands[1].append(param.replace('_', ' ').title())
+            commands[0].append(param)
+            commands[1].append(param.replace('_', ' ').title())
         if index == 0:
             return BatchParamsPopup(commands)
 

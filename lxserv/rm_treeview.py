@@ -22,10 +22,10 @@ FONT_ITALIC = markup('f', 'FONT_ITALIC')
 
 
 class TreeNode(object):
-
     _primary = None
 
-    def __init__(self, key, value=None, parent=None, node_region=None, value_type=None, selectable=True, ui_only=False):
+    def __init__(self, key, value=None, parent=None, node_region=None, value_type=None,
+                 selectable=True, ui_only=False):
         self._key = key
         self._value = value
         self._parent = parent
@@ -48,8 +48,10 @@ class TreeNode(object):
     def primary(cls):
         return cls._primary
 
-    def add_child(self, key, value=None, node_region=None, value_type=None, selectable=True, ui_only=False):
-        self._children.append(TreeNode(key, value, self, node_region, value_type, selectable, ui_only))
+    def add_child(self, key, value=None, node_region=None, value_type=None, selectable=True,
+                  ui_only=False):
+        self._children.append(
+            TreeNode(key, value, self, node_region, value_type, selectable, ui_only))
         return self._children[-1]
 
     def clear_children(self):
@@ -152,7 +154,7 @@ class TreeNode(object):
         self._node_region = node_region
         return self._node_region
 
-    def set_value(self,value):
+    def set_value(self, value):
         self._value = value
 
     def value_type(self):
@@ -208,19 +210,19 @@ class TreeNode(object):
     def parent_child_index(self):
         return self.parent().children().index(self)
 
-    def set_parent_child_index(self,index):
+    def set_parent_child_index(self, index):
         self.destroy()
         self.parent().insert_child(index, self)
 
     def reorder_up(self):
         if self.parent_child_index() > 0:
-            self.set_parent_child_index(self.parent_child_index()-1)
+            self.set_parent_child_index(self.parent_child_index() - 1)
 
     def reorder_down(self):
         if self.parent_child_index() + 1 < len(
                 [i for i in self.parent().children() if not i.ui_only()]
         ):
-            self.set_parent_child_index(self.parent_child_index()+1)
+            self.set_parent_child_index(self.parent_child_index() + 1)
 
     def reorder_top(self):
         self.set_parent_child_index(0)
@@ -274,7 +276,8 @@ class BatchManager:
         paths_list = paths_list if isinstance(paths_list, list) else [paths_list]
 
         for path in paths_list:
-            self.grow_node([{SCENE_PATH: path, FRAMES: monkey.defaults.get(FRAMES)}], batch_root_node, 1)
+            self.grow_node([{SCENE_PATH: path, FRAMES: monkey.defaults.get(FRAMES)}],
+                           batch_root_node, 1)
 
         if self._batch_file_path:
             self.save_to_file()
@@ -312,9 +315,9 @@ class BatchManager:
     @staticmethod
     def iterate_anything(obj):
         if isinstance(obj, (list, tuple)):
-            return {k: v for k, v in enumerate(obj)}.iteritems()
+            return {k: v for k, v in enumerate(obj)}.items()
         if isinstance(obj, dict):
-            return obj.iteritems()
+            return obj.items()
 
     def grow_node(self, branch, parent_node, depth=0):
 
@@ -432,7 +435,6 @@ class BatchTreeView(lxifc.TreeView,
                     lxifc.ListenerPort,
                     lxifc.Attributes
                     ):
-
     _listenerClients = {}
 
     def __init__(self, node=None, current_index=0):
@@ -686,14 +688,16 @@ class BatchAddToList(lxu.command.BasicCommand):
 
         sel = _BATCH.tree().children()[0].selected_children()
         sel = set([node for node in sel if node.value_type() in (list.__name__, tuple.__name__)])
-        sel = [node for node in sel if not value in [child.raw_value() for child in node.children()]]
+        sel = [node for node in sel if
+               not value in [child.raw_value() for child in node.children()]]
 
         if not sel:
             lx.out("Invalid selection.")
             return lx.symbol.e_FAILED
 
         for node in sel:
-            new_node = node.add_child(len(node.children())-1,value,REGIONS[4],type(value).__name__)
+            new_node = node.add_child(len(node.children()) - 1, value, REGIONS[4],
+                                      type(value).__name__)
             new_node.reorder_bottom()
 
         _BATCH.save_to_file()
@@ -726,7 +730,7 @@ class BatchAddToDict(lxu.command.BasicCommand):
             return lx.symbol.e_FAILED
 
         for node in sel:
-            new_node = node.add_child(key,value,REGIONS[4],type(value).__name__)
+            new_node = node.add_child(key, value, REGIONS[4], type(value).__name__)
             new_node.reorder_bottom()
 
         _BATCH.save_to_file()
@@ -757,7 +761,7 @@ class BatchReorderNodes(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else REORDER_ARGS['TOP']
 
-        if mode not in [v for k, v in REORDER_ARGS.iteritems()]:
+        if mode not in [v for k, v in REORDER_ARGS.items()]:
             lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
             return lx.symbol.e_FAILED
 
@@ -791,7 +795,7 @@ class BatchSelectShift(lxu.command.BasicCommand):
     def basic_Execute(self, msg, flags):
         mode = self.dyna_String(0).lower() if self.dyna_IsSet(0) else SELECT_SHIFT_ARGS['UP']
 
-        if mode not in [v for k, v in SELECT_SHIFT_ARGS.iteritems()]:
+        if mode not in [v for k, v in SELECT_SHIFT_ARGS.items()]:
             lx.out("Wow, no idea to do with \"{}\". Sorry.".format(mode))
             return lx.symbol.e_FAILED
 
@@ -856,7 +860,8 @@ class BatchEditNodes(lxu.command.BasicCommand):
                     if node.parent().child_by_key(DESTINATION):
                         node.parent().child_by_key(DESTINATION).set_value(path)
                     else:
-                        new_node = node.parent().add_child(DESTINATION, path, REGIONS[2], PATH_SAVE_IMAGE)
+                        new_node = node.parent().add_child(DESTINATION, path, REGIONS[2],
+                                                           PATH_SAVE_IMAGE)
                         new_node.reorder_bottom()
 
                     node.set_value(format)
@@ -866,12 +871,12 @@ class BatchEditNodes(lxu.command.BasicCommand):
             lx.eval('monkey.BatchEditString')
             frames_list = monkey.util.frames_from_string(primary_node.raw_value())
             if not frames_list:
-                modo.dialogs.alert('Invalid Frame Range','Invalid frame range.','error')
+                modo.dialogs.alert('Invalid Frame Range', 'Invalid frame range.', 'error')
                 primary_node.set_value(old_value)
             else:
                 for node in sel:
-                    node.set_value(''.join([i for i in primary_node.raw_value() if i in "0123456789-:,"]))
-
+                    node.set_value(
+                        ''.join([i for i in primary_node.raw_value() if i in "0123456789-:,"]))
 
         elif primary_node.value_type() in (int.__name__, float.__name__):
             try:
@@ -1038,7 +1043,7 @@ class BatchRender(lxu.command.BasicCommand):
                 elif mode == 'eighth':
                     res = .125
                 elif mode == 'sixteenth':
-                    res = 1.0/16
+                    res = 1.0 / 16
 
                 monkey.batch.run(_BATCH.batch_file_path(), dry_run=dry, res_multiply=res)
 
@@ -1110,6 +1115,7 @@ class BatchOpenTaskScene(lxu.command.BasicCommand):
         if len(sel):
             for node in sel:
                 lx.eval('scene.open {{{}}}'.format(node.child_by_key(SCENE_PATH).raw_value()))
+
 
 sTREEVIEW_TYPE = " ".join((VPTYPE, IDENT, sSRV_USERNAME, NICE_NAME))
 

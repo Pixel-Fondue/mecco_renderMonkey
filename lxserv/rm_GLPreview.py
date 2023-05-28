@@ -1,4 +1,4 @@
-#python
+# python
 
 import lx
 import lxu.command
@@ -13,12 +13,13 @@ from monkey.symbols import *
 BORDER = 8
 BACKGROUND_DEFAULT = '0.5 0.5 0.5'
 
+
 class GLRenderWindow(lxu.command.BasicCommand):
 
     def __init__(self):
         lxu.command.BasicCommand.__init__(self)
 
-        #command accepts an argument
+        # command accepts an argument
         self.dyna_Add('width', lx.symbol.sTYPE_INTEGER)
         self.basic_SetFlags(0, lx.symbol.fCMDARG_OPTIONAL)
 
@@ -28,11 +29,10 @@ class GLRenderWindow(lxu.command.BasicCommand):
         self.dyna_Add('background', lx.symbol.sTYPE_COLOR)
         self.basic_SetFlags(2, lx.symbol.fCMDARG_OPTIONAL)
 
-
     def scene_ratio(self):
         x = int(modo.Scene().renderItem.channel('resX').get())
         y = int(modo.Scene().renderItem.channel('resY').get())
-        return str(Fraction(x,y))
+        return str(Fraction(x, y))
 
     def basic_Execute(self, msg, flags):
         width = self.dyna_Int(0, 0.0) if self.dyna_IsSet(0) else 1280
@@ -44,19 +44,21 @@ class GLRenderWindow(lxu.command.BasicCommand):
             ratio_float = float(ratio_string)
         except:
             try:
-                ratio_parts = re.split(":|/|,",ratio_string)
-                ratio_float = float(ratio_parts[0])/float(ratio_parts[1])
+                ratio_parts = re.split(":|/|,", ratio_string)
+                ratio_float = float(ratio_parts[0]) / float(ratio_parts[1])
             except:
                 modo.dialogs.alert(
                     "Invalid Ratio",
-                    "Could not parse \"{}\".\nRatio should be either a decimal (e.g. 1.777) or a ratio (e.g. 16:9).".format(ratio_string),
+                    "Could not parse \"{}\".\nRatio should be either a decimal (e.g. 1.777) or a ratio (e.g. 16:9).".format(
+                        ratio_string),
                     'error'
                 )
                 return lx.symbol.e_FAILED
 
         height = int(round(width / ratio_float))
 
-        lx.eval('layout.create width:%s height:%s style:palette' % (width+BORDER,height+BORDER))
+        lx.eval(
+            'layout.create width:%s height:%s style:palette' % (width + BORDER, height + BORDER))
         lx.eval('viewport.restore base.3DSceneView false 3Dmodel')
         lx.eval('view3d.bgEnvironment background solid')
         lx.eval('view3d.showGrid false')

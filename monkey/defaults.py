@@ -3,7 +3,7 @@
 import lx
 import os
 
-from symbols import *
+from .symbols import *
 
 DEFAULTS = {
     FORMAT: 'JPG',
@@ -32,7 +32,7 @@ DEFAULTS = {
     'test_render_channels': {'irrCache': False, 'globLimit': 5, 'aa': 's128'},
     'test_outputs': ['FCO'],
     'test_width': 256,
-    'test_height': 256.0*(9.0/16),
+    'test_height': 256.0 * (9.0 / 16),
     'test_single_frame': '1'
 }
 
@@ -43,16 +43,17 @@ def get(key):
     else:
         return None
 
+
 TASK_PARAMS = {
-                FORMAT: DEFAULTS[FORMAT],
-                FRAMES: DEFAULTS[FRAMES],
-                COMMANDS: DEFAULTS[COMMANDS],
-                DESTINATION: DEFAULTS[DESTINATION],
-                PATTERN: DEFAULTS[PATTERN],
-                GROUPS: DEFAULTS[GROUPS],
-                WIDTH: DEFAULTS[WIDTH],
-                HEIGHT: DEFAULTS[HEIGHT],
-                OUTPUTS: DEFAULTS[OUTPUTS],
-                CAMERA: DEFAULTS[CAMERA],
-                RENDER_CHANNELS: DEFAULTS[RENDER_CHANNELS]
-            }
+    FORMAT: DEFAULTS[FORMAT],
+    FRAMES: DEFAULTS[FRAMES],
+    COMMANDS: DEFAULTS[COMMANDS],
+    DESTINATION: DEFAULTS[DESTINATION],
+    PATTERN: DEFAULTS[PATTERN],
+    GROUPS: DEFAULTS[GROUPS],
+    WIDTH: DEFAULTS[WIDTH],
+    HEIGHT: DEFAULTS[HEIGHT],
+    OUTPUTS: DEFAULTS[OUTPUTS],
+    CAMERA: DEFAULTS[CAMERA],
+    RENDER_CHANNELS: DEFAULTS[RENDER_CHANNELS]
+}

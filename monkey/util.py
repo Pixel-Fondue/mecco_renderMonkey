@@ -1,11 +1,16 @@
 # python
 
-import lx, modo
-import os, traceback, re, sys
-import defaults
-
-from os.path import basename
+import os
+import re
+import sys
+import traceback
 from math import copysign
+from os.path import basename
+
+import lx
+import modo
+
+from . import defaults
 
 
 def debug(string):
@@ -283,11 +288,11 @@ def frames_from_string(input_string="*"):
                 step *= -1
                 sign = int(copysign(1, step))
                 first = max(start, end)
-                last = min(start, end)+sign
+                last = min(start, end) + sign
             else:
                 sign = int(copysign(1, step))
                 first = min(start, end)
-                last = max(start, end)+sign
+                last = max(start, end) + sign
             try:
                 frames.extend(range(first, last, step))
             except:
@@ -371,7 +376,7 @@ def set_or_create_user_value(name, value, valueType="string", life="config", use
 
 def build_arg_string(arg_dict):
     arg_string = ''
-    for k, v in arg_dict.iteritems():
+    for k, v in arg_dict.items():
         if v is not None:
             v = str(v) if str(v).isalnum() else '{{{}}}'.format(str(v))
             arg_string += " {}:{}".format(str(k), v)

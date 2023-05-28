@@ -4,13 +4,13 @@ import lx
 import traceback
 
 try:
-    import batch
-    import util
-    import defaults
-    import symbols
-    import io
-    import passes
-    import render
+    from . import batch
+    from . import util
+    from . import defaults
+    from . import symbols
+    from . import io
+    from . import passes
+    from . import render
 
 except:
     lx.out(traceback.format_exc())

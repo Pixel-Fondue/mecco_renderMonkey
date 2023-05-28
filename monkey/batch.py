@@ -1,13 +1,25 @@
 # python
 
-import lx, modo
-import os, traceback, sys, re, time
-import util, defaults, io, render, passes, yaml
+import os
+import re
+import sys
+import time
+import traceback
+import yaml
 
-from symbols import *
+import lx
+import modo
+
+from . import defaults
+from . import io
+from . import passes
+from . import render
+from . import util
+from .symbols import *
 
 _STATUS = []
 _ABORT = False
+
 
 def batch_status_file(batch_file_path):
     split = os.path.splitext(batch_file_path)
@@ -28,7 +40,8 @@ def batch_status_create(data, batch_file_path):
 
 def batch_dryRun_write(data, batch_file_path):
     status_file = open(batch_dryRun_file(batch_file_path), 'w')
-    status_file.write("{}\n\n".format(time.asctime( time.localtime(time.time()) )) + "\n".join([i for i in data]))
+    status_file.write(
+        "{}\n\n".format(time.asctime(time.localtime(time.time()))) + "\n".join([i for i in data]))
     status_file.close()
 
 
@@ -51,7 +64,8 @@ def batch_status_reset(batch_file_path):
     data = io.read_yaml(batch_file_path)
 
     try:
-        status_file.write(yaml.dump(data, indent=4, width=999, default_flow_style=False).replace("\n-", "\n\n-"))
+        status_file.write(
+            yaml.dump(data, indent=4, width=999, default_flow_style=False).replace("\n-", "\n\n-"))
     except:
         util.debug(traceback.format_exc())
         status_file.close()
@@ -113,8 +127,9 @@ def set_frame_status(batch_file_path, task_index, frame_number, status):
             batch[task_index][STATUS] = []
 
         batch[task_index][STATUS] = [
-            i for i in batch[task_index][STATUS] if not int(re.search('^[0-9]*', i).group(0)) == frame_number
-            ]
+            i for i in batch[task_index][STATUS] if
+            not int(re.search('^[0-9]*', i).group(0)) == frame_number
+        ]
 
         batch[task_index][STATUS].append("%04d %s" % (frame_number, status))
 
@@ -145,13 +160,13 @@ def status(message):
     util.status(message)
     _STATUS.append(message)
 
+
 def status_reset():
     global _STATUS
     _STATUS = []
 
 
 def run(batch_file_path, dry_run=False, res_multiply=1):
-
     global _ABORT
 
     restore = {}
@@ -196,7 +211,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
     for task_index, task in enumerate(batch):
 
         if not get_task_status(batch_file_path, task_index) == STATUS_AVAILABLE:
-            status("ERROR: Task %s status: '%s'. Skip task." % (task_index, get_task_status(batch_file_path, task_index)))
+            status("ERROR: Task %s status: '%s'. Skip task." % (
+            task_index, get_task_status(batch_file_path, task_index)))
             set_task_status(batch_file_path, task_index, STATUS_FAILED)
             continue
 
@@ -259,14 +275,14 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             lx.eval('!scene.close')
             continue
 
-        if not [i for i in frames_list if get_frame_status(batch_file_path, task_index, i) == STATUS_AVAILABLE]:
+        if not [i for i in frames_list if
+                get_frame_status(batch_file_path, task_index, i) == STATUS_AVAILABLE]:
             status("ERROR: No available frames. Skip task.")
             set_task_status(batch_file_path, task_index, STATUS_FAILED)
             lx.eval('!scene.close')
             continue
 
         status(FRAMES + ": " + ", ".join([str(i) for i in frames_list]))
-
 
         #
         # Parse Output Pattern
@@ -309,10 +325,10 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                 height = scene_height
 
             elif width and not height:
-                height = int(round(width * (scene_height/scene_width)))
+                height = int(round(width * (scene_height / scene_width)))
 
             elif height and not width:
-                width = int(round(height * (scene_width/scene_height)))
+                width = int(round(height * (scene_width / scene_height)))
 
             width *= res_multiply
             height *= res_multiply
@@ -382,7 +398,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         pass_group_names = task[GROUPS] if GROUPS in task else None
         try:
             if pass_group_names:
-                pass_group_names = pass_group_names if isinstance(pass_group_names, list) else [pass_group_names]
+                pass_group_names = pass_group_names if isinstance(pass_group_names, list) else [
+                    pass_group_names]
 
                 pass_groups = set()
                 for group in pass_group_names:
@@ -447,7 +464,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         status(DESTINATION + ": " + str(destination))
 
-
         #
         # Parse Image Saver
         #
@@ -458,7 +474,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             else:
                 imagesaver = defaults.get(FORMAT)
 
-            if (DESTINATION in task and task[DESTINATION] == '*') or (FORMAT in task and task[FORMAT] == '*'):
+            if (DESTINATION in task and task[DESTINATION] == '*') or (
+                    FORMAT in task and task[FORMAT] == '*'):
                 imagesaver = None
 
             if imagesaver and not util.get_imagesaver(imagesaver):
@@ -476,7 +493,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
 
         status(FORMAT + ": " + str(imagesaver))
 
-
         #
         # Set render channels
         #
@@ -484,7 +500,7 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
         render_channels = task[RENDER_CHANNELS] if RENDER_CHANNELS in task else {}
         if render_channels:
             try:
-                for channel,  value in render_channels.iteritems():
+                for channel, value in render_channels.items():
                     try:
                         scene.renderItem.channel(channel).set(value)
                         status('{}: {} = {}'.format(
@@ -556,7 +572,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                         if not o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FILENAME).get():
                             o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FILENAME).set(destination)
                         if not o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FORMAT).get():
-                            o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FORMAT).set(imagesaver if imagesaver else defaults.get(FORMAT))
+                            o.channel(lx.symbol.sICHAN_RENDEROUTPUT_FORMAT).set(
+                                imagesaver if imagesaver else defaults.get(FORMAT))
 
                 if force_dest:
                     destination = '*'
@@ -582,7 +599,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             util.debug(traceback.format_exc())
             master_pass_group_name = None
 
-
         #
         # Run task commands
         #
@@ -598,7 +614,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                     failed = True
         if failed:
             continue
-
 
         #
         # Render Frames
@@ -628,12 +643,12 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             #
 
             if not get_frame_status(batch_file_path, task_index, frame) == STATUS_AVAILABLE:
-                status("FRAME BUSY: %s. Skip frame." % get_frame_status(batch_file_path, task_index, frame))
+                status("FRAME BUSY: %s. Skip frame." % get_frame_status(batch_file_path, task_index,
+                                                                        frame))
                 continue
 
             set_frame_status(batch_file_path, task_index, frame, STATUS_IN_PROGRESS)
             status("\n- Rendering frame %04d." % frame)
-
 
             #
             # Run task commands
@@ -651,7 +666,6 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
             if failed:
                 continue
 
-
             #
             # Build render command
             #
@@ -660,10 +674,10 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                 render_command = task[RENDER_OVERRIDE]
             else:
                 args = util.build_arg_string({
-                        "filename": destination,
-                        "format": imagesaver,
-                        "group": master_pass_group_name
-                    })
+                    "filename": destination,
+                    "format": imagesaver,
+                    "group": master_pass_group_name
+                })
 
                 render_command = 'render.animation' + args
 
@@ -692,7 +706,8 @@ def run(batch_file_path, dry_run=False, res_multiply=1):
                 util.debug(traceback.format_exc())
 
         if _ABORT:
-            util.status('User aborted task %s (%s). Stop.' % (task_index, os.path.basename(task_path)))
+            util.status(
+                'User aborted task %s (%s). Stop.' % (task_index, os.path.basename(task_path)))
             break
 
         #
